@@ -141,7 +141,7 @@
     if(age<18){showError('Bu hesaplayıcı yetişkinler (18 yaş ve üzeri) içindir. Çocuk ve ergenlerde farklı bir formül (bedside Schwartz) kullanılır; sonucu çocuk hekimine veya nefrolojiye sorun.');return;}
     if(sex!=='K'&&sex!=='E'){showError('Formül kadın ve erkek için farklı katsayılar kullandığından lütfen biyolojik cinsiyeti seçin.');return;}
     if(typeof calculateCKDEPI_eGFR!=='function'){showError('Hesaplama modülü yüklenemedi.');return;}
-    const r=calculateCKDEPI_eGFR(scr,age,sex);
+    const r=calculateCKDEPI_eGFR(scr,age,sex,{ignorePregnancy:true});
     if(!r){showError('Hesaplama yapılamadı. Girilen değerleri kontrol edin.');return;}
     const rows=STAGES.map(s=>`<tr class="${s.id===r.stage?'active':''}"><td>${esc(s.id)}</td><td>${esc(s.range)}</td><td>${esc(s.text)}</td></tr>`).join('');
     const urgent=r.egfr<15?'<p><strong>Çok düşük eGFR:</strong> Bu sonuç gecikmeden bir sağlık profesyoneli tarafından değerlendirilmelidir. Nefes darlığı, belirgin şişlik, çok az idrar, bilinç bulanıklığı gibi belirtiler varsa 112\'yi arayın.</p>':'';

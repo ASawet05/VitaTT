@@ -748,7 +748,8 @@
 
   function renderAllRechartsDashboards() {
     renderRechartsMount("rechartsBloodHistoryContainer");
-    renderRechartsMount("labsRechartsMultiLineMount");
+    // Tahlillerim sayfası: sade gelişim grafiği (js/lab-trend.js); yüklenemediyse eski çoklu çizgi paneli kullanılır.
+    if (!(window.VitaLabTrend && window.VitaLabTrend.render())) renderRechartsMount("labsRechartsMultiLineMount");
     // Ensure biomarkerChartCard in view-labs is visible so users can always inspect multi-line trends
     const labCard = document.getElementById("biomarkerChartCard");
     if (labCard) {

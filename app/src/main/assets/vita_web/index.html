@@ -10,7 +10,7 @@
 <meta content="end-user-2026-10-21-vitaai3-clinical-guide" name="vitatakip-build"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <!-- Startup fix: utility CSS is bundled; Chart.js/PDF.js are lazy-loaded. -->
-<title>VitaTakip Bitirme Projesi - Kişiselleştirilmiş Sağlık, Karar Destek ve Farmasötik Portal</title>
+<title>VitaTakip — Kişiselleştirilmiş Sağlık ve Karar Destek Portalı</title>
 <!-- Mobil Bağımsız Uygulama (Standalone PWA / Web App) Meta Etiketleri -->
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
@@ -24,6 +24,9 @@
 <!-- PDF.js loads only when a user selects a PDF for analysis. -->
 <link rel="stylesheet" href="css/tailwind.css">
 <link rel="stylesheet" href="css/style.css?v=32">
+<link rel="stylesheet" href="css/auth.css?v=36">
+<link rel="stylesheet" href="css/clinical.css?v=58">
+<link rel="stylesheet" href="css/home.css?v=64">
 <script src="js/lazy-icon-fonts.js"></script>
 
 
@@ -235,7 +238,7 @@
 </button>
 <button class="w-full flex items-center gap-2.5 rounded-xl px-3 py-1.5 text-left text-[11px] font-bold text-teal-200 hover:bg-navy-800 transition cursor-pointer" onclick="closeAppDrawer(); openKvkkInfoModal()" type="button">
 <i class="fa-solid fa-shield-halved text-teal-400 w-4 text-center"></i>
-<span>KVKK &amp; Yerel Veri Güvenliği</span>
+<span>Gizlilik &amp; Yasal Şartlar</span>
 </button>
 </div>
 <!-- Çekmece Alt Kısım: Çıkış Yap -->
@@ -408,8 +411,6 @@
 </div>
 </div>
 </div>
-<!-- Tıbbi uyarı: ayrıntılar gerektiğinde açılır -->
-<div class="vita-hide-in-compact"><button type="button" onclick="openClinicalReminder()" aria-haspopup="dialog" aria-controls="clinicalReminderModal" class="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100"><i class="fa-solid fa-circle-exclamation text-amber-600"></i> Tıbbi uyarı ve güvenli kullanım</button></div>
 <!-- Hızlı Aksiyon & Günlük Sıvı Hedefi Şeridi -->
 <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 vita-hide-in-compact">
 <div class="flex items-center gap-3 w-full md:w-auto">
@@ -522,51 +523,33 @@
 <div class="mt-4 space-y-4" id="supplementChecklistContainer"></div>
 </div>
 <!-- Alt Açılır Çekmece: Gerçek Zamanlı İlaç–Besin Etkileşim Kalkanı (En Alt Kısımda, Kalabalık Yapmayan Çekmece) -->
-<details class="rounded-2xl border border-slate-200/90 bg-white shadow-sm overflow-hidden group" id="dailyProtocolMedicationsDrawer">
-<summary class="cursor-pointer list-none p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 hover:bg-slate-50/80 transition select-none">
-<div class="flex items-center gap-3 min-w-0">
-<span class="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-rose-600 flex items-center justify-center text-base font-black shrink-0 shadow-xs" id="medShieldDrawerIconBox">
-<i class="fa-solid fa-circle-exclamation"></i>
+<!-- İlaç kontrolü (ilaç–besin etkileşim kalkanı): sade çekmece -->
+<details class="vsd" id="dailyProtocolMedicationsDrawer">
+<summary class="vsd-sum">
+<span class="vsd-ico" id="medShieldDrawerIconBox"><i class="fa-solid fa-shield-heart" aria-hidden="true"></i></span>
+<span class="vsd-title">
+<b>İlaç kontrolü</b>
+<small id="medShieldDrawerSummarySubtext">Kullandığınız ilaçlar takviyelerinizle karşılaştırılır.</small>
 </span>
-<div class="min-w-0">
-<div class="flex flex-wrap items-center gap-2">
-<h3 class="text-xs sm:text-sm font-black text-navy-900">Gerçek Zamanlı İlaç–Besin Etkileşim Kalkanı</h3>
-<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200" id="dailyProtocolDbStatusBadge">NIH ODS • Lexicomp • TİTCK Aktif</span>
-</div>
-<p class="text-[11px] text-slate-500 mt-0.5" id="medShieldDrawerSummarySubtext">Kullandığınız reçeteli ilaçları seçmek veya denetlemek için dokunun (Kayıt/Profil bilgilerinizle senkronizedir).</p>
-</div>
-</div>
-<div class="flex items-center gap-2 ml-auto">
-<span class="text-[11px] font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-xl border border-teal-200 transition">
-<i class="fa-solid fa-prescription-bottle-medical mr-1"></i>İlaç Seç / Denetle
-</span>
-<i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200 group-open:rotate-180"></i>
-</div>
+<span class="vsd-cta"><i class="fa-solid fa-prescription-bottle-medical" aria-hidden="true"></i> İlaç ekle</span>
+<i class="fa-solid fa-chevron-down vsd-chev" aria-hidden="true"></i>
 </summary>
-<div class="p-4 sm:p-5 pt-3.5 border-t border-slate-100 bg-slate-50/80 space-y-3" id="dailyProtocolMedicationsBar">
-<div class="flex flex-wrap items-center justify-between gap-2">
-<p class="text-[11px] text-slate-600 leading-relaxed">
-<i class="fa-solid fa-shield-halved text-teal-600 mr-1"></i>
-<strong>Klinik Etkileşim Denetimi:</strong> Kayıt olurken veya buradan seçtiğiniz reçeteli ilaçlar, Günlük Protokoldeki takviyelerinizle (Demir, Kalsiyum, Magnezyum, D3/K2, B12, Çinko vb.) anında karşılaştırılır.
-</p>
-<button class="text-[11px] font-bold text-teal-700 hover:text-teal-900 underline cursor-pointer shrink-0" onclick="if(window.SoundEffects) SoundEffects.playClick(); openProfileModal(true)" type="button">
-<i class="fa-solid fa-user-pen mr-1"></i>Profilde Düzenle
-</button>
+<div class="vsd-body" id="dailyProtocolMedicationsBar">
+<!-- Ekle: ad yaz veya barkod okut -->
+<div class="vsd-add">
+<div class="vsd-input">
+<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+<input autocomplete="off" id="quickAddMedInput" inputmode="search" onkeydown="if(event.key==='Enter'){event.preventDefault(); addQuickMedicationFromInput();}" oninput="vsMedSearch(this.value)" placeholder="İlaç adı yazın (Örn: Euthyrox, Glucophage)" type="text"/>
 </div>
-<div class="flex flex-wrap gap-1.5 pt-0.5" id="dailyProtocolQuickMedChips"></div>
-<!-- Misantha Tipi İlaç-Vitamin Tüketim Analizi (Drug-Induced Nutrient Depletion) Çekmecesi / Mini-Modal -->
-<div class="hidden rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 via-white to-orange-50/70 p-3.5 shadow-sm space-y-2" id="drugDepletionMiniModal" role="region" aria-label="İlaç-Vitamin Tüketim Analizi Detayı"></div>
-<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-<div class="relative flex-1">
-<input class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-navy-900 focus:outline-none focus:border-teal-500" id="quickAddMedInput" onkeydown="if(event.key==='Enter'){event.preventDefault(); addQuickMedicationFromInput();}" placeholder="Reçeteli ilaç adı ekle (Örn: Glucophage, Pantpas, Atorvastatin, Lasix, Ramipril, Euthyrox...)" type="text"/>
+<button class="vsd-btn vsd-btn-scan" id="btnOpenMedicationScannerModal" onclick="if(window.SoundEffects) SoundEffects.playClick(); openBarcodeScannerModal('medication')" type="button" aria-label="Barkod ile ilaç ekle"><i class="fa-solid fa-barcode"></i><span>Barkod</span></button>
 </div>
-<button class="px-3.5 py-2 rounded-xl bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(document.getElementById('quickAddMedInput') && document.getElementById('quickAddMedInput').value.trim()){ addQuickMedicationFromInput(); } else { openBarcodeScannerModal('medication'); }" type="button">
-<i class="fa-solid fa-shield-heart text-teal-300"></i> İlaç Ekle &amp; Denetle
-</button>
-<button class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0 shadow-xs" id="btnOpenMedicationScannerModal" onclick="if(window.SoundEffects) SoundEffects.playClick(); openBarcodeScannerModal('medication')" title="Ayrı ilaç denetleme sayfasında barkod, ilaç adı veya AI kutu fotoğrafı ile reçeteli ilaç seç ve denetle" type="button">
-<i class="fa-solid fa-camera text-indigo-200"></i> <span>İlaç Denetleme Sayfasını Aç (Barkod / AI)</span>
-</button>
-</div>
+<div class="vsd-suggest hidden" id="vsMedSuggest" role="listbox"></div>
+<!-- Seçili ilaç grupları -->
+<div class="vsd-label">Kullandığım ilaçlar</div>
+<div class="flex flex-wrap gap-1.5" id="dailyProtocolQuickMedChips"></div>
+<!-- Etkileşim sonucu -->
+<div class="hidden" id="drugDepletionMiniModal" role="region" aria-label="İlaç-vitamin tüketim analizi"></div>
+<div class="vsd-legacy" aria-hidden="true"><span id="dailyProtocolDbStatusBadge"></span></div>
 </div>
 </details>
 </div>
@@ -649,9 +632,9 @@
 <span class="min-w-0">
 <span class="text-sm font-bold text-navy-900 flex items-center gap-2">
 <i class="fa-solid fa-chart-line text-medTeal-600"></i>
-              Tahlil gelişim grafiği (Biyobelirteç Karşılaştırma &amp; Zaman Serisi)
+              Tahlil gelişimim
             </span>
-<span class="block mt-0.5 text-[11px] text-slate-500">Birden fazla kan tahlili değerini çoklu çizgi grafikte karşılaştırın veya tekil biyobelirteç seçerek tarih bazlı trendi inceleyin.</span>
+<span class="block mt-0.5 text-[11px] text-slate-500">Değerleriniz zamanla nasıl değişti? Ayrıntı için bir satıra dokunun.</span>
 </span>
 <span class="flex shrink-0 items-center gap-2 text-xs font-bold text-teal-700"><span id="label-acc-labtrend">Grafiği gizle</span><i class="fa-solid fa-chevron-up text-[10px] transition-transform duration-200" id="icon-acc-labtrend"></i></span>
 </button>
@@ -1248,11 +1231,11 @@
 <div class="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4" id="cdssAnalysisActionRow">
 <div class="text-xs text-slate-600 flex items-center gap-1.5">
 <i class="fa-solid fa-user-shield text-teal-600"></i>
-<span>Seçtiğiniz belirtiler, Tahlillerim sayfasındaki sonuçlarınız (Kreatinin / eGFR dahil) ve Profil bilgileriniz otomatik birleştirilerek <strong>Klinik Karar Analizi</strong> sayfasında değerlendirilir.</span>
+<span>Belirtileriniz, tahlilleriniz ve profil bilgileriniz birleştirilerek <strong>Klinik Analiz</strong> sayfasında gösterilir.</span>
 </div>
 <button class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-gradient-to-r from-medTeal-600 to-teal-500 hover:from-medTeal-700 hover:to-teal-600 text-white font-bold text-sm shadow-lg shadow-teal-500/25 transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer" id="btnRunCDSS" onclick="if(window.SoundEffects) SoundEffects.playClick(); runCDSSAnalysis(event)" type="button">
-<i class="fa-solid fa-microchip"></i>
-<span>Anamnez Triyaj ve eGFR Analiz</span>
+<i class="fa-solid fa-clipboard-check"></i>
+<span>Sonuçları Gör</span>
 </button>
 </div>
 <!-- Kullanıcı Dostu Hata / Uyarı Kutusu -->
@@ -1277,6 +1260,8 @@
 <button class="btn-primary mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-teal-800 cursor-pointer transition" id="btn-goto-symptoms-error" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(typeof navigateToModule==='function') navigateToModule('module-neyim-var'); else navigateToView('view-neyim'); window.scrollTo(0, 0);" type="button">← Belirti Seçimine Git</button>
 </div>
 </div>
+<!-- Sade görünüm: özet, değerlerim, belirtiler (js/clinical-simple.js) -->
+<div class="hidden" id="vitaSimpleHost"></div>
 <div class="hidden relative overflow-hidden rounded-3xl bg-gradient-to-r from-navy-900 via-slate-900 to-medTeal-700 p-5 sm:p-7 text-white shadow-xl" id="cdssResultsOverview" aria-live="polite">
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
@@ -1345,12 +1330,6 @@
 </div>
 <div class="p-4 sm:p-5 rounded-2xl bg-navy-950/90 border border-indigo-500/40 text-xs sm:text-[13px] text-slate-100 leading-relaxed font-sans shadow-inner" id="aiSummaryTextContainer">
 </div>
-<div class="flex justify-end">
-  <button type="button" onclick="openClinicalReminder()" class="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300" aria-haspopup="dialog" aria-controls="clinicalReminderModal">
-    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-    Önemli klinik hatırlatma
-  </button>
-</div>
 </div>
 </div>
 <!-- Kontrendikasyonlar & Tahlil Öncesi Triyaj Uyarıları -->
@@ -1368,7 +1347,6 @@
               </h3>
 <p class="text-xs text-slate-500 mt-1">Yalnızca hekimle görüşülecek ayrıntılar; otomatik doz önerisi değildir.</p>
 </div>
-<button type="button" onclick="openClinicalReminder()" aria-haspopup="dialog" aria-controls="clinicalReminderModal" class="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100" title="Tıbbi uyarıyı görüntüle"><i class="fa-solid fa-circle-exclamation text-amber-600"></i><span class="hidden sm:inline">Tıbbi uyarı</span></button>
 </div>
 <details class="mt-3 rounded-xl border border-slate-200 bg-slate-50/70" id="protocolDetailsAccordion">
 <summary class="cursor-pointer list-none flex items-center justify-between gap-3 px-3 py-3 text-xs font-bold text-slate-700"><span><i class="fa-solid fa-list-check mr-2 text-teal-700"></i>Takip seçeneklerini göster</span><i class="fa-solid fa-chevron-down text-slate-500"></i></summary>
@@ -1402,26 +1380,8 @@
 <div class="hidden" id="foodAlternativesSection"></div>
 <!-- Akıllı Kontrol Tahlili Zamanlaması Kartı -->
 <div class="hidden" id="cdssRecallContainer"></div>
-<!-- 4. Daraltılabilir (Accordion) Detaylı Bulgular Listesi -->
-<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200" id="cdssFindingsSection">
-<div class="flex items-start justify-between gap-3">
-<div class="min-w-0">
-<h3 class="text-sm sm:text-base font-bold text-navy-900 flex items-center gap-2">
-<i class="fa-solid fa-heart-pulse text-medTeal-600"></i>
-<span>Değerlendirme notları</span>
-</h3>
-<p class="text-xs text-slate-500 mt-1 leading-relaxed">Seçtiğiniz belirtilerle ilgili notları gerektiğinde açıp inceleyin.</p>
-</div>
-<span class="shrink-0 text-xs px-2.5 py-1 rounded-full font-bold bg-teal-50 text-teal-700 border border-teal-200" id="findingsCountBadge">0 bulgu</span>
-</div>
-<div class="mt-3 flex items-center justify-between gap-3 cursor-pointer select-none group rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5" role="button" tabindex="0" aria-controls="acc-findings" aria-expanded="false" onclick="if(window.SoundEffects) SoundEffects.playClick(); toggleAccordionSection('acc-findings')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordionSection('acc-findings')}">
-<span class="text-xs font-bold text-slate-700">Notları göster</span>
-<span class="text-xs font-bold text-teal-700 flex items-center gap-1.5"><span id="label-acc-findings">Genişlet</span><i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" id="icon-acc-findings"></i></span>
-</div>
-<div class="accordion-content hidden mt-3" id="acc-findings">
-<div class="space-y-2" id="findingsList"></div>
-</div>
-</div>
+<!-- Doktorla görüşmede değerlendirilebilecek test ve incelemeler (js/doctor-tests.js) -->
+<div class="hidden" id="doctorTestsSection"></div>
 </div>
 </section>
 <!-- ========================================================================= -->
@@ -1818,9 +1778,6 @@ Bu belge, hastanın VitaTakip sistemine beyan ettiği demografik veriler, seçil
 <p class="text-[11px] text-slate-300">Profil, bildirim izinleri, yapay zekâ bağlantısı, yardımcı araçlar ve yerel veri yedekleme merkezi.</p>
 </div>
 </div>
-<span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-teal-500/15 text-teal-300 border border-teal-500/30 self-start sm:self-center">
-<i class="fa-solid fa-shield-halved mr-1"></i>Yerel &amp; KVKK Uyumlu
-</span>
 </div>
 
 <!-- 5.1. Profil ve Kişisel Bilgiler -->
@@ -2109,7 +2066,7 @@ Verileri Sil
 <span class="fridge-water-cup"><i class="fa-solid fa-glass-water text-sky-600 text-lg"></i><strong>☐</strong></span><span class="fridge-water-cup"><i class="fa-solid fa-glass-water text-sky-600 text-lg"></i><strong>☐</strong></span><span class="fridge-water-cup"><i class="fa-solid fa-glass-water text-sky-600 text-lg"></i><strong>☐</strong></span><span class="fridge-water-cup"><i class="fa-solid fa-glass-water text-sky-600 text-lg"></i><strong>☐</strong></span><span class="fridge-water-cup"><i class="fa-solid fa-glass-water text-sky-600 text-lg"></i><strong>☐</strong></span><span class="fridge-water-cup"><i class="fa-solid fa-glass-water text-sky-600 text-lg"></i><strong>☐</strong></span><span class="fridge-water-cup"><i class="fa-solid fa-glass-water text-sky-600 text-lg"></i><strong>☐</strong></span><span class="fridge-water-cup"><i class="fa-solid fa-glass-water text-sky-600 text-lg"></i><strong>☐</strong></span>
 </div></section>
 <div class="fridge-note-grid"><section class="fridge-note-box"><strong><i class="fa-solid fa-user-doctor mr-1 text-rose-600"></i> Hekimimin Acil Notu</strong><div class="fridge-writing-lines"></div><div class="fridge-writing-lines"></div></section><section class="fridge-note-box"><strong><i class="fa-solid fa-calendar-check mr-1 text-teal-600"></i> Kontrol Tahlili Tarihi</strong><div class="mt-3 border-b border-dashed border-slate-400 h-6"></div><p class="mt-2 text-[8px] text-slate-500">Randevu / hatırlatma:</p><div class="border-b border-dashed border-slate-400 h-5"></div></section></div>
-<div class="mt-3 pt-2 border-t border-slate-200 flex justify-between text-[8px] text-slate-500"><span>VitaTakip • Yerel sağlık takip prototipi</span><span>Tanı/reçete değildir — hekim onayı gereklidir.</span></div>
+<div class="mt-3 pt-2 border-t border-slate-200 flex justify-between text-[8px] text-slate-500"><span>VitaTakip • Yerel sağlık takibi</span><span>Tanı/reçete değildir — hekim onayı gereklidir.</span></div>
 </section>
 <!-- A4 Kan Tahlili Geçmişi PDF Çıktısı: kullanıcı PDF dışa aktarmayı seçtiğinde görünür. -->
 <section aria-label="Kronolojik kan tahlili geçmişi PDF raporu" class="lab-history-print-sheet" id="vitaLabHistoryPrintSheet"></section>
@@ -2150,15 +2107,15 @@ Verileri Sil
 <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
 <p>VitaTakip © 2026 • Tüm hakları <strong class="text-slate-700 font-bold">Abdulsamet Kılıç &amp; Bekir Bostancı</strong>'a aittir.</p>
 <div class="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-[11px]">
-<span class="text-teal-600 font-semibold"><i class="fa-solid fa-database"></i> Tarayıcıda Yerel Depolama (Prototip)</span>
+<span class="text-teal-600 font-semibold"><i class="fa-solid fa-database"></i> Tarayıcıda Yerel Depolama</span>
 <span class="hidden sm:inline text-slate-400">|</span>
-<span class="text-slate-500">v9.6.0-ClinicalModules • Prototip</span>
+<span class="text-slate-500">v9.6.0</span>
 
 
 </div>
 </div>
 </footer>
-<!-- Geri bildirim alanı: bitirme projesi prototipinde kayıtlar yalnızca bu tarayıcıda tutulur. -->
+<!-- Geri bildirim alanı: kayıtlar yalnızca bu tarayıcıda tutulur. -->
 <div aria-hidden="true" class="hidden fixed inset-0 z-[90] bg-navy-950/75 backdrop-blur-sm items-center justify-center p-3 sm:p-4 no-print" id="feedbackModal" onclick="if(event.target === this) closeVitaFeedback()">
 <section aria-labelledby="feedbackModalTitle" aria-modal="true" class="w-full max-w-xl max-h-[92dvh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-slate-200" role="dialog">
 <div class="sticky top-0 z-10 flex items-center justify-between gap-3 rounded-t-3xl bg-gradient-to-r from-navy-900 to-medTeal-700 px-4 py-4 text-white">
@@ -2173,15 +2130,11 @@ Verileri Sil
 </div>
 <div class="space-y-4 p-4 sm:p-5">
 <div class="rounded-xl border border-teal-200 bg-teal-50/80 p-3 text-[11px] leading-relaxed text-teal-950">
-<strong><i aria-hidden="true" class="fa-solid fa-envelope-circle-check mr-1 text-teal-700"></i> Doğrudan Geliştiriciye İletim (samet1975bjk@gmail.com)</strong>
-<p class="mt-1">Buradan gönderdiğiniz geri bildirim ve öneriler doğrudan <strong>samet1975bjk@gmail.com</strong> e-posta adresine iletilir ve yerel/bulut arşivinize kaydedilir.</p>
+<strong><i aria-hidden="true" class="fa-solid fa-paper-plane mr-1 text-teal-700"></i> Geri bildiriminiz geliştiriciye iletilir</strong>
+<p class="mt-1">Gönderen: <b id="vitaFeedbackSenderLine">Kullanıcı</b> (profilinizden alınır). Lütfen tahlil değeri gibi sağlık bilgisi yazmayın.</p>
 </div>
 <form class="space-y-3" id="vitaFeedbackForm" onsubmit="submitVitaFeedback(event)">
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<div>
-<label class="mb-1 block text-xs font-bold text-slate-700" for="vitaFeedbackSenderName">Adınız / İletişim (İsteğe bağlı)</label>
-<input class="min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs focus:border-teal-500 focus:outline-none" id="vitaFeedbackSenderName" maxlength="100" placeholder="Adınız veya e-posta adresiniz" type="text"/>
-</div>
 <div>
 <label class="mb-1 block text-xs font-bold text-slate-700" for="vitaFeedbackRating">Kullanımı ne kadar kolay buldunuz?</label>
 <select class="min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs focus:border-teal-500" id="vitaFeedbackRating">
@@ -2233,7 +2186,7 @@ Verileri Sil
 </form>
 <div class="border-t border-slate-200 pt-3">
 <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-<div><h3 class="text-xs font-black text-navy-900">Bu tarayıcıdaki geri bildirimler</h3><p class="mt-0.5 text-[10px] text-slate-500">Kayıtlar sadece prototipte görünür.</p></div>
+<div><h3 class="text-xs font-black text-navy-900">Bu tarayıcıdaki geri bildirimler</h3><p class="mt-0.5 text-[10px] text-slate-500">Kayıtlar yalnızca bu cihazda görünür.</p></div>
 <div class="flex gap-2">
 <button class="min-h-9 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-50" onclick="exportVitaFeedback()" type="button"><i aria-hidden="true" class="fa-solid fa-download mr-1"></i>Dışa aktar</button>
 <button class="min-h-9 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-[10px] font-bold text-rose-700 hover:bg-rose-100" onclick="clearVitaFeedback()" type="button">Temizle</button>
@@ -2300,7 +2253,7 @@ Verileri Sil
 <div class="flex items-start space-x-2">
 <div class="w-6 h-6 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] shrink-0 font-bold">AI</div>
 <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-200 shadow-xs text-slate-700 max-w-[88%]">
-<p>Merhaba! Ben <strong>VitaAI</strong> sağlık bilgi asistanınızım. Sorunuz için yalnızca ilgili kayıtları, dış AI paylaşımını ayrıca onaylamanız halinde kullanırım. <strong>Açıklamalarım ön bilgilendirme amaçlıdır; hekim muayenesi veya önerisinin yerine geçmez.</strong> Tahlilleriniz, takviyeleriniz veya uygulamanın kullanımı hakkında soru sorabilirsiniz.</p>
+<p>Merhaba! Ben <strong>VitaAI</strong> sağlık bilgi asistanınızım. Sorunuz için yalnızca ilgili kayıtları, dış AI paylaşımını ayrıca onaylamanız halinde kullanırım. Tahlilleriniz, takviyeleriniz veya uygulamanın kullanımı hakkında soru sorabilirsiniz.</p>
 </div>
 </div>
 </div>
@@ -2328,7 +2281,7 @@ Verileri Sil
 <input class="mt-0.5 h-4 w-4 rounded border-amber-400 text-teal-600 focus:ring-teal-500 shrink-0" id="aiHealthDataConsent" onchange="VitaAIChat.handleConsentChange(this.checked)" type="checkbox"/>
 <span><strong id="aiConsentProviderLabel">Haricî yapay zekâ veri paylaşım onayı:</strong> Bu oturumdaki sorumun ve soruyla ilişkili, uygulamada kayıtlı sağlık verilerinin (tahlil yorumu isteyen sorularda girdiğiniz tüm tahlil değerleri, referans aralıkları, önceki ölçümler, yaş/cinsiyet, ilaç ve belirti kayıtları dahil) Google Gemini hizmetine yanıt üretimi için gönderilmesini onaylıyorum.</span>
 </label>
-<p class="mt-1 pl-6 text-[9px] text-amber-800">Onay vermezseniz soru yerel VitaTakip motoruyla yanıtlanır. Sağlık verileriniz hassastır; dış servise göndermeden önce metni ve paylaşım kapsamını değerlendirin. Bu tek dosyalı prototip güvenli sunucu altyapısı veya otomatik KVKK uyumluluğu garantisi değildir.</p>
+<p class="mt-1 pl-6 text-[9px] text-amber-800">Onay vermezseniz soru yerel VitaTakip motoruyla yanıtlanır. Sağlık verileriniz hassastır; dış servise göndermeden önce metni ve paylaşım kapsamını değerlendirin. Bu uygulama otomatik KVKK uyumluluğu garantisi vermez.</p>
 <div class="mt-2 flex justify-end">
 <button class="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[9px] font-bold text-amber-900 hover:bg-amber-100" onclick="VitaAIChat.closeConsentPanel()" type="button">Kapat / Şimdilik yerel kullan</button>
 </div>
@@ -2374,150 +2327,106 @@ Verileri Sil
 </div>
 </div>
 </div>
-<!-- MODAL 0: VİTATAKİP PORTALI GİRİŞ EKRANI (İKİ ANA GİRİŞ YÖNTEMİ: BULUT FIREBASE İLE GİRİŞ VEYA YEREL CİHAZ DEPOLAMA İLE GİRİŞ) -->
-<div class="fixed inset-0 z-50 bg-navy-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4" id="authModal" style="display:flex">
-<div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 relative max-h-[94vh] overflow-y-auto">
-<div class="text-center">
-<img src="icons/icon-192.png" alt="VitaTakip" class="w-14 h-14 rounded-2xl object-cover shadow-lg shadow-teal-500/30 mx-auto mb-2"/>
-<h2 class="text-xl font-black text-navy-900 tracking-tight">VitaTakip Portalı</h2>
-<p class="text-xs text-slate-600 mt-1" id="authSubtitle">Devam etmek için iki ana giriş yönteminden birini seçin</p>
+<!-- MODAL 0: VİTATAKİP GİRİŞ EKRANI (yerel hesap + isteğe bağlı bulut girişi). Eleman id'leri JS tarafından kullanılır; değiştirmeyin. -->
+<div class="vta-auth" id="authModal" style="display:flex">
+<div class="vta-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+<header class="vta-hero">
+<img src="icons/icon-192.png" alt="VitaTakip" class="vta-logo"/>
+<h2 id="authTitle">VitaTakip</h2>
+<p id="authSubtitle">Hesabınıza giriş yapın</p>
+</header>
+
+<div class="vta-body">
+<!-- Eski yöntem seçici (JS uyumluluğu için duruyor; gizli) -->
+<div id="authMainMethodTabs" role="tablist" aria-hidden="true">
+<button id="authMethodTabCloud" onclick="selectAuthPrimaryMethod('cloud')" role="tab" tabindex="-1" type="button">Bulut</button>
+<button id="authMethodTabLocal" onclick="selectAuthPrimaryMethod('local')" role="tab" tabindex="-1" type="button">Yerel</button>
 </div>
 
-<!-- İKİ ANA GİRİŞ YÖNTEMİ HIZLI SEÇİCİ -->
-<div class="grid grid-cols-2 gap-2 mt-4 p-1 bg-slate-100 rounded-2xl border border-slate-200" id="authMainMethodTabs" role="tablist">
-<button class="py-2 px-2.5 rounded-xl bg-indigo-600 text-white font-black text-[11px] shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5" id="authMethodTabCloud" onclick="if(window.SoundEffects) SoundEffects.playClick(); selectAuthPrimaryMethod('cloud')" role="tab" type="button">
-<i class="fa-solid fa-cloud-bolt text-xs"></i>
-<span>Bulut (Firebase) ile Giriş</span>
-</button>
-<button class="py-2 px-2.5 rounded-xl bg-white text-navy-900 font-black text-[11px] border border-slate-200/80 hover:bg-slate-50 transition cursor-pointer flex items-center justify-center gap-1.5" id="authMethodTabLocal" onclick="if(window.SoundEffects) SoundEffects.playClick(); selectAuthPrimaryMethod('local')" role="tab" type="button">
-<i class="fa-solid fa-mobile-screen-button text-teal-600 text-xs"></i>
-<span>Yerel (Cihaz) ile Giriş</span>
-</button>
+<div id="authLocalMethodCard">
+<div class="vta-seg" role="group" aria-label="Giriş türü">
+<button id="authTabLoginBtn" class="bg-white" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchAuthMode('login')" type="button">Giriş Yap</button>
+<button id="authTabRegisterBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchAuthMode('register')" type="button">Hesap Oluştur</button>
 </div>
 
-<!-- 1. ANA GİRİŞ YÖNTEMİ: BULUT (FIREBASE) İLE GİRİŞ -->
-<div class="mt-3.5 p-4 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-white to-sky-50/70 border-2 border-indigo-300 space-y-2.5 shadow-xs transition-all" id="authCloudMethodCard">
-<div class="flex items-center justify-between gap-2">
-<span class="text-xs font-black text-indigo-950 flex items-center gap-1.5">
-<i class="fa-solid fa-cloud-bolt text-indigo-600"></i>
-<span>Bulut (Firebase) ile Giriş</span>
-</span>
-<span class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-white text-indigo-800 border border-indigo-200 shrink-0" id="authCloudSyncStatusBadge">Cloud Firestore</span>
-</div>
-<p class="text-[11px] text-slate-600 leading-relaxed">
-Google / Firebase kimlik doğrulaması ile oturum açın; tahlil, protokol ve sağlık verileriniz bulut veritabanında yedeklenir.
-</p>
-<button class="w-full py-2.5 px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition active:scale-95 cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-indigo-500/20" id="btnFirebaseGoogleLogin" onclick="if(window.SoundEffects) SoundEffects.playClick(); startFirebaseGoogleLoginFromPortal()" type="button">
-<i class="fa-brands fa-google text-sm"></i>
-<span id="authFirebaseLoginBtnLabel">Bulut (Firebase) ile Giriş Yap</span>
-</button>
-<button class="w-full py-2 px-3 rounded-xl bg-white hover:bg-indigo-50 text-indigo-900 border border-indigo-200 font-bold text-[11px] transition active:scale-95 cursor-pointer flex items-center justify-between gap-2" id="authGoogleCloudSyncBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); openCloudSyncModal('auth')" type="button">
-<span class="flex items-center gap-1.5 min-w-0">
-<i class="fa-solid fa-cloud-arrow-up text-indigo-600 text-xs shrink-0"></i>
-<span class="truncate" id="authGoogleCloudSyncBtnLabel">Bulut Eşitleme &amp; Yedekten Geri Yükleme Merkezi</span>
-</span>
-<i class="fa-solid fa-chevron-right text-[10px] text-indigo-500 shrink-0"></i>
-</button>
-</div>
-
-<!-- AYIRICI -->
-<div class="relative flex py-2.5 items-center">
-<div class="flex-grow border-t border-slate-200"></div>
-<span class="flex-shrink mx-2.5 text-[10px] font-black uppercase tracking-wider text-slate-400">veya</span>
-<div class="flex-grow border-t border-slate-200"></div>
-</div>
-
-<!-- 2. ANA GİRİŞ YÖNTEMİ: YEREL (CİHAZ) DEPOLAMA İLE GİRİŞ -->
-<div class="p-4 rounded-2xl bg-slate-50/95 border-2 border-teal-300/80 shadow-xs transition-all" id="authLocalMethodCard">
-<div class="flex items-center justify-between gap-2 mb-1.5">
-<span class="text-xs font-black text-navy-900 flex items-center gap-1.5">
-<i class="fa-solid fa-mobile-screen-button text-teal-600"></i>
-<span>Yerel (Cihaz) Depolama ile Giriş</span>
-</span>
-<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200">Cihaz İçi Kayıt</span>
-</div>
-<p class="text-[11px] text-slate-600 leading-relaxed mb-2.5">
-Bulut bağlantısı olmadan verilerinizi yalnızca bu cihazda yerel olarak saklamak için yerel hesabınızla giriş yapın veya yeni hesap oluşturun.
-</p>
-<!-- Giriş / Kayıt Tab Seçimi -->
-<div class="flex bg-slate-200/80 p-1 rounded-xl">
-<button class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-navy-900 shadow-sm transition cursor-pointer" id="authTabLoginBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchAuthMode('login')" type="button">
-          Giriş Yap
-        </button>
-<button class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-800 transition cursor-pointer" id="authTabRegisterBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchAuthMode('register')" type="button">
-          Hesap Oluştur
-        </button>
-</div>
-<!-- Giriş / Kayıt Formu -->
-<form class="mt-3 space-y-3 text-xs" id="authForm" novalidate="" onsubmit="return submitAuthForm(event)">
-<div>
-<label class="font-bold text-slate-700 block mb-1">Adınız Soyadınız <span class="text-rose-500">*</span></label>
-<div class="relative">
-<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-user"></i></span>
-<input aria-describedby="authErrorMsg" autocomplete="name" class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white border border-slate-300 font-semibold focus:outline-none focus:border-teal-500" id="authInputFullName" maxlength="120" placeholder="Örn: Ahmet Yılmaz" required="" type="text"/>
-</div>
-</div>
-<div>
-<label class="font-bold text-slate-700 block mb-1">Şifreniz <span class="text-rose-500">*</span></label>
-<div class="relative">
-<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-lock"></i></span>
-<input aria-describedby="authErrorMsg" autocomplete="current-password" class="w-full pl-9 pr-10 py-2.5 rounded-xl bg-white border border-slate-300 font-semibold focus:outline-none focus:border-teal-500" id="authInputPassword" minlength="8" placeholder="••••••••" required="" type="password"/>
-<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer" onclick="if(window.SoundEffects) SoundEffects.playClick(); togglePasswordVisibility('authInputPassword', this)" type="button">
-<i class="fa-solid fa-eye"></i>
-</button>
-</div>
-</div>
-<div class="hidden" id="authConfirmPasswordContainer">
-<label class="font-bold text-slate-700 block mb-1">Şifre Tekrar <span class="text-rose-500">*</span></label>
-<div class="relative">
-<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-shield-halved"></i></span>
-<input aria-describedby="authErrorMsg" autocomplete="new-password" class="w-full pl-9 pr-10 py-2.5 rounded-xl bg-white border border-slate-300 font-semibold focus:outline-none focus:border-teal-500" id="authInputPasswordConfirm" placeholder="••••••••" type="password"/>
-<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer" onclick="if(window.SoundEffects) SoundEffects.playClick(); togglePasswordVisibility('authInputPasswordConfirm', this)" type="button">
-<i class="fa-solid fa-eye"></i>
-</button>
-</div>
-</div>
-<div class="pt-0.5">
-<input checked="" class="sr-only" id="authRememberMeCheckbox" onchange="if(typeof syncRememberMeButtonUI==='function') syncRememberMeButtonUI(this.checked)" type="checkbox"/>
-<button aria-pressed="true" class="w-full px-3 py-2.5 rounded-xl border-2 border-teal-500 bg-teal-50/80 hover:bg-teal-100/70 text-navy-900 transition flex items-center justify-between gap-2.5 cursor-pointer text-left" id="authRememberMeBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(typeof toggleRememberMeOption==='function') toggleRememberMeOption(); else { var cb=document.getElementById('authRememberMeCheckbox'); if(cb){ cb.checked=!cb.checked; } }" type="button">
-<span class="flex items-center gap-2.5 min-w-0">
-<span class="w-5 h-5 rounded-md bg-teal-600 text-white flex items-center justify-center text-[11px] font-black shrink-0 transition" id="authRememberMeCheckIcon">
-<i class="fa-solid fa-check"></i>
-</span>
-<span class="min-w-0">
-<span class="block text-xs font-extrabold text-navy-900">Beni Hatırla</span>
-<span class="block text-[10px] text-slate-600 truncate" id="authRememberMeSubtext">Bu cihazda oturumumu ve giriş bilgilerimi açık tut</span>
-</span>
-</span>
-<span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-teal-600 text-white shrink-0" id="authRememberMeStateBadge">Aktif</span>
-</button>
-</div>
-<div class="hidden p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2" id="authRememberedQuickLoginBox">
+<div class="hidden" id="authRememberedQuickLoginBox">
 <div class="min-w-0">
 <span class="block text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">Hatırlanan Hesap</span>
 <span class="block text-xs font-black text-navy-900 truncate" id="authRememberedAccountName">—</span>
 </div>
 <button class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] shadow-xs transition cursor-pointer shrink-0 flex items-center gap-1.5" id="btnQuickLoginRemembered" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(typeof loginWithRememberedAccount==='function') loginWithRememberedAccount()" type="button">
 <i class="fa-solid fa-bolt"></i>
-<span>Hızlı Giriş Yap</span>
+<span>Hızlı Giriş</span>
 </button>
 </div>
-<div aria-live="assertive" class="hidden text-[11px] font-bold text-rose-700 bg-rose-50 p-2.5 rounded-xl border border-rose-200 vita-feedback-enter" id="authErrorMsg" role="alert" tabindex="-1"></div>
-<div aria-live="polite" class="hidden text-[11px] font-bold text-teal-900 bg-teal-50 p-2.5 rounded-xl border border-teal-200 vita-feedback-enter" id="authNoticeMsg" role="status"></div>
-<button class="w-full py-3 rounded-xl bg-gradient-to-r from-medTeal-600 to-teal-500 hover:from-medTeal-700 hover:to-teal-600 text-white font-bold shadow-md shadow-teal-500/20 transition active:scale-95 cursor-pointer mt-1 flex items-center justify-center gap-2" id="authSubmitBtn" type="submit">
-<span>Yerel (Cihaz) Depolama ile Giriş Yap</span>
-<i class="fa-solid fa-arrow-right text-xs"></i>
-</button>
-</form>
-<div class="mt-2.5 text-center">
-<p class="text-[11px] text-slate-500" id="authSwitchPrompt">
-          Yerel hesabınız yok mu?
-          <a class="text-teal-600 font-bold hover:underline" href="javascript:void(0)" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchAuthMode('register')">Yerel (Cihaz) Hesabı Oluşturun</a>
-</p>
+
+<form id="authForm" novalidate="" onsubmit="return submitAuthForm(event)">
+<div class="vta-field">
+<label for="authInputFullName">Ad Soyad</label>
+<div class="vta-input">
+<i class="fa-solid fa-user vta-ico" aria-hidden="true"></i>
+<input aria-describedby="authErrorMsg" autocomplete="name" id="authInputFullName" maxlength="120" placeholder="Örn: Ahmet Yılmaz" required="" type="text"/>
+</div>
+</div>
+<div class="vta-field">
+<label for="authInputPassword">Şifre</label>
+<div class="vta-input">
+<i class="fa-solid fa-lock vta-ico" aria-hidden="true"></i>
+<input aria-describedby="authErrorMsg" autocomplete="current-password" id="authInputPassword" minlength="8" placeholder="En az 8 karakter" required="" type="password"/>
+<button class="vta-eye" aria-label="Şifreyi göster/gizle" onclick="if(window.SoundEffects) SoundEffects.playClick(); togglePasswordVisibility('authInputPassword', this)" type="button"><i class="fa-solid fa-eye"></i></button>
+</div>
+</div>
+<div class="hidden vta-field" id="authConfirmPasswordContainer">
+<label for="authInputPasswordConfirm">Şifre Tekrar</label>
+<div class="vta-input">
+<i class="fa-solid fa-shield-halved vta-ico" aria-hidden="true"></i>
+<input aria-describedby="authErrorMsg" autocomplete="new-password" id="authInputPasswordConfirm" placeholder="Şifrenizi tekrar yazın" type="password"/>
+<button class="vta-eye" aria-label="Şifreyi göster/gizle" onclick="if(window.SoundEffects) SoundEffects.playClick(); togglePasswordVisibility('authInputPasswordConfirm', this)" type="button"><i class="fa-solid fa-eye"></i></button>
 </div>
 </div>
 
-<p class="mt-2.5 text-[10px] leading-relaxed text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-2.5" id="authLocalDataNotice"><strong>Veri Depolama Güvencesi:</strong> <strong>Bulut (Firebase) ile Giriş</strong> seçeneğinde verileriniz Firebase Cloud Firestore veritabanında şifreli olarak saklanır. <strong>Yerel (Cihaz) Depolama ile Giriş</strong> seçeneğinde ise verileriniz yalnızca bu cihazın hafızasında tutulur.</p>
+<input class="sr-only" id="authRememberMeCheckbox" onchange="if(typeof syncRememberMeButtonUI==='function') syncRememberMeButtonUI(this.checked)" type="checkbox"/>
+<button aria-pressed="true" class="border-2 border-teal-500 bg-teal-50/80" id="authRememberMeBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(typeof toggleRememberMeOption==='function') toggleRememberMeOption(); else { var cb=document.getElementById('authRememberMeCheckbox'); if(cb){ cb.checked=!cb.checked; } }" type="button">
+<span class="flex items-center gap-2.5 min-w-0">
+<span class="w-5 h-5 rounded-md bg-teal-600 text-white flex items-center justify-center text-[11px] font-black shrink-0 transition" id="authRememberMeCheckIcon"><i class="fa-solid fa-check"></i></span>
+<span class="min-w-0">
+<span class="block">Beni Hatırla</span>
+<span class="block" id="authRememberMeSubtext">Bu cihazda oturumumu açık tut</span>
+</span>
+</span>
+<span id="authRememberMeStateBadge">Aktif</span>
+</button>
+
+<div aria-live="assertive" class="hidden vita-feedback-enter" id="authErrorMsg" role="alert" tabindex="-1"></div>
+<div aria-live="polite" class="hidden vita-feedback-enter" id="authNoticeMsg" role="status"></div>
+
+<button class="vta-primary" id="authSubmitBtn" type="submit">
+<span>Giriş Yap</span>
+<i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+</button>
+</form>
+<p id="authSwitchPrompt"></p>
+</div>
+
+<div class="vta-or"><span>veya</span></div>
+
+<div id="authCloudMethodCard">
+<span id="authCloudSyncStatusBadge">Cloud Firestore</span>
+<button class="vta-google" id="btnFirebaseGoogleLogin" onclick="if(window.SoundEffects) SoundEffects.playClick(); startFirebaseGoogleLoginFromPortal()" type="button">
+<i class="fa-brands fa-google" aria-hidden="true"></i>
+<span id="authFirebaseLoginBtnLabel">Google ile devam et</span>
+</button>
+<button class="vta-sync" id="authGoogleCloudSyncBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); openCloudSyncModal('auth')" type="button">
+<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+<span id="authGoogleCloudSyncBtnLabel">Yedekten geri yükle</span>
+</button>
+</div>
+
+<p class="vta-note" id="authLocalDataNotice">
+<i class="fa-solid fa-lock" aria-hidden="true"></i>
+<span>Yerel hesapta verileriniz yalnızca bu cihazda tutulur; Google ile girişte bulutta yedeklenir. <button type="button" onclick="openKvkkInfoModal()">Gizlilik &amp; Yasal Şartlar</button></span>
+</p>
+</div>
 </div>
 </div>
 <!-- MODAL: GOOGLE HESABI BAĞLANTISI & BULUT EŞİTLEME MERKEZİ -->
@@ -2656,10 +2565,6 @@ Kapat
   <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
     <h4 class="flex items-center gap-2 text-xs font-black text-navy-900"><i class="fa-solid fa-shield-halved text-teal-700"></i>İki Giriş Yöntemi &amp; Veri Güvenliği</h4>
     <p class="mt-1 text-[11px] leading-relaxed text-slate-600">Uygulamaya <strong>Bulut (Firebase) ile Giriş</strong> yaparak verilerinizi Cloud Firestore üzerinde yedekleyebilir veya <strong>Yerel (Cihaz) Depolama ile Giriş</strong> yaparak kayıtlarınızı yalnızca telefonunuzda saklayabilirsiniz.</p>
-  </div>
-  <div class="rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-950">
-    <h4 class="flex items-center gap-2 text-xs font-black"><i class="fa-solid fa-user-doctor"></i>Önemli Klinik Hatırlatma</h4>
-    <p class="mt-1 text-[11px] leading-relaxed">VitaTakip tanı koymaz, reçete düzenlemez ve otomatik doz belirlemez. Sonuçlar ön bilgilendirme ve hekim görüşmesine hazırlık içindir. Takviye kullanımını hekiminizle görüşmeden başlatmayın veya değiştirmeyin.</p>
   </div>
 </div>
 <div class="mt-4 flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
@@ -2896,7 +2801,17 @@ Kapat
 <option value="fitness">Ağırlık &amp; Direnç Antrenmanı / Fitness</option>
 </select>
 </div>
-<div class="hidden rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5 space-y-3" aria-hidden="true">
+<div id="modalPregnancyBox">
+<label class="text-xs font-bold text-slate-700 block mb-1" for="modalPregnancyStatus">Gebelik / emzirme</label>
+<select class="w-full text-xs font-semibold px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-teal-500 bg-white" id="modalPregnancyStatus">
+<option value="">Yok</option>
+<option value="t1">Gebeyim: 1. trimester (0–13. hafta)</option>
+<option value="t2">Gebeyim: 2. trimester (14–27. hafta)</option>
+<option value="t3">Gebeyim: 3. trimester (28. hafta ve sonrası)</option>
+<option value="lactation">Emziriyorum</option>
+</select>
+<p class="mt-1 text-[10px] text-slate-500">Gebelikte hemoglobin ve kreatinin referansları farklıdır; eGFR hesaplanmaz ve takviye önerisi üretilmez.</p>
+</div>
 <div><h4 class="text-xs font-black text-sky-950"><i class="fa-solid fa-utensils mr-1.5"></i> Beslenme ve güneşlenme (kısa anket)</h4><p class="mt-1 text-[10px] leading-relaxed text-sky-900">Yanıtlar yalnızca hekime sunulan yaşam tarzı bağlamına eklenir. Tek başına eksiklik tanısı veya takviye önerisi oluşturmaz. İstemiyorsanız boş bırakabilirsiniz.</p></div>
 <div><label class="mb-1 block text-[10px] font-bold text-slate-700" for="modalDietPattern">Beslenme biçimi</label><select class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[11px]" id="modalDietPattern" onchange="saveProfileDraft()"><option value="unspecified">Belirtmek istemiyorum / seçilmedi</option><option value="omnivore">Karışık beslenme</option><option value="vegetarian">Vejetaryen</option><option value="vegan">Vegan</option></select></div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label class="mb-1 block text-[10px] font-bold text-slate-700" for="modalFishPerWeek">Haftalık balık tüketimi</label><select class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[11px]" id="modalFishPerWeek" onchange="saveProfileDraft()"><option value="unspecified">Seçilmedi</option><option value="0">Hiç</option><option value="1">1 kez</option><option value="2-3">2–3 kez</option><option value="4+">4 veya daha fazla</option></select></div><div><label class="mb-1 block text-[10px] font-bold text-slate-700" for="modalRedMeatPerWeek">Haftalık kırmızı et tüketimi</label><select class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[11px]" id="modalRedMeatPerWeek" onchange="saveProfileDraft()"><option value="unspecified">Seçilmedi</option><option value="0">Hiç</option><option value="1">1 kez</option><option value="2-3">2–3 kez</option><option value="4+">4 veya daha fazla</option></select></div></div>
@@ -2981,205 +2896,113 @@ Kapat
 </div>
 </div>
 <!-- MODAL: MANUEL TAKVİYE VE FARMASÖTİK FORM EKLEME -->
-<div class="fixed inset-0 z-50 bg-navy-950/70 backdrop-blur-sm hidden items-center justify-center p-4" id="addSupplementModal">
-<div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-7 shadow-2xl border border-slate-200 relative max-h-[92vh] overflow-y-auto">
-<button class="absolute right-5 top-5 text-slate-400 hover:text-slate-700 cursor-pointer" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeAddSupplementModal()">
-<i class="fa-solid fa-xmark text-lg"></i>
-</button>
-<div class="flex items-center gap-3">
-<div class="w-11 h-11 rounded-2xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center text-xl">
-<i class="fa-solid fa-shapes"></i>
-</div>
+<div class="fixed inset-0 z-50 bg-navy-950/70 backdrop-blur-sm hidden items-center justify-center p-4" id="addSupplementModal" style="z-index:60" onclick="if(event.target===this) closeAddSupplementModal()">
+<div class="vsa-card" role="dialog" aria-modal="true" aria-labelledby="vsaTitle">
+<div class="vsa-head">
 <div>
-<h3 class="text-base font-black text-navy-900">Takviye Ekle &amp; Farmasötik Form Seç</h3>
-<p class="text-xs text-slate-500">Kutu barkodunu okutun, AI ile kutuyu tanıtın veya takviye bilgilerini girin.</p>
+<h3 id="vsaTitle">Takviye ekle</h3>
+<p>Barkodu tarayın, adını arayın veya elle yazın.</p>
 </div>
-</div>
-<div class="mt-4 space-y-4 text-xs">
-<!-- KUTU VE BARKOD / KAREKOD BÖLÜMÜ (Yalnızca Takviye Ekle Modalı İçinde) -->
-<div class="p-3.5 sm:p-4 rounded-2xl border-2 border-teal-300 bg-gradient-to-br from-teal-50/90 via-white to-sky-50/60 space-y-3 shadow-xs" id="addSupBoxBarcodeSection">
-<div class="flex flex-wrap items-center justify-between gap-2">
-<div class="flex items-center gap-2">
-<span class="w-7 h-7 rounded-xl bg-teal-600 text-white flex items-center justify-center text-xs shadow-xs">
-<i class="fa-solid fa-barcode"></i>
-</span>
-<div>
-<h4 class="text-xs font-black text-navy-900">Kutu ve Barkod / Karekod</h4>
-<p class="text-[10px] text-slate-500">EAN-13 Barkod (30 Popüler TR Takviyesi) • Kamera • Gemini Vision AI</p>
-</div>
-</div>
-<div class="flex flex-wrap items-center gap-1.5">
-<button class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300 cursor-pointer transition hover:opacity-90 flex items-center gap-1" id="addSupModalCameraPermBadge" onclick="if(window.SoundEffects) SoundEffects.playClick(); handleModalCameraPermBadgeClick('addSupplementModal')" title="Kamera ve AI Fotoğraf Analizi İznini Kontrol Et veya Ayarlar > İzinler Menüsünü Aç" type="button">
-<i class="fa-solid fa-camera"></i>
-<span>Kamera İzni: Kontrol Ediliyor</span>
-</button>
-<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-100 text-teal-900 border border-teal-300" id="addSupDbBadge">30 Takviye Aktif</span>
-</div>
+<button class="vsa-x" type="button" aria-label="Kapat" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeAddSupplementModal()"><i class="fa-solid fa-xmark"></i></button>
 </div>
 
-<!-- Hızlı TR Takviye Veritabanı Seçici (30 Ürün) -->
-<div>
-<label class="block text-[10px] font-bold text-slate-600 mb-1" for="addSupQuickDbSelect">Popüler Türkiye Takviye Veritabanından Hızlı Seç (veya Aşağıdan Barkod Girin / Okutun):</label>
-<select class="w-full px-3 py-2 rounded-xl border border-teal-200 bg-white text-xs font-bold text-navy-900 focus:outline-none focus:border-teal-500" id="addSupQuickDbSelect" onchange="if(this.value) { document.getElementById('addSupBarcodeInput').value = this.value; handleAddSupBarcodeDecoded(this.value); }">
-<option value="">— 30 Popüler Takviyeden Seçin (Orzaks, VeNatura, Solgar, Magnimore, Möller's...) —</option>
-</select>
+<!-- Bul: ad veya barkod, kamera, fotoğraf -->
+<section class="vsa-find" id="addSupBoxBarcodeSection">
+<div class="vsa-search">
+<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+<input autocomplete="off" id="addSupBarcodeInput" inputmode="search" maxlength="64" oninput="vsAddSearch(this.value)" onkeydown="vsAddSearchKey(event)" placeholder="Ürün adı veya barkod numarası" type="search"/>
 </div>
-
-<!-- Manuel Barkod / Karekod Giriş Kutusu -->
-<div>
-<label class="block text-[10px] font-bold text-slate-700 mb-1" for="addSupBarcodeInput">Barkod / Karekod Numarası (EAN-13)</label>
-<div class="flex gap-2">
-<input autocomplete="off" class="min-w-0 flex-1 px-3 py-2 rounded-xl border border-slate-300 bg-white font-mono text-xs font-bold text-navy-900 focus:outline-none focus:border-teal-500" id="addSupBarcodeInput" maxlength="64" onkeydown="if(event.key==='Enter'){event.preventDefault(); handleAddSupBarcodeDecoded(this.value);}" placeholder="EAN-13 barkod girin (Örn: 8697595871234)" type="text"/>
-<button class="px-3.5 py-2 rounded-xl bg-navy-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer shrink-0 flex items-center gap-1.5" id="btnAddSupLookupBarcode" onclick="if(window.SoundEffects) SoundEffects.playClick(); handleAddSupBarcodeDecoded(document.getElementById('addSupBarcodeInput').value)" type="button">
-<i class="fa-solid fa-magnifying-glass text-teal-300"></i>
-<span>Barkod Sorgula</span>
-</button>
-</div>
-</div>
-
-<!-- Kamera Aç / Barkod Tara ve Fotoğraf Çek / AI ile Kutuyu Tanı Butonları -->
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-<button class="w-full py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs" id="btnAddSupStartCamera" onclick="if(window.SoundEffects) SoundEffects.playClick(); startAddSupModalScanner()" type="button">
-<i class="fa-solid fa-camera"></i>
-<span>Kamerayı Aç / Barkod Tara</span>
-</button>
-<button class="hidden w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs" id="btnAddSupStopCamera" onclick="if(window.SoundEffects) SoundEffects.playClick(); stopScanner()" type="button">
-<i class="fa-solid fa-stop"></i>
-<span>Kamerayı Kapat</span>
-</button>
-<button class="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs" id="btnAddSupAiBoxScan" onclick="if(window.SoundEffects) SoundEffects.playClick(); triggerGeminiBoxScan()" type="button">
-<i class="fa-solid fa-wand-magic-sparkles"></i>
-<span>Fotoğraf Çek / AI ile Kutuyu Tanı</span>
-</button>
+<div class="vsa-suggest hidden" id="vsAddSuggest" role="listbox"></div>
+<div class="vsa-actions">
+<button class="vsa-btn vsa-btn-main" id="btnAddSupStartCamera" onclick="if(window.SoundEffects) SoundEffects.playClick(); startAddSupModalScanner()" type="button"><i class="fa-solid fa-barcode"></i><span>Barkod tara</span></button>
+<button class="vsa-btn vsa-btn-stop hidden" id="btnAddSupStopCamera" onclick="if(window.SoundEffects) SoundEffects.playClick(); stopScanner()" type="button"><i class="fa-solid fa-stop"></i><span>Kamerayı kapat</span></button>
+<button class="vsa-btn" id="btnAddSupAiBoxScan" onclick="if(window.SoundEffects) SoundEffects.playClick(); triggerGeminiBoxScan()" type="button"><i class="fa-solid fa-camera"></i><span>Fotoğrafla tanı</span></button>
 <input accept="image/*" capture="environment" class="hidden" id="addSupAiPhotoInput" onchange="handleAddSupAiPhotoInput(event)" type="file"/>
 </div>
+<div class="hidden vsa-cam" id="addSupCameraViewportWrapper">
+<div class="vsa-cam-box">
+<div id="addSupQrReader"></div>
+<video autoplay="" class="hidden" id="addSupCameraVideo" muted="" playsinline="" webkit-playsinline=""></video>
+<div class="vsa-frame" aria-hidden="true"></div>
+</div>
+<p id="addSupCameraLiveStatus">Barkodu çerçeveye hizalayın.</p>
+</div>
+<div aria-live="polite" class="hidden vsa-feedback" id="addSupBarcodeFeedbackBox"></div>
+<div aria-live="assertive" class="hidden vsa-fallback" id="addSupFallbackConfirmBox">
+<p><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Barkod bulunamadı. Kutunun fotoğrafıyla yapay zekâ doldursun mu?</p>
+<div class="vsa-fb-actions">
+<button class="vsa-btn vsa-btn-main" onclick="if(window.SoundEffects) SoundEffects.playClick(); triggerGeminiBoxScan()" type="button"><i class="fa-solid fa-camera-retro"></i><span>Evet, fotoğraf çek</span></button>
+<button class="vsa-btn" onclick="document.getElementById('addSupFallbackConfirmBox').classList.add('hidden')" type="button">Elle yazacağım</button>
+</div>
+</div>
+<!-- Eski öğeler (kod uyumluluğu için duruyor, gizli) -->
+<div class="vsa-legacy" aria-hidden="true">
+<select id="addSupQuickDbSelect" tabindex="-1"><option value=""></option></select>
+<button id="btnAddSupLookupBarcode" tabindex="-1" onclick="handleAddSupBarcodeDecoded(document.getElementById('addSupBarcodeInput').value)" type="button">Sorgula</button>
+<button id="addSupModalCameraPermBadge" tabindex="-1" onclick="if(window.SoundEffects) SoundEffects.playClick(); handleModalCameraPermBadgeClick('addSupplementModal')" type="button"><span>Kamera İzni</span></button>
+<span id="addSupDbBadge"></span>
+</div>
+</section>
 
-<!-- Kameranın Açıldığı Video Alanı (playsinline, muted, mobil donmayı önleyen hafif konfigürasyon) -->
-<div class="hidden rounded-2xl border-2 border-teal-400 bg-navy-950 p-2.5 text-center text-white space-y-2" id="addSupCameraViewportWrapper">
-<div class="relative mx-auto w-full max-w-sm overflow-hidden rounded-xl bg-slate-900 min-h-44 flex items-center justify-center">
-<div class="w-full max-h-56 overflow-hidden" id="addSupQrReader"></div>
-<video autoplay="" class="hidden w-full max-h-56 object-contain" id="addSupCameraVideo" muted="" playsinline="" webkit-playsinline=""></video>
+<!-- Form: önce yalnızca ad ve zaman; kalan alanlar isteğe bağlı -->
+<div class="vsa-form" id="modalCustomNameContainer">
+<div class="vsa-row">
+<label class="vsa-field"><span>Ürün adı *</span>
+<input id="manualSupName" oninput="if(typeof updateModalLiveInteractionPreview === 'function') updateModalLiveInteractionPreview()" placeholder="Örn: D3 Vitamini" type="text"/></label>
+<label class="vsa-field vsa-field-sm"><span>Ne zaman?</span>
+<select id="manualSupTiming" onchange="if(typeof updateModalLiveInteractionPreview === 'function') updateModalLiveInteractionPreview()">
+<option value="Sabah">Sabah</option>
+<option value="Öğle">Öğle</option>
+<option value="Akşam">Akşam</option>
+<option value="Gece">Gece</option>
+</select></label>
 </div>
-<p class="text-[10px] text-teal-200 font-semibold" id="addSupCameraLiveStatus">Kamerayı takviye kutusunun barkoduna odaklayın...</p>
+<details class="vsa-more">
+<summary><span>Daha fazla bilgi <small>(isteğe bağlı)</small></span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
+<div class="vsa-more-body">
+<div class="vsa-grid" id="modalCustomDoseContainer">
+<label class="vsa-field"><span>Marka / etken madde</span>
+<input id="manualSupBrandActive" oninput="if(typeof updateModalLiveInteractionPreview === 'function') updateModalLiveInteractionPreview()" placeholder="Örn: Orzaks — Kolekalsiferol" type="text"/></label>
+<label class="vsa-field"><span>Form</span>
+<input id="manualSupFormText" placeholder="Tablet, kapsül, damla…" type="text"/></label>
+<label class="vsa-field"><span>Birim doz</span>
+<input id="manualSupDose" oninput="if(typeof updateModalLiveInteractionPreview === 'function') updateModalLiveInteractionPreview()" placeholder="Örn: 1000 IU" type="text"/></label>
+<label class="vsa-field"><span>Aç / tok</span>
+<input id="manualSupHungerNote" placeholder="Örn: Tok karnına" type="text"/></label>
 </div>
-
-<!-- Barkod / AI Durum Bildirimi ve Fallback Onay Kutusu -->
-<div aria-live="polite" class="hidden rounded-xl border p-2.5 text-xs" id="addSupBarcodeFeedbackBox"></div>
-<div aria-live="assertive" class="hidden rounded-xl border-2 border-amber-300 bg-amber-50 p-3 text-xs text-amber-950 space-y-2" id="addSupFallbackConfirmBox">
-<p class="font-bold leading-relaxed"><i class="fa-solid fa-circle-question text-amber-600 mr-1"></i>Barkod yerel veritabanında bulunamadı. Kutunun fotoğrafını çekerek Yapay Zeka (AI) ile bilgileri otomatik doldurmak ister misiniz?</p>
-<div class="flex flex-wrap items-center gap-2">
-<button class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] transition cursor-pointer flex items-center gap-1.5" onclick="if(window.SoundEffects) SoundEffects.playClick(); triggerGeminiBoxScan()" type="button">
-<i class="fa-solid fa-camera-retro"></i>
-<span>Evet, Kutu Fotoğrafı Çek / AI ile Doldur</span>
-</button>
-<button class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 font-bold text-[11px] transition cursor-pointer" onclick="document.getElementById('addSupFallbackConfirmBox').classList.add('hidden')" type="button">
-Elle Dolduracağım
-</button>
+<label class="vsa-field"><span>Hazır şablon</span>
+<select id="modalCatalogSelect" onchange="if(window.SoundEffects) SoundEffects.playClick(); onCatalogSelectChange(this.value)">
+<option value="custom">Şablon yok (kendim yazacağım)</option>
+<option value="D3_K2">☀️ D3 + K2 Vitamini</option>
+<option value="Omega3">🐟 Omega-3 Balık Yağı</option>
+<option value="Demir">🩸 Demir (Fe)</option>
+<option value="B12">🧠 B12 Vitamini</option>
+<option value="Magnezyum">⚡ Magnezyum</option>
+<option value="Folat">🌱 Folat / Metilfolat</option>
+<option value="Kolajen">🧬 Kolajen</option>
+<option value="Kreatin">💧 Kreatin</option>
+</select></label>
+<div class="hidden vsa-formbox" id="modalFormSelectorContainer">
+<label class="vsa-field"><span>Hangi formda alacaksınız?</span>
+<select class="form-selector" id="modalFormSelect" onchange="if(window.SoundEffects) SoundEffects.playClick(); onModalFormOptionChange(this.value)"></select></label>
+<div class="vsa-pills" id="modalFormQuickPills"></div>
+<div class="vsa-formline"><span>Porsiyon:</span><b id="modalDosePreview">-</b></div>
+<p id="modalInstructionPreview">-</p>
 </div>
-</div>
-</div>
-
-<!-- Hızlı Katalog Seçimi (İsteğe Bağlı Şablon) -->
-<div>
-<label class="font-bold text-slate-700 block mb-1" for="modalCatalogSelect">Hızlı Takviye Şablonu (veya Barkod / Özel Ürün)</label>
-<select class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-navy-900 focus:outline-none focus:border-teal-500 bg-white" id="modalCatalogSelect" onchange="if(window.SoundEffects) SoundEffects.playClick(); onCatalogSelectChange(this.value)">
-<option value="custom">📦 Barkod / AI / Özel Takviye Formu (Tüm Alanlar Açık)</option>
-<option value="D3_K2">☀️ D3 + K2 Vitamini (Damla / Kapsül / Sprey)</option>
-<option value="Omega3">🐟 Omega-3 Balık Yağı (Yumuşak Kapsül / Sıvı Yağ)</option>
-<option value="Demir">🩸 Demir (Fe) (Saşe / Kapsül / Tablet)</option>
-<option value="B12">🧠 B12 Vitamini (Metilkobalamin - Dilaltı Tablet / Sprey / Kapsül)</option>
-<option value="Magnezyum">⚡ Magnezyum Kompleks (Tablet / Saşe / Kapsül)</option>
-<option value="Folat">🌱 Folat / Metilfolat (B9 - 5-MTHF Kapsül / Dilaltı / Tablet)</option>
-<option value="Kolajen">🧬 Kolajen Peptitleri (Saşe / Sıvı Shot / Tablet)</option>
-<option value="Kreatin">💧 Kreatin Monohidrat (Toz / Kapsül)</option>
-</select>
-</div>
-
-<div class="hidden p-3.5 bg-teal-50/70 border border-teal-200 rounded-2xl space-y-2" id="modalFormSelectorContainer">
-<div class="flex items-center justify-between">
-<label class="text-[11px] font-black text-teal-950 flex items-center gap-1.5">
-<i class="fa-solid fa-flask-vial text-teal-600"></i> Hangi Farmasötik Formda Alacaksınız?
-</label>
-</div>
-<select class="form-selector w-full text-xs font-black px-3 py-2 rounded-xl border border-teal-300 bg-white text-teal-950 focus:outline-none focus:border-teal-500 cursor-pointer shadow-sm" id="modalFormSelect" onchange="if(window.SoundEffects) SoundEffects.playClick(); onModalFormOptionChange(this.value)">
-</select>
-<div class="flex flex-wrap gap-1.5 pt-1" id="modalFormQuickPills"></div>
-<div class="pt-2 border-t border-teal-200/70 flex items-baseline justify-between text-xs">
-<span class="text-slate-600 text-[11px]">Form / porsiyon bilgisi:</span>
-<span class="font-black text-teal-800 font-mono bg-white px-2 py-0.5 rounded border border-teal-200" id="modalDosePreview">-</span>
-</div>
-<p class="text-[10px] text-teal-900/80 italic leading-relaxed" id="modalInstructionPreview">-</p>
-</div>
-
-<!-- OTOMATİK DOLDURULAN TAKVİYE EKLE FORM ALANLARI -->
-<div class="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5" id="modalCustomNameContainer">
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-<div>
-<label class="font-bold text-slate-700 block mb-1" for="manualSupName">Ürün Adı *</label>
-<input class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold text-navy-900 focus:outline-none focus:border-teal-500" id="manualSupName" oninput="if(typeof updateModalLiveInteractionPreview === 'function') updateModalLiveInteractionPreview()" placeholder="Örn: Ocean Vitamin D3 1000 IU" type="text"/>
-</div>
-<div>
-<label class="font-bold text-slate-700 block mb-1" for="manualSupBrandActive">Marka / Etken Madde</label>
-<input class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-teal-500" id="manualSupBrandActive" oninput="if(typeof updateModalLiveInteractionPreview === 'function') updateModalLiveInteractionPreview()" placeholder="Örn: Orzaks — Kolekalsiferol (Vitamin D3)" type="text"/>
+<div class="vsa-stock" id="modalMisanthaStockBox">
+<div class="vsa-stock-head"><span><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Stok takibi</span><b id="modalMisanthaDaysPreviewBadge">30 gün yetecek</b></div>
+<div class="vsa-grid3">
+<label class="vsa-field"><span>Kutu adedi</span><input id="manualSupBoxCount" max="1000" min="1" oninput="updateManualModalStockPreview(true)" type="number" value="30"/></label>
+<label class="vsa-field"><span>Kalan</span><input id="manualSupRemainingCount" max="1000" min="0" oninput="updateManualModalStockPreview(false)" type="number" value="30"/></label>
+<label class="vsa-field"><span>Günlük doz</span><input id="manualSupDailyDose" max="50" min="1" oninput="updateManualModalStockPreview(false)" type="number" value="1"/></label>
 </div>
 </div>
-
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="modalCustomDoseContainer">
-<div>
-<label class="font-bold text-slate-700 block mb-1" for="manualSupFormText">Form (Tablet / Kapsül / Damla)</label>
-<input class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold text-navy-900 focus:outline-none focus:border-teal-500" id="manualSupFormText" placeholder="Örn: Oral Damla / Sprey, Tablet, Yumuşak Kapsül" type="text"/>
 </div>
-<div>
-<label class="font-bold text-slate-700 block mb-1" for="manualSupDose">Birim Dozaj</label>
-<input class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold text-navy-900 focus:outline-none focus:border-teal-500" id="manualSupDose" oninput="if(typeof updateModalLiveInteractionPreview === 'function') updateModalLiveInteractionPreview()" placeholder="Örn: 1000 IU (25 mcg) / puf" type="text"/>
-</div>
-<div>
-<label class="font-bold text-slate-700 block mb-1" for="manualSupTiming">Zaman Bloku (Sabah / Öğle / Akşam)</label>
-<select class="w-full px-2.5 py-2 rounded-xl border border-slate-300 font-bold text-navy-900 focus:outline-none focus:border-teal-500 bg-white" id="manualSupTiming" onchange="if(typeof updateModalLiveInteractionPreview === 'function') updateModalLiveInteractionPreview()">
-<option value="Sabah">Sabah (08:00)</option>
-<option value="Öğle">Öğle (13:00)</option>
-<option value="Akşam">Akşam (21:30)</option>
-<option value="Gece">Gece (23:00 - Yatmadan Önce)</option>
-</select>
-</div>
-<div>
-<label class="font-bold text-slate-700 block mb-1" for="manualSupHungerNote">Açlık / Tokluk Notu</label>
-<input class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-teal-500" id="manualSupHungerNote" placeholder="Örn: Tok (Yağlı Kahvaltı İle)" type="text"/>
-</div>
-</div>
+</details>
 </div>
 
-<!-- Misantha Tipi Kutu Stok Miktarı, Günlük Doz ve Kalan Gün Sayacı Girişi -->
-<div class="p-3.5 rounded-2xl border border-indigo-200 bg-indigo-50/60 space-y-2.5" id="modalMisanthaStockBox">
-<div class="flex items-center justify-between gap-2">
-<span class="text-[11px] font-black text-indigo-950 flex items-center gap-1.5">
-<i class="fa-solid fa-boxes-stacked text-indigo-600"></i> Kutu Adedi (Stok) &amp; Günlük Doz Sayacı
-</span>
-<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white text-indigo-800 border border-indigo-200" id="modalMisanthaDaysPreviewBadge">30 gün yetecek</span>
-</div>
-<div class="grid grid-cols-3 gap-2.5">
-<div>
-<label class="block text-[10px] font-bold text-slate-700 mb-1" for="manualSupBoxCount">Kutu Adedi (Stok)</label>
-<input class="w-full px-2.5 py-2 rounded-xl border border-indigo-200 bg-white text-xs font-black text-navy-900 focus:outline-none focus:border-indigo-500" id="manualSupBoxCount" min="1" max="1000" oninput="updateManualModalStockPreview(true)" type="number" value="30"/>
-</div>
-<div>
-<label class="block text-[10px] font-bold text-slate-700 mb-1" for="manualSupRemainingCount">Kalan Adet</label>
-<input class="w-full px-2.5 py-2 rounded-xl border border-indigo-200 bg-white text-xs font-black text-navy-900 focus:outline-none focus:border-indigo-500" id="manualSupRemainingCount" min="0" max="1000" oninput="updateManualModalStockPreview(false)" type="number" value="30"/>
-</div>
-<div>
-<label class="block text-[10px] font-bold text-slate-700 mb-1" for="manualSupDailyDose">Günlük Doz</label>
-<input class="w-full px-2.5 py-2 rounded-xl border border-indigo-200 bg-white text-xs font-black text-navy-900 focus:outline-none focus:border-indigo-500" id="manualSupDailyDose" min="1" max="50" oninput="updateManualModalStockPreview(false)" type="number" value="1"/>
-</div>
-</div>
-<p class="text-[10px] text-indigo-900/80 leading-snug">Dozu "İçtim / Alındı" işaretlediğinizde kalan adet günlük doz kadar düşer; 3 gün veya altına indiğinde kritik stok uyarısı verilir.</p>
-</div>
-<!-- Gerçek Zamanlı Ekleme Öncesi Klinik Etkileşim Ön İzleme Kutusu -->
-<div class="hidden rounded-2xl border p-3.5 space-y-2 text-xs" id="modalLiveInteractionWarning" role="status" aria-live="polite"></div>
-<button class="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-medTeal-600 to-teal-500 text-white font-bold shadow-md hover:from-medTeal-700 hover:to-teal-600 transition active:scale-95 cursor-pointer flex items-center justify-center gap-2" onclick="if(window.SoundEffects) SoundEffects.playClick(); commitManualSupplement()">
-<i class="fa-solid fa-plus text-sm"></i>
-<span>Seçilen Formda Takip Listeme Ekle</span>
-</button>
-</div>
+<div class="hidden vsa-live" id="modalLiveInteractionWarning" role="status" aria-live="polite"></div>
+<button class="vsa-submit" onclick="if(window.SoundEffects) SoundEffects.playClick(); commitManualSupplement()" type="button"><i class="fa-solid fa-plus"></i><span>Takviyeyi ekle</span></button>
 </div>
 </div>
 <!-- Gerçek kamera barkod okuyucu ve isteğe bağlı Gemini fotoğraf ön incelemesi. İki modlu: 'supplement' (Takviye Ekle) ve 'medication' (İlaç Seç ve Denetle). -->
@@ -3386,41 +3209,50 @@ Elle Dolduracağım
 </section>
 </div>
 <!-- KVKK ve veri akışı açıklaması: gizlilik/uyum garantisi değildir. -->
-<div aria-hidden="true" class="hidden fixed inset-0 z-[95] bg-navy-950/80 backdrop-blur-sm items-center justify-center p-3 sm:p-4 no-print" id="kvkkInfoModal" onclick="if(event.target===this) closeKvkkInfoModal()">
+<div aria-hidden="true" class="hidden fixed inset-0 z-[130] bg-navy-950/80 backdrop-blur-sm items-center justify-center p-3 sm:p-4 no-print" id="kvkkInfoModal" style="z-index:130;background:rgba(2,6,23,.93);padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));overscroll-behavior:contain" onclick="if(event.target===this) closeKvkkInfoModal()">
 <section aria-labelledby="kvkkInfoTitle" aria-modal="true" class="w-full max-w-xl max-h-[92dvh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-teal-300" role="dialog">
-<div class="flex items-center justify-between gap-3 rounded-t-3xl bg-gradient-to-r from-navy-900 to-medTeal-700 px-5 py-4 text-white"><div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-xl"></i></span><div><h2 class="text-base font-black" id="kvkkInfoTitle">KVKK &amp; Yerel Veri Güvenliği</h2><p class="text-[10px] text-teal-100">Bitirme projesi prototipi için veri akışı bilgisi</p></div></div><button aria-label="Kapat" class="w-9 h-9 rounded-xl hover:bg-white/15" onclick="closeKvkkInfoModal()" type="button"><i class="fa-solid fa-xmark"></i></button></div>
-<div class="space-y-3 p-4 sm:p-5 text-xs leading-relaxed text-slate-700">
-<div class="rounded-2xl border border-teal-300 bg-teal-50 p-4 text-teal-950"><strong class="flex items-center gap-2"><i class="fa-solid fa-shield-heart text-xl text-teal-700"></i> Yerel-first prototip</strong><p class="mt-2">Profil, laboratuvar geçmişi ve anamnez kayıtları VitaTakip'in kendi merkezi sunucusuna yüklenmez; bu prototip bunları bu tarayıcının yerel depolama alanında tutar. Tarayıcı verileri şifrelenmiş değildir; cihazı ortak kullanıyorsanız gerçek kişisel sağlık verisi girmeyin.</p></div>
-<div class="rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-950"><strong><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Haricî yapay zekâ kullanıldığında veri aktarımı olabilir</strong><p class="mt-1">Google Gemini sağlayıcısını seçip veri paylaşım onayını açarsanız, sorunuz ve uygulamanın oluşturduğu ilgili sağlık bağlamı dış servise gönderilir. Bu nedenle bu prototip için "sıfır veri transferi" veya otomatik KVKK uyumluluğu garantisi verilemez. Paylaşım istemiyorsanız onayı kapalı tutun; yerel yanıt motoru kullanılacaktır.</p></div>
-<p>API anahtarı tarayıcı tarafında saklandığı için geliştirici araçlarıyla erişilebilir olabilir. Gerçek kullanıma açmadan önce sunucu taraflı anahtar yönetimi, uygun kimlik doğrulama, veri minimizasyonu, bilgilendirme/onay ve hukuki değerlendirme gerekir. Bu bilgilendirme hukuki danışmanlık veya KVKK uyumluluk belgesi değildir.</p>
-<div class="flex justify-end"><button class="min-h-10 rounded-xl bg-teal-700 px-5 py-2 text-xs font-black text-white" onclick="closeKvkkInfoModal()" type="button">Anladım</button></div>
+<div class="flex items-center justify-between gap-3 rounded-t-3xl bg-gradient-to-r from-navy-900 to-medTeal-700 px-5 py-4 text-white"><div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-xl"></i></span><div><h2 class="text-base font-black" id="kvkkInfoTitle">Gizlilik Politikası &amp; KVKK Aydınlatma Metni</h2><p class="text-[10px] text-teal-100">VitaTakip · 9 maddede veri işleme özeti</p></div></div><button aria-label="Kapat" class="w-9 h-9 rounded-xl hover:bg-white/15" onclick="closeKvkkInfoModal()" type="button"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="space-y-3 p-4 sm:p-5 text-xs leading-relaxed text-slate-700" id="kvkkInfoBody">
+<ol class="list-decimal space-y-3 pl-5" style="list-style:decimal;padding-left:1.4rem;display:flex;flex-direction:column;gap:12px;margin:0">
+<li><strong>Kapsam ve veri sorumlusu.</strong> Bu metin, VitaTakip'te işlenen kişisel verilere ilişkin 6698 sayılı KVKK kapsamındaki aydınlatma özetidir. Uygulama eğitim ve klinik karar desteği amacıyla sunulur.</li>
+<li><strong>İşlenen veriler.</strong> Profil bilgileriniz (yaş, cinsiyet, boy, kilo), tahlil sonuçları ve referans aralıkları, seçtiğiniz belirtiler, kullandığınız ilaç ve takviyeler, günlük takip kayıtları ve yüklediğiniz PDF/fotoğraf içerikleri; bunlar sağlık verisi olup özel nitelikli kişisel veridir.</li>
+<li><strong>İşleme amaçları.</strong> Verileriniz yalnızca tahlil ve belirti analizi, takviye ve ilaç etkileşimi kontrolü, hatırlatmalar ve doktorunuzla paylaşabileceğiniz özetlerin üretilmesi için kullanılır. Reklam veya profilleme amacıyla kullanılmaz.</li>
+<li><strong>Saklama yeri.</strong> Yerel depolama ile kullanımda kayıtlarınız yalnızca bu cihazın tarayıcı/uygulama hafızasında tutulur. Bulut (Firebase) ile giriş yaparsanız yedekleme amacıyla kayıtlarınız Cloud Firestore'a da yazılır.</li>
+<li><strong>Üçüncü taraflarla paylaşım.</strong> Reklam, pazarlama veya profilleme amacıyla hiçbir üçüncü tarafla veri paylaşılmaz. Yapay zekâ sohbetinde Google Gemini sağlayıcısını seçer ve paylaşım onayını açarsanız, yalnızca o soruyla ilgili sağlık bağlamı yanıt üretimi için bu servise gönderilir. Onayı kapalı tutarsanız yanıtlar cihazınızdaki yerel motorla üretilir. Geri bildirim gönderirseniz adınız (profilinizden) ve yazdığınız mesaj, e-posta iletim hizmeti (FormSubmit) aracılığıyla geliştiriciye iletilir; sağlık bilgisi yazmamanız önerilir.</li>
+<li><strong>Yurt dışına aktarım.</strong> Firebase ve Google Gemini kullanımı verilerin yurt dışındaki sunucularda işlenmesi anlamına gelebilir. Bu servisleri kullanmak tamamen isteğe bağlıdır; kullanmadığınız sürece verileriniz cihazınızdan çıkmaz.</li>
+<li><strong>Güvenlik ve sınırlar.</strong> Tarayıcı yerel depolaması şifrelenmemiştir; cihazı ortak kullanıyorsanız gerçek sağlık verisi girmeyin. API anahtarı tarayıcıda saklandığından geliştirici araçlarıyla erişilebilir olabilir. Bu uygulama otomatik KVKK uyumluluğu garantisi vermez.</li>
+<li><strong>Haklarınız.</strong> KVKK madde 11 uyarınca verilerinize erişme, düzeltme, silme ve işlenmesine itiraz etme hakkınız vardır. Yerel verilerinizi tarayıcı verilerini temizleyerek veya uygulamadaki yedekleme/silme araçlarıyla kendiniz silebilirsiniz.</li>
+<li><strong>Tıbbi sorumluluk ve değişiklikler.</strong> VitaTakip tanı koymaz, tedavi başlatmaz ve reçete düzenlemez; nihai karar hekiminize aittir. Acil durumlarda 112'yi arayın. Bu metin güncellenebilir ve hukuki danışmanlık niteliği taşımaz.</li>
+</ol>
+<div class="flex justify-end"><button class="min-h-10 rounded-xl bg-teal-700 px-5 py-2 text-xs font-black text-white" onclick="closeKvkkInfoModal()" type="button">Kapat</button></div>
 </div>
 </section>
 </div>
 <!-- ========================================================================= -->
 <!--                      UYGULAMA JAVASCRIPT MOTORU                           -->
 <!-- ========================================================================= -->
-<script src="js/app/01-hash-ses-tts.js?v=32"></script>
-<script src="js/app/02-navigation.js?v=32"></script>
+<script src="js/app/01-hash-ses-tts.js?v=61"></script>
+<script src="js/app/02-navigation.js?v=55"></script>
 <script src="js/app/03-global-search.js?v=32"></script>
-<script src="js/app/04-anamnesis-tabs.js?v=32"></script>
-<script src="js/app/05-clinical-rules.js?v=32"></script>
-<script src="js/app/06-state-lab-reference.js?v=32"></script>
+<script src="js/app/04-anamnesis-tabs.js?v=42"></script>
+<script src="js/app/05-clinical-rules.js?v=69"></script>
+<script src="js/app/06-state-lab-reference.js?v=69"></script>
 <script src="js/app/07-session-backup-fhir.js?v=32"></script>
 <script src="js/prescription_drugs_db.js?v=32"></script>
-<script src="js/app/08-pdf-onboarding-conflicts.js?v=32"></script>
-<script src="js/app/09-symptom-review-storage.js?v=32"></script>
+<script src="js/app/08-pdf-onboarding-conflicts.js?v=69"></script>
+<script src="js/app/09-symptom-review-storage.js?v=66"></script>
 <script src="js/supplement_db.js?v=32"></script>
-<script src="js/app/10-daily-tracking-deprescribing.js?v=32"></script>
-<script src="js/app/11-cdss-analysis.js?v=32"></script>
+<script src="js/app/10-daily-tracking-deprescribing.js?v=69"></script>
+<script src="js/app/11-cdss-analysis.js?v=69"></script>
 <script src="js/app/12-report-notifications-ai-chat.js?v=32"></script>
-<script src="js/app/13-ai-summary-barcode.js?v=32"></script>
+<script src="js/app/13-ai-summary-barcode.js?v=67"></script>
 <script src="js/app/14-spotlight-tour.js?v=32"></script>
 <script src="js/app/15-fridge-schedule.js?v=32"></script>
-<script src="js/app/16-lab-evidence.js?v=32"></script>
+<script src="js/app/16-lab-evidence.js?v=69"></script>
 <script src="js/app/17-lab-insights.js?v=32"></script>
-<script src="js/app/18-food-alternatives.js?v=32"></script>
-<script src="js/recharts-lab-dashboard.js?v=32"></script>
+<script src="js/app/18-food-alternatives.js?v=50"></script>
+<script src="js/lab-trend.js?v=54"></script>
+<script src="js/recharts-lab-dashboard.js?v=53"></script>
 <script src="js/pwa-notification-checklist.js?v=32"></script>
 <script src="js/app/19-app-startup.js?v=32"></script>
 <!-- İnteraktif Spotlight Tur Katmanı -->
@@ -3442,28 +3274,14 @@ Elle Dolduracağım
   </section>
 </div>
 
-<div id="clinicalReminderModal" class="hidden fixed inset-0 z-[90] bg-navy-950/70 backdrop-blur-sm items-center justify-center p-4 no-print" aria-hidden="true" onclick="if(event.target===this) closeClinicalReminder()">
-  <section class="w-full max-w-lg rounded-2xl border border-amber-200 bg-white p-5 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="clinicalReminderTitle">
-    <div class="flex items-start justify-between gap-3">
-      <div>
-        <h2 id="clinicalReminderTitle" class="text-base font-black text-navy-900"><i class="fa-solid fa-circle-exclamation mr-1.5 text-amber-600" aria-hidden="true"></i>Önemli Klinik Hatırlatma</h2>
-        <p class="mt-1 text-xs text-slate-500">VitaTakip Pro · Güvenli kullanım</p>
-      </div>
-      <button type="button" onclick="closeClinicalReminder()" class="min-h-9 px-2 text-slate-500 hover:text-slate-800" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
-      VitaTakip sonuçları düzenlemenize ve sağlık verilerinizi anlamanıza yardımcı olur; tek başına tanı koymaz veya kişiye özel tedavi/reçete yerine geçmez.
-    </div>
-    <ul class="mt-3 list-disc space-y-2 pl-5 text-xs leading-relaxed text-slate-700">
-      <li>Tahlil sonuçlarını, raporda yazan birim ve laboratuvar referans aralığıyla birlikte değerlendirin.</li>
-      <li>Takviyeye başlamadan, bırakmadan veya doz değiştirmeden önce sağlık profesyoneline danışın.</li>
-      <li>Şiddetli ya da ani belirtilerde uygulama yanıtını beklemeyin; uygun acil sağlık hizmetine başvurun.</li>
-    </ul>
-    <div class="mt-4 flex justify-end"><button type="button" onclick="closeClinicalReminder()" class="min-h-10 rounded-xl bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-800">Anladım</button></div>
-  </section>
-</div>
 
 
+<script src="js/legal-onboarding.js?v=34"></script>
+<script src="js/medical-drawer.js?v=34"></script>
+<script src="js/doctor-tests.js?v=49"></script>
+<script src="js/clinical-simple.js?v=66"></script>
+<script src="js/add-sup-simple.js?v=64"></script>
+<script src="js/scanner-simple.js?v=64"></script>
 <script src="js/ui-enhancements.js"></script>
 
 <script src="js/compact-labs-neyim.js"></script>
@@ -3510,7 +3328,6 @@ Elle Dolduracağım
       <div id="vitaEgResults" class="vita-eg-result" aria-live="polite">
         <div class="flex items-start gap-3"><div class="vita-eg-symptom-icon"><i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i></div><div><h3 class="font-black text-sm">Rehber nasıl çalışır?</h3><p class="text-xs leading-relaxed text-slate-600 mt-1">İlgili belirtileri seçin. Sistem bilimsel kaynaklarda tanımlanan ilişkileri ve hangi durumlarda sağlık uzmanına danışmanız gerektiğini açıklar. Belirti tek başına eksiklik kanıtı sayılmaz.</p></div></div>
       </div>
-      <div class="vita-eg-caution mt-3"><strong><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i> Önemli:</strong> Belirti-vitamin ilişkileri ön bilgilendirme içindir. Vitamin veya takviye kullanmaya yalnızca bu ekrana dayanarak başlamayın; mevcut ilaçlarınız ve hastalıklarınız değerlendirilmelidir.</div>
       <div class="vita-eg-emergency mt-3"><strong><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i> Gecikmeyin:</strong> Ani görme kaybı, yeni başlayan tek taraflı güçsüzlük/uyuşma, belirgin denge kaybı, durmayan kanama, nefes darlığıyla birlikte şişlik veya hızla kötüleşen belirtilerde rehberle yetinmeyin; acil tıbbi yardım alın.</div>
       <div class="mt-4 rounded-2xl bg-white border border-slate-200 p-4">
         <h3 class="text-sm font-black text-slate-800"><i class="fa-solid fa-book-open text-teal-700 mr-1.5" aria-hidden="true"></i> Bilimsel kaynaklar</h3>
@@ -3529,7 +3346,6 @@ Elle Dolduracağım
       </div>
     </div>
     <footer class="vita-eg-footer">
-      <span class="text-[10px] text-slate-500 max-w-xl">Eğitim ve karar desteği amaçlıdır; tanı, hekim değerlendirmesi veya laboratuvar yorumunun yerine geçmez.</span>
       <div class="flex gap-2"><button type="button" class="vita-eg-secondary" onclick="window.clearVitaSymptomGuideSelection()">Seçimleri temizle</button><button type="button" class="vita-eg-primary" onclick="window.closeVitaSymptomGuide(); if(typeof navigateToView==='function') navigateToView('view-neyim')">Anamneze geç <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></button></div>
     </footer>
   </section>
@@ -3539,7 +3355,7 @@ Elle Dolduracağım
   <script src="js/neyim-wizard.js"></script>
 
   <script src="js/visual-reference.js"></script>
-<script src="js/egfr-calculator.js"></script>
+<script src="js/egfr-calculator.js?v=66"></script>
 <script src="js/install-app.js"></script>
 
 

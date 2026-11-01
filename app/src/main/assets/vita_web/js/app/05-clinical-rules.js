@@ -101,8 +101,8 @@ const KDSSRuleEngine = {
             break;
 
           case 'creatinine': {
-            const crUpperNormal = gender === 'E' ? 1.25 : 1.10;
-            const crBorderline = gender === 'E' ? 1.40 : 1.25;
+            const crUpperNormal = getCreatinineUpperLimit(gender);
+            const crBorderline = crUpperNormal + 0.15;
             if (val < 0.5) { statusText = 'Düşük (Kas Kütlesi / Beslenme)'; color = 'yellow'; tier = 'borderline_low'; isLow = true; }
             else if (val <= crUpperNormal) { statusText = 'Optimal / Normal'; color = 'green'; tier = 'optimal'; }
             else if (val <= crBorderline) { statusText = 'Sınırda Yüksek'; color = 'yellow'; tier = 'borderline_high'; isHigh = true; }
@@ -172,7 +172,7 @@ const KDSSRuleEngine = {
         defaultForm: "Dilaltı_Tablet",
         reviewDays: 35,
         forms: {
-          "Dilaltı_Tablet": () => ({ doseText: "Etiket / hekim planındaki miktarı girin", subText: "Sublingual aktif form (mide asidini baypas eder)", timing: "Sabah", instruction: "Sabah aç karnına dil altında tamamen eriyene kadar bekletiniz. Hekim önerisine göre kullanınız." }),
+          "Dilaltı_Tablet": () => ({ doseText: "Etiket / hekim planındaki miktarı girin", subText: "Dilaltı form (oral takviyeye üstünlüğü kanıtlanmamıştır; hekim/eczacıya danışın)", timing: "Sabah", instruction: "Sabah aç karnına dil altında tamamen eriyene kadar bekletiniz. Hekim önerisine göre kullanınız." }),
           "Dilaltı_Sprey": () => ({ doseText: "Etiket / hekim planındaki miktarı girin", subText: "Yüksek biyoyararlanımlı sprey formu", timing: "Sabah", instruction: "Sabahları dil altına sıkarak 30 saniye yutkunmadan bekleyiniz. Hekim gözetiminde alınız." }),
           "Kapsül": () => ({ doseText: "Etiket / hekim planındaki miktarı girin", subText: "Klasik oral form (bağırsaktan pasif difüzyon)", timing: "Sabah", instruction: "Sabah kahvaltısı ile birlikte bol suyla yutunuz. Hekim tavsiyesine uyunuz." })
         }
@@ -240,10 +240,20 @@ const KDSSRuleEngine = {
       return { stage: "G5", desc: "Çok ciddi eGFR azalması; gecikmeden sağlık profesyoneli değerlendirmesi gerekir", badgeClass: "bg-rose-100 text-rose-800 border-rose-300", riskLevel: "very-severe" };
     }
 
-    function calculateCKDEPI_eGFR(creatinine, age, gender) {
+    /* Gebelik durumu: "" (yok) | t1 | t2 | t3 | lactation. Yalnızca kadın profilinde geçerlidir. */
+    function getPregnancyStage() {
+      try { return (typeof state !== "undefined" && state.user && state.user.gender !== "E" && state.user.pregnancyStage) || ""; } catch (_) { return ""; }
+    }
+    function isPregnantNow() { const s = getPregnancyStage(); return s === "t1" || s === "t2" || s === "t3"; }
+    window.getPregnancyStage = getPregnancyStage;
+    window.isPregnantNow = isPregnantNow;
+
+    /* opts.ignorePregnancy: bağımsız hesaplayıcı (başka biri için hesap) kullanır. Gebelikte eGFR formülleri geçerli değildir. */
+    function calculateCKDEPI_eGFR(creatinine, age, gender, opts) {
       const scr = Number(creatinine);
       const ageYears = Number(age);
       if (!Number.isFinite(scr) || scr <= 0 || !Number.isFinite(ageYears) || ageYears < 1 || ageYears > 120) return null;
+      if (!(opts && opts.ignorePregnancy) && isPregnantNow()) return null; // gebelikte CKD-EPI geçerli değildir
 
 
       const isFemale = (gender === 'K' || gender === 'female');
@@ -324,8 +334,25 @@ const KDSSRuleEngine = {
        Önceki sabit eşikler (ör. B12 400–800 "optimal", >1200 "toksik") yalnızca KDSSRuleEngine.evaluateLegacy içinde
        arşiv olarak durur; kreatinin ve ALT güvenlik süzgeci eskisi gibi çalışır. Kaynak/gerekçe: docs/LAB_THRESHOLDS.md */
     KDSSRuleEngine.evaluateLegacy = KDSSRuleEngine.evaluate;
+    /* Gebelikte kreatinin ve ALT (ACOG): normal kreatinin 0,4–0,8 mg/dL (GFR ~%50 artar); ≥1,1 mg/dL ağır preeklampsi bulgusu olabilir.
+       ALT yüksekliği HELLP/kolestaz açısından hekime bildirilmelidir. Tanı değil, ek değerlendirme eşikleridir. */
+    function pregnancyCreatinineAltEvaluate(key, val) {
+      const mk = (statusText, color, tier, isHigh, isToxic) => ({
+        statusText, tier, color, badgeHtml: KDSSRuleEngine.createBadge(statusText, color),
+        isLow: false, isHigh, isToxic, status: isToxic ? 'urgent' : (isHigh ? 'above_ref' : 'in_ref')
+      });
+      if (key === 'creatinine') {
+        if (val >= 1.1) return mk('Gebelikte kreatinin yüksek: gecikmeden doğum hekimi', 'red', 'critical_high', true, true);
+        if (val > 0.8) return mk('Gebelikte kreatinin normalin üstünde', 'yellow', 'borderline_high', true, false);
+        return mk('Gebelik aralığında', 'green', 'optimal', false, false);
+      }
+      if (val > 70) return mk('Gebelikte ALT belirgin yüksek: gecikmeden doğum hekimi', 'red', 'critical_high', true, true);
+      if (val > 35) return mk('Gebelikte ALT yüksek: hekime bildirin', 'yellow', 'borderline_high', true, false);
+      return mk('Referans aralığında', 'green', 'optimal', false, false);
+    }
     KDSSRuleEngine.evaluate = function (key, value, gender = 'K', referenceText = '') {
       const missing = value === null || value === undefined || value === '' || (typeof value !== 'number' && isNaN(Number(value)));
+      if (!missing && (key === 'creatinine' || key === 'alt') && isPregnantNow()) return pregnancyCreatinineAltEvaluate(key, Number(value));
       if (missing || !window.VitaLabEvidence || !VitaLabEvidence.handles(key)) {
         return KDSSRuleEngine.evaluateLegacy(key, missing ? null : value, gender, referenceText);
       }

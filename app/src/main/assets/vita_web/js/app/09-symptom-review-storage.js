@@ -827,6 +827,7 @@ function checkPendingSymptomReviews() {
         document.getElementById("modalInputHeight").value = state.user.height || 168;
         document.getElementById("modalInputWeight").value = state.user.weight || 68;
         document.getElementById("modalInputActivity").value = state.user.activity || "sedentary";
+        const pregSel = document.getElementById("modalPregnancyStatus"); if (pregSel) pregSel.value = state.user.gender === "E" ? "" : (state.user.pregnancyStage || (state.user.pregnancyLactation ? "lactation" : ""));
         const lifestyleValues = [["modalDietPattern", state.user.dietPattern || "unspecified"], ["modalFishPerWeek", state.user.fishPerWeek || "unspecified"], ["modalRedMeatPerWeek", state.user.redMeatPerWeek || "unspecified"], ["modalSunExposure", state.user.sunExposureDaily || "unspecified"]];
         lifestyleValues.forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.value = value; });
 
@@ -963,6 +964,8 @@ function checkPendingSymptomReviews() {
         medications,
         prescriptionDrugRecords,
         activity,
+        pregnancyStage: gender === "K" ? (document.getElementById("modalPregnancyStatus")?.value || "") : "",
+        pregnancyLactation: gender === "K" && Boolean(document.getElementById("modalPregnancyStatus")?.value),
         dietPattern: document.getElementById("modalDietPattern")?.value || "unspecified",
         fishPerWeek: document.getElementById("modalFishPerWeek")?.value || "unspecified",
         redMeatPerWeek: document.getElementById("modalRedMeatPerWeek")?.value || "unspecified",

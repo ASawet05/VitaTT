@@ -125,7 +125,6 @@
         if (key === "B12" && diet === "vegan") extras.push("Vegan beslenmede bitkisel besinler doğal B12 sağlamaz; zenginleştirilmiş ürünler çoğu zaman yeterli olmaz. B12 durumunuzu ve gerekirse takviye ihtiyacını doktorunuzla konuşun.");
         if (key === "B12" && (ctx.hasPPI || ctx.hasMetformin)) extras.push("Kullandığınız ilaç (mide koruyucu veya metformin) B12 emilimini azaltabilir; besin tek başına yeterli olmayabilir.");
         if (ctx.hasPPI && ["Demir", "Magnezyum", "Kalsiyum"].includes(key)) extras.push("Mide asidini azaltan ilaçlar bu mineralin emilimini azaltabilir.");
-        if (ctx.hasKidneyRisk && (VITA_FOOD_SOURCES[key].kidney)) extras.push("Böbrek hastalığı veya riski bildirildi: bu besinlerin miktarı sınırlanabilir, doktor/diyetisyene danışın.");
         const extraHtml = extras.map(t => `<p class="vita-food-extra">${esc(t)}</p>`).join("");
         return `
           <details class="vita-food-item" data-food-key="${esc(key)}" ${openKeys.has(key) ? "open" : ""}>

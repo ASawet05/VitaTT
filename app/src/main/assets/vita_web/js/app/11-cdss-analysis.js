@@ -542,7 +542,12 @@ function generateClinicalAnalysis({ profile, hasCurrentLab, hasArchivedLab, sele
   }
 
   // Tam CDSS kural motorunu çalıştır (5 senaryonun tamamını kapsar)
-  executeCDSSRules();
+  try {
+    executeCDSSRules();
+  } catch (err) {
+    // Tek bir kural modülündeki hata tüm analizi ve sayfa geçişini kilitlemesin.
+    console.error("[VitaTakip] executeCDSSRules hatası:", err);
+  }
 
   const labCtx = window.VitaLabInsights ? VitaLabInsights.cdssInputs() : null;
   const recentHistorySummary = getRecentHistoricalLabsSummary(3);
@@ -678,6 +683,7 @@ function evaluateClinicalAnalysisState() {
   const triageBannerEl = document.getElementById("clinicalResultsTriageEgfrBanner");
 
   if (isCompletelyEmpty) {
+    try { if (typeof window.renderVitaSimple === "function") window.renderVitaSimple(false); } catch (_) {}
     if (typeof saveState === "function") {
       saveState();
     }
@@ -729,7 +735,17 @@ function evaluateClinicalAnalysisState() {
     resultsContainerEl.style.display = "block";
   }
 
-  generateClinicalAnalysis({ profile, hasCurrentLab, hasArchivedLab, selectedSymptoms });
+  try {
+    generateClinicalAnalysis({ profile, hasCurrentLab, hasArchivedLab, selectedSymptoms });
+  } catch (err) {
+    console.error("[VitaTakip] generateClinicalAnalysis hatası:", err);
+  }
+  try {
+    if (typeof window.renderDoctorTestsSection === "function") window.renderDoctorTestsSection();
+    if (typeof window.renderVitaSimple === "function") window.renderVitaSimple(true);
+  } catch (err) {
+    console.error("[VitaTakip] doktor test listesi hatası:", err);
+  }
 
   if (triageBannerEl && triageBannerEl.innerHTML.trim() !== "") {
     triageBannerEl.classList.remove("hidden");
@@ -823,7 +839,7 @@ function runCDSSAnalysis(event) {
     const btn = document.getElementById("btnRunCDSS");
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Anamnez Triyajı &amp; Klinik Karar Analizi Hazırlanıyor...</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Hazırlanıyor...</span>`;
     }
 
     // 2. Klinik analiz durumunu değerlendir ve 5 senaryodan uygun olanını çalıştırıp Klinik Analiz sayfasını aç
@@ -831,7 +847,7 @@ function runCDSSAnalysis(event) {
 
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-microchip"></i> <span>Anamnez Triyaj ve eGFR Analiz</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-clipboard-check"></i> <span>Sonuçları Gör</span>`;
     }
     if (window.SoundEffects) SoundEffects.playSuccess();
 
@@ -850,7 +866,7 @@ function runCDSSAnalysis(event) {
     const btn = document.getElementById("btnRunCDSS");
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-microchip"></i> <span>Anamnez Triyaj ve eGFR Analiz</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-clipboard-check"></i> <span>Sonuçları Gör</span>`;
     }
     showClinicalResultsPage();
     return null;
@@ -1142,7 +1158,7 @@ document.addEventListener("DOMContentLoaded", () => {
           detail: "Serum kalsiyum düzeyiniz referans üst sınırının (>10,2 mg/dL) üzerindedir. Hiperkalsemi varlığında D vitamini (25-OH D3 düşük olsa bile) ve Kalsiyum takviyesi kesin kontrendikedir; primer hiperparatiroidizm veya diğer hiperkalsemi nedenleri açısından PTH, fosfor ve albümin ile dahiliye/endokrinoloji değerlendirmesi gerekir."
         });
       }
-      const hasKidneyRisk = hasKidneyChronic || (creatinine !== null && creatinine > (gender === 'E' ? 1.25 : 1.10)) || hasEgfrRisk;
+      const hasKidneyRisk = hasKidneyChronic || (creatinine !== null && creatinine > getCreatinineUpperLimit(gender)) || hasEgfrRisk;
       const hasHepaticRisk = (alt !== null && alt !== undefined && alt > 50);
 
       if (creatinine !== null && egfrResult) {
@@ -1365,7 +1381,7 @@ document.addEventListener("DOMContentLoaded", () => {
           doseText: formEval.doseText,
           timing: formEval.timing,
           instruction: formEval.instruction,
-          safety: (crp !== null && crp > 10) ? "⚠️ Aktif Enflamasyon / Enfeksiyon Kontrolü Şart" : "Lipozomal Form (Reçeteli)"
+          safety: (crp !== null && crp > 10) ? "⚠️ Aktif Enflamasyon / Enfeksiyon Kontrolü Şart" : "Form ve süre hekimle belirlenir"
         });
       }
 
@@ -1450,7 +1466,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      if (isPediatric) protocol.length = 0;
+      if (isPediatric || Boolean(state.user && state.user.pregnancyLactation)) protocol.length = 0; // 18 yaş altı ve gebelik/emzirmede takviye adayı üretilmez
       protocol.forEach(item => {
         item.selectedForm = "Hekimle belirlenir";
         item.doseText = "Otomatik doz belirlenmez";
@@ -1687,10 +1703,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const findingsAcc = document.getElementById("acc-findings");
       if (findingsAcc && state.lastCDSS.findings && state.lastCDSS.findings.length > 0) {
-        findingsAcc.classList.remove("hidden");
-        findingsAcc.style.display = "block";
-        const iconFindings = document.getElementById("icon-findings");
-        if (iconFindings) iconFindings.classList.add("rotate-180");
+        // Kullanıcı daha önce daraltmışsa yeniden çizimde tekrar açma; ilk çizimde açık başlat.
+        if (findingsAcc.dataset.userCollapsed !== "1") {
+          findingsAcc.classList.remove("hidden");
+          findingsAcc.style.display = "block";
+        }
+        const accOpen = !findingsAcc.classList.contains("hidden");
+        const accIcon = document.getElementById("icon-acc-findings");
+        const accLabel = document.getElementById("label-acc-findings");
+        const accToggle = document.querySelector('[aria-controls="acc-findings"]');
+        if (accIcon) { accIcon.classList.toggle("fa-chevron-up", accOpen); accIcon.classList.toggle("fa-chevron-down", !accOpen); }
+        if (accLabel) accLabel.textContent = accOpen ? "Daralt" : "Genişlet";
+        if (accToggle) accToggle.setAttribute("aria-expanded", accOpen ? "true" : "false");
       }
 
       const findingsList = document.getElementById("findingsList");
@@ -1719,10 +1743,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (protocolSection) {
         protocolSection.classList.remove("hidden");
         protocolSection.style.display = "block";
-      }
-      const protocolAccordion = document.getElementById("protocolDetailsAccordion");
-      if (protocolAccordion && Array.isArray(state.lastCDSS.protocol) && state.lastCDSS.protocol.length > 0) {
-        protocolAccordion.setAttribute("open", "");
       }
 
       const tbody = document.getElementById("protocolTableBody");

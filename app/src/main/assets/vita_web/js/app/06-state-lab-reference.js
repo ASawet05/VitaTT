@@ -103,6 +103,7 @@ let currentAuthMode = "login";
         "cdssKidneySafetyWarningContainer",
         "foodAlternativesSection",
         "cdssRecallContainer",
+        "doctorTestsSection",
         "aiSummaryTextContainer"
       ];
       containerIds.forEach(id => {
@@ -115,7 +116,8 @@ let currentAuthMode = "login";
             id === "contraindicationAlertContainer" ||
             id === "cdssKidneySafetyWarningContainer" ||
             id === "foodAlternativesSection" ||
-            id === "cdssRecallContainer"
+            id === "cdssRecallContainer" ||
+            id === "doctorTestsSection"
           ) {
             el.classList.add("hidden");
           }
@@ -164,7 +166,7 @@ let currentAuthMode = "login";
       mg: { name: "Magnezyum", value: "1,8–2,3 mg/dL", unit: "mg/dL" },
       ca: { name: "Kalsiyum", value: "8,6–10,2 mg/dL", unit: "mg/dL" },
       zinc: { name: "Çinko", value: "70–120 µg/dL", unit: "µg/dL" },
-      creatinine: { name: "Kreatinin", value: "0,6–1,2 mg/dL", unit: "mg/dL" },
+      creatinine: { name: "Kreatinin", value: "0,5–1,1 mg/dL", maleValue: "0,7–1,3 mg/dL", unit: "mg/dL" },
       folate: { name: "Folat", value: "4,0–20,0 ng/mL", unit: "ng/mL" },
       alt: { name: "ALT", value: "7–35 U/L", unit: "U/L" },
       hb: { name: "Hemoglobin", value: "12,0–16,0 g/dL", maleValue: "13,0–17,5 g/dL", unit: "g/dL" },
@@ -175,9 +177,25 @@ let currentAuthMode = "login";
     function getVitaAppLabReference(key, gender = state.user?.gender || "K") {
       const meta = VITA_LAB_APP_REFERENCE_META[key];
       if (!meta) return "Aralık tanımlı değil";
-      const value = (key === "ferritin" || key === "hb") && gender === "E" ? meta.maleValue : meta.value;
+      // Gebelik referansları (WHO 2011 / CDC / ACOG): hemoglobin ve kreatinin gebelikte farklıdır.
+      const pregStage = typeof getPregnancyStage === "function" ? getPregnancyStage() : "";
+      if (pregStage === "t1" || pregStage === "t2" || pregStage === "t3") {
+        if (key === "hb") return pregStage === "t2" ? "10,5–14,0 g/dL (gebelik)" : "11,0–14,0 g/dL (gebelik)";
+        if (key === "creatinine") return "0,4–0,8 mg/dL (gebelik)";
+      }
+      const value = (key === "ferritin" || key === "hb" || key === "creatinine") && gender === "E" ? meta.maleValue : meta.value;
       return value;
     }
+
+    /* Kreatinin üst sınırı: TEK KAYNAK (ekrandaki aralık). Tüm güvenlik süzgeçleri ve sınıflandırma bunu kullanır.
+       Gebelikte (GFR artışı) normal üst sınır 0,8 mg/dL'dir. */
+    function getCreatinineUpperLimit(gender = state.user?.gender || "K") {
+      try { if (typeof isPregnantNow === "function" && isPregnantNow()) return 0.8; } catch (_) {}
+      const meta = VITA_LAB_APP_REFERENCE_META.creatinine;
+      const nums = String(gender === "E" ? meta.maleValue : meta.value).replace(/,/g, ".").match(/\d+(?:\.\d+)?/g);
+      return nums && nums.length >= 2 ? Number(nums[1]) : (gender === "E" ? 1.3 : 1.1);
+    }
+    window.getCreatinineUpperLimit = getCreatinineUpperLimit;
 
     function getVitaAppLabReferenceMap(gender = state.user?.gender || "K") {
       return Object.fromEntries(Object.keys(VITA_LAB_APP_REFERENCE_META).map(key => [key, getVitaAppLabReference(key, gender)]));
@@ -661,7 +679,8 @@ let currentAuthMode = "login";
 
     function isRememberMeEnabled() {
       const saved = safeLocalStorageGetItem("vitatakip_remember_me");
-      return saved === null ? true : saved === "true";
+      // Sağlık verisi içerdiği için varsayılan KAPALI (ortak cihazda oturum kalıcı saklanmaz); kullanıcı isterse açar.
+      return saved === null ? false : saved === "true";
     }
 
     function syncRememberMeButtonUI(checked) {
@@ -1179,13 +1198,13 @@ let currentAuthMode = "login";
       }
       if (authFirebaseBtnLabel) {
         authFirebaseBtnLabel.textContent = connected
-          ? `Bulut (Firebase) ile Giriş Yap (${acc.email})`
-          : "Bulut (Firebase) ile Giriş Yap";
+          ? `Google ile devam et (${acc.email})`
+          : "Google ile devam et";
       }
       if (authLabel) {
         authLabel.textContent = connected
-          ? `Bulut Eşitleme Merkezi (${acc.email})`
-          : "Bulut Eşitleme & Yedekten Geri Yükleme Merkezi";
+          ? `Bulut eşitleme (${acc.email})`
+          : "Yedekten geri yükle";
       }
 
       // 2. Top Header Cloud Sync button
@@ -1727,15 +1746,15 @@ let currentAuthMode = "login";
         if (loginBtn) loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-navy-900 shadow-sm transition cursor-pointer";
         if (regBtn) regBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-800 transition cursor-pointer";
         if (confirmContainer) confirmContainer.classList.add("hidden");
-        if (submitBtn) submitBtn.innerHTML = `<span>Yerel (Cihaz) Depolama ile Giriş Yap</span> <i class="fa-solid fa-arrow-right text-xs"></i>`;
-        if (subtitle) subtitle.textContent = "Devam etmek için iki ana giriş yönteminden birini seçin";
+        if (submitBtn) submitBtn.innerHTML = `<span>Giriş Yap</span> <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>`;
+        if (subtitle) subtitle.textContent = "Hesabınıza giriş yapın";
         if (switchPrompt) switchPrompt.innerHTML = `Yerel hesabınız yok mu? <a href="javascript:void(0)" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchAuthMode('register')" class="text-teal-600 font-bold hover:underline">Yerel (Cihaz) Hesabı Oluşturun</a>`;
       } else {
         if (regBtn) regBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-navy-900 shadow-sm transition cursor-pointer";
         if (loginBtn) loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-800 transition cursor-pointer";
         if (confirmContainer) confirmContainer.classList.remove("hidden");
-        if (submitBtn) submitBtn.innerHTML = `<span>Yerel (Cihaz) Depolama Hesabı Oluştur</span> <i class="fa-solid fa-user-plus text-xs"></i>`;
-        if (subtitle) subtitle.textContent = "Bu cihazda yerel olarak saklanacak yeni bir hesap ve şifre oluşturun";
+        if (submitBtn) submitBtn.innerHTML = `<span>Hesap Oluştur</span> <i class="fa-solid fa-user-plus" aria-hidden="true"></i>`;
+        if (subtitle) subtitle.textContent = "Birkaç saniyede yeni hesap oluşturun";
         if (switchPrompt) switchPrompt.innerHTML = `Zaten yerel hesabınız var mı? <a href="javascript:void(0)" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchAuthMode('login')" class="text-teal-600 font-bold hover:underline">Yerel Giriş Yapın</a>`;
       }
     }

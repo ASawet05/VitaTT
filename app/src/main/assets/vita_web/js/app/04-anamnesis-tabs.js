@@ -121,6 +121,8 @@ let activeAnamnesisTab = "cat-A";
       if (isHidden) {
         if (toggle) toggle.setAttribute("aria-expanded", "true");
         content.classList.remove("hidden");
+        content.style.display = "block";
+        delete content.dataset.userCollapsed;
         if (icon) {
           icon.classList.remove("fa-chevron-down");
           icon.classList.add("fa-chevron-up");
@@ -132,6 +134,8 @@ let activeAnamnesisTab = "cat-A";
       } else {
         if (toggle) toggle.setAttribute("aria-expanded", "false");
         content.classList.add("hidden");
+        content.style.display = "none";
+        content.dataset.userCollapsed = "1";
         if (icon) {
           icon.classList.remove("fa-chevron-up");
           icon.classList.add("fa-chevron-down");

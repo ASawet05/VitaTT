@@ -1,0 +1,132 @@
+/* VitaTakip giriş ekranı — #authModal kapsamlı stiller (.vta-*) */
+#authModal.vta-auth{
+  position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;padding:14px;
+  background:
+    radial-gradient(900px 500px at 15% -10%,rgba(20,184,166,.35),transparent 60%),
+    radial-gradient(700px 480px at 100% 110%,rgba(56,189,248,.22),transparent 60%),
+    linear-gradient(160deg,#020617 0%,#0f172a 55%,#0b3b3a 100%);
+  overflow-y:auto;
+}
+.vta-card{
+  width:100%;max-width:410px;margin:auto;border-radius:28px;background:#fff;overflow:hidden;
+  box-shadow:0 30px 70px -10px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);
+  animation:vtaRise .5s cubic-bezier(.22,.9,.3,1) both;
+}
+@keyframes vtaRise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+
+/* Başlık */
+.vta-hero{
+  position:relative;padding:20px 22px 16px;text-align:center;color:#fff;overflow:hidden;
+  background:linear-gradient(135deg,#0f172a 0%,#115e59 60%,#14b8a6 120%);
+}
+.vta-hero::before,.vta-hero::after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.07)}
+.vta-hero::before{width:180px;height:180px;right:-60px;top:-80px}
+.vta-hero::after{width:120px;height:120px;left:-40px;bottom:-60px}
+.vta-logo{
+  position:relative;z-index:1;width:56px;height:56px;margin:0 auto 8px;border-radius:18px;object-fit:cover;display:block;
+  box-shadow:0 10px 24px rgba(0,0,0,.35),0 0 0 3px rgba(255,255,255,.18);
+}
+.vta-hero h2{position:relative;z-index:1;margin:0;font-size:24px;font-weight:900;letter-spacing:-.02em}
+.vta-hero p{position:relative;z-index:1;margin:5px 0 0;font-size:13px;color:#99f6e4;font-weight:600}
+
+/* Gövde */
+.vta-body{padding:18px 20px 20px}
+#authMainMethodTabs{display:none !important}
+
+/* Giriş / Kayıt segmenti */
+.vta-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:#f1f5f9;margin-bottom:14px}
+.vta-seg button{
+  min-height:40px;border:0;border-radius:11px;background:transparent;color:#64748b;
+  font-size:13px;font-weight:800;cursor:pointer;transition:background .2s,color .2s,box-shadow .2s;
+}
+.vta-seg button.bg-white{background:#fff !important;color:#0f172a !important;box-shadow:0 2px 8px rgba(15,23,42,.12) !important}
+
+/* Form */
+.vta-field{margin-bottom:10px}
+.vta-field label{display:block;margin:0 0 5px;font-size:12px;font-weight:800;color:#334155}
+.vta-input{position:relative}
+.vta-input > .vta-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:14px;pointer-events:none}
+.vta-input input{
+  width:100%;box-sizing:border-box;height:46px;padding:0 44px 0 40px;border-radius:14px;
+  border:1.5px solid #e2e8f0;background:#f8fafc;color:#0f172a;font-size:16px;font-weight:600;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.vta-input input::placeholder{color:#a8b3c4;font-weight:500}
+.vta-input input:focus{outline:none;border-color:#14b8a6;background:#fff;box-shadow:0 0 0 4px rgba(20,184,166,.15)}
+.vta-input .vta-eye{
+  position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:transparent;
+  color:#94a3b8;cursor:pointer;border-radius:10px;
+}
+.vta-input .vta-eye:hover{color:#475569;background:#f1f5f9}
+
+/* Beni hatırla: kompakt onay satırı */
+#authRememberMeBtn{
+  width:100% !important;padding:6px 2px !important;margin:2px 0 12px !important;border:0 !important;background:transparent !important;
+  box-shadow:none !important;display:flex !important;align-items:center !important;justify-content:flex-start !important;gap:10px !important;
+}
+#authRememberMeBtn:hover{background:transparent !important}
+#authRememberMeBtn #authRememberMeSubtext,#authRememberMeBtn #authRememberMeStateBadge{display:none !important}
+#authRememberMeBtn #authRememberMeCheckIcon{width:20px !important;height:20px !important;border-radius:7px !important}
+#authRememberMeBtn .block{font-size:13px !important;font-weight:700 !important;color:#334155 !important}
+
+/* Hatırlanan hesap */
+#authRememberedQuickLoginBox{
+  margin-bottom:12px;padding:10px 12px;border-radius:14px;border:1.5px solid #a7f3d0;background:#ecfdf5;
+  align-items:center;justify-content:space-between;gap:10px;
+}
+#authRememberedQuickLoginBox:not(.hidden){display:flex}
+
+/* Mesajlar */
+#authErrorMsg,#authNoticeMsg{margin-bottom:12px;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:700;line-height:1.4}
+#authErrorMsg{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
+#authNoticeMsg{background:#f0fdfa;color:#115e59;border:1px solid #99f6e4}
+
+/* Ana buton */
+.vta-primary{
+  width:100%;min-height:50px;border:0;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(90deg,#0f766e,#14b8a6);color:#fff;font-size:15px;font-weight:900;cursor:pointer;
+  box-shadow:0 10px 22px -6px rgba(13,148,136,.55);transition:transform .12s,box-shadow .2s,filter .2s;
+}
+.vta-primary:hover{filter:brightness(1.05);box-shadow:0 14px 26px -6px rgba(13,148,136,.6)}
+.vta-primary:active{transform:scale(.98)}
+.vta-primary:disabled{opacity:.7;cursor:wait}
+.vta-primary:focus-visible,.vta-google:focus-visible,.vta-seg button:focus-visible{outline:3px solid #99f6e4;outline-offset:2px}
+
+/* Ayırıcı ve bulut girişi */
+.vta-or{display:flex;align-items:center;gap:12px;margin:12px 0 10px;color:#94a3b8;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.vta-or::before,.vta-or::after{content:"";flex:1;height:1px;background:#e2e8f0}
+.vta-google{
+  width:100%;min-height:48px;border-radius:14px;border:1.5px solid #e2e8f0;background:#fff;color:#0f172a;
+  display:flex;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:800;cursor:pointer;
+  transition:background .15s,border-color .15s,transform .12s;
+}
+.vta-google:hover{background:#f8fafc;border-color:#cbd5e1}
+.vta-google:active{transform:scale(.98)}
+.vta-google i{color:#4285f4;font-size:16px}
+#authCloudSyncStatusBadge{display:none !important}
+.vta-sync{
+  display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:4px;padding:6px;border:0;background:transparent;
+  color:#0f766e;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;
+}
+.vta-sync:hover{background:#f0fdfa}
+
+/* Alt not */
+.vta-note{
+  margin:8px 0 0;padding:9px 12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;
+  display:flex;gap:10px;align-items:flex-start;font-size:11.5px;line-height:1.45;color:#64748b;
+}
+.vta-note i{color:#0d9488;margin-top:2px}
+.vta-note button{border:0;background:none;padding:0;color:#0f766e;font-weight:800;font-size:inherit;cursor:pointer;text-decoration:underline}
+#authSwitchPrompt{display:none !important}
+
+@media (max-width:420px){
+  #authModal.vta-auth{padding:10px}
+  .vta-body{padding:16px 16px 18px}
+  .vta-hero{padding:22px 18px 18px}
+}
+@media (max-height:700px){
+  .vta-hero{padding:16px 18px 14px}
+  .vta-logo{width:50px;height:50px;margin-bottom:6px;border-radius:16px}
+  .vta-hero h2{font-size:21px}
+}
+@media (prefers-reduced-motion:reduce){.vta-card{animation:none}}

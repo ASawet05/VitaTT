@@ -56,7 +56,7 @@
           typical: { min: 4, max: 20, source: "UNVERIFIED", verified: false, note: "Tipik laboratuvar aralığı; yönteme göre belirgin değişir." },
           sources: ["UNVERIFIED"] },
         hb: { label: "Hemoglobin", unit: "g/dL", units: { "g/dl": 1, "g/l": 0.1 }, plausible: [3, 25],
-          typical: { min: 12, minMale: 13, source: "WHO2011_HB", verified: true, note: "WHO anemi sınırı: K <12, E <13 g/dL (gebelikte farklıdır)." },
+          typical: { min: 12, max: 16, minMale: 13, maxMale: 17.5, source: "WHO2011_HB", verified: true, note: "Alt sınır WHO anemi ölçütü (K <12, E <13 g/dL; gebelikte farklıdır). Üst sınır (K 16 / E 17,5) genel laboratuvar aralığıdır; ekrandaki aralıkla aynıdır." },
           sources: ["WHO2011_HB"] },
         mcv: { label: "MCV", unit: "fL", units: { "fl": 1 }, plausible: [40, 150],
           typical: { min: 80, max: 100, source: "UNVERIFIED", verified: false, note: "Yetişkinlerde yaygın tipik aralık; laboratuvara göre değişir." },
@@ -120,6 +120,7 @@
           if (v >= 1000) return { level: "urgent", side: "high", sources: ["WHO2020_FERR"], text: "Ferritin 1000 ng/mL ve üzerinde: ciddi demir yüklenmesi (hemokromatozis), karaciğer patolojisi veya belirgin sistemik enflamasyon açısından gecikmeden uzman dahiliye/hematoloji değerlendirmesi gerekir. Demir takviyesi kesinlikle kullanmayın." };
           if (v > 500) return { level: "high_review", sources: ["WHO2020_FERR"], text: "Ferritin 500 ng/mL üzerinde: WHO, sağlıksız bireylerde bu düzeyi demir yüklenmesi veya başka bir hastalık açısından ek değerlendirme gerektiren bir sınır olarak tanımlar. Demir takviyesi kullanmayın; hekime başvurun." };
           if (v > (female ? 150 : 200)) return { level: "high_review", sources: ["WHO2020_FERR"], text: `Ferritin ${female ? "150" : "200"} ng/mL üzerinde: sağlıklı bireylerde demir yüklenmesi riski eşiği. Enflamasyon, karaciğer hastalığı ve alkol de ferritini yükseltir; tek başına demir fazlası göstermez. Demir takviyesinden önce hekime danışın.` };
+          if (ctx.pregnancy && v >= 15 && v < 30) return { level: "borderline", sources: ["WHO2020_FERR"], text: "Gebelikte ferritin 30 ng/mL altı: birçok rehber gebelikte demir eksikliği açısından anlamlı sayar (WHO eşiği yalnızca 1. trimesterde 15 ng/mL). 2.–3. trimesterde hemodilüsyon yorumu etkiler. Hemogram ve transferrin satürasyonu ile doğum hekimi değerlendirmelidir." };
           if (v < 15) return { level: "low_likely", sources: ["WHO2020_FERR"], text: "Ferritin 15 ng/mL altında: WHO'ya göre sağlıklı yetişkinde demir eksikliğini gösterir. Hemoglobin, MCV ve nedenin (adet kanaması, beslenme, sindirim kaybı) hekimce değerlendirilmesi gerekir." };
           if (inflamed && v < 70) return { level: "borderline", sources: ["WHO2020_FERR"], text: "CRP yüksek (>5 mg/L): WHO, enflamasyonda ferritinin 70 ng/mL altında kalmasını demir eksikliği açısından anlamlı sayar (koşullu öneri). Ferritin enflamasyonla yükseldiği için gerçek demir deposu daha düşük olabilir." };
           if (v < 45) return { level: "borderline", sources: ["AGA2020_IDA", "WHO2020_FERR"], text: "Ferritin 15–44 ng/mL arasında: sınırda. AGA 45 ng/mL altını demir eksikliği anemisi araştırmasında anlamlı sayar. Hemoglobin, MCV, transferrin satürasyonu ve klinik durumla birlikte değerlendirilmelidir; tek başına takviye gereksinimini kesinleştirmez." };
@@ -134,10 +135,20 @@
           return { level: "adequate", sources: ["ODS_MG"], text: "" };
         },
         hb(v, ctx) {
+          if (ctx.pregnancy) {
+            /* WHO 2011: gebelikte anemi <11 g/dL (ağır <7). CDC: 2. trimesterde sınır 10,5 g/dL. */
+            const pl = ctx.pregnancy === "t2" ? 10.5 : 11;
+            if (v < 7) return { level: "urgent", side: "low", sources: ["WHO2011_HB"], text: "Gebelikte hemoglobin 7 g/dL altında: WHO ağır anemi düzeyi. Anne ve bebek için risk taşır; gecikmeden doğum hekimi veya acil servis değerlendirmesi gerekir." };
+            if (v > 18.5) return { level: "urgent", side: "high", sources: ["WHO2011_HB"], text: "Hemoglobin 18,5 g/dL üzerinde: gebelikte de gecikmeden doğum hekimi değerlendirmesi gerekir." };
+            if (v < pl) return { level: "low_likely", sources: ["WHO2011_HB"], text: `Gebelikte hemoglobin ${String(pl).replace(".", ",")} g/dL altında: WHO/CDC ölçütüne göre anemi ile uyumlu (2. trimesterde sınır 10,5 g/dL). Demir, B12, folat ve diğer nedenler doğum hekimiyle değerlendirilmelidir; kendi başınıza takviye başlamayın.` };
+            return { level: "adequate", sources: ["WHO2011_HB"], text: "" };
+          }
           const limit = ctx.gender === "E" ? 13 : 12;
           if (v < 8.5) return { level: "urgent", side: "low", sources: ["WHO2011_HB"], text: "Hemoglobin 8,5 g/dL altında: belirgin/ağır anemi düzeyi. Doku oksijenlenmesi ve kardiyovasküler yük açısından gecikmeden yüz yüze dahiliye/hematoloji değerlendirmesi gerekir." };
           if (v > 18.5) return { level: "urgent", side: "high", sources: ["WHO2011_HB"], text: "Hemoglobin 18,5 g/dL üzerinde: belirgin eritrositoz/polisitemi eğilimi. Kan viskozitesi ve altta yatan nedenler açısından gecikmeden hekim değerlendirmesi gerekir." };
           if (v < limit) return { level: "low_likely", sources: ["WHO2011_HB"], text: `Hemoglobin ${limit} g/dL altında: WHO ölçütüne göre anemi ile uyumlu (gebelikte sınır 11 g/dL'dir). Nedeni (demir, B12, folat, kronik hastalık, kanama) hekimce araştırılmalıdır.` };
+          const hiLimit = ctx.gender === "E" ? 17.5 : 16;
+          if (v > hiLimit) return { level: "high_review", sources: ["WHO2011_HB"], text: `Hemoglobin ${String(hiLimit).replace(".", ",")} g/dL üzerinde (genel aralığın üstü). Dehidrasyon, sigara, yüksek rakım, uyku apnesi, testosteron veya eritropoetin kullanımı ve bazı kan hastalıkları neden olabilir; tekrar ölçüm ve hekim değerlendirmesi önerilir.` };
           return { level: "adequate", sources: ["WHO2011_HB"], text: "" };
         },
         ca(v) {
@@ -215,7 +226,14 @@
 
         // 3) Parametreye özgü klinik değerlendirme (yalnızca kaynaklı)
         const fn = CLINICAL[key];
-        const clin = fn ? fn(value, { gender, age: ctx.age, crp: num(ctx.crp), hb: num(ctx.hb) }) : null;
+        const pregnancy = ctx.pregnancy !== undefined ? ctx.pregnancy : (typeof getPregnancyStage === "function" ? getPregnancyStage() : "");
+        const pregT = (pregnancy === "t1" || pregnancy === "t2" || pregnancy === "t3") ? pregnancy : "";
+        if (pregT && key === "hb" && out.referenceUsed === "typical") {
+          refMin = pregT === "t2" ? 10.5 : 11; refMax = 14;
+          out.reference = `${fmt(refMin)}–14 ${P.unit} (gebelik)`;
+          out.refStatus = value < refMin ? "below" : (value > refMax ? "above" : "in");
+        }
+        const clin = fn ? fn(value, { gender, age: ctx.age, crp: num(ctx.crp), hb: num(ctx.hb), pregnancy: pregT }) : null;
         out.clinical = clin;
         out.sources = [...new Set([...(P.sources || []), ...(clin?.sources || [])])];
 
