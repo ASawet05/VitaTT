@@ -25,7 +25,9 @@
 <link rel="stylesheet" href="css/tailwind.css">
 <link rel="stylesheet" href="css/style.css?v=32">
 <link rel="stylesheet" href="css/auth.css?v=36">
-<link rel="stylesheet" href="css/clinical.css?v=58">
+<link rel="stylesheet" href="css/clinical.css?v=75">
+<link rel="stylesheet" href="css/report.css?v=70">
+<link rel="stylesheet" href="css/compact.css?v=73">
 <link rel="stylesheet" href="css/home.css?v=64">
 <script src="js/lazy-icon-fonts.js"></script>
 
@@ -383,31 +385,26 @@
 <!-- ========================================================================= -->
 <section class="space-y-4 sm:space-y-5" id="view-home">
 <!-- Karşılama Kartı -->
-<div class="bg-gradient-to-r from-navy-900 via-slate-900 to-medTeal-700 rounded-3xl p-5 sm:p-7 text-white shadow-xl relative overflow-hidden">
+<div class="bg-gradient-to-r from-navy-900 via-slate-900 to-medTeal-700 rounded-3xl p-5 sm:p-7 text-white shadow-xl relative overflow-hidden" id="homeHeroCard">
 <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-<div>
+<div class="min-w-0">
 <div class="flex flex-wrap items-center gap-2 mb-2">
 <span class="px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold border border-teal-500/30 flex items-center gap-1.5">
-<i class="fa-solid fa-clock"></i> <span id="homeGreetingTime">İyi Günler</span>
+<i class="fa-solid fa-clock" id="homeGreetingIcon"></i> <span id="homeGreetingTime">İyi Günler</span>
 </span>
-<span class="px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/20" id="homeGreetingBmi">
-                VKİ: Hesaplanıyor...
-              </span>
+<span class="px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/20" id="homeGreetingBmi">VKİ: Hesaplanıyor...</span>
 </div>
-<h1 class="text-xl sm:text-3xl font-black tracking-tight" id="homeGreetingName">
-              Merhaba!
-            </h1>
-<p class="text-xs sm:text-sm text-teal-100/90 mt-1 max-w-2xl font-medium leading-relaxed" id="homeGreetingDesc">
-              Bugünkü planınızı takip edin veya belirtilerinizi değerlendirmek için kısa anamnezi başlatın.
-            </p>
+<h1 class="text-xl sm:text-3xl font-black tracking-tight" id="homeGreetingName">Merhaba!</h1>
+<p class="text-xs sm:text-sm text-teal-100/90 mt-1 max-w-2xl font-medium leading-relaxed" id="homeGreetingDesc">Bugünkü planınızı takip edin veya belirtilerinizi değerlendirmek için kısa anamnezi başlatın.</p>
 </div>
-<div class="flex flex-wrap items-center gap-2.5">
+<div class="flex flex-wrap items-center gap-2.5 shrink-0">
 <button class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition flex items-center gap-2 cursor-pointer whitespace-nowrap" onclick="if(window.SoundEffects) SoundEffects.playClick(); printFridgeSchedule()" type="button">
 <i class="fa-solid fa-print text-sm"></i><span>Buzdolabı Çizelgesi Yazdır</span>
 </button>
 <button class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition flex items-center gap-2 cursor-pointer whitespace-nowrap" onclick="if(window.SoundEffects) SoundEffects.playClick(); navigateToView('view-neyim')" type="button">
 <i class="fa-solid fa-clipboard-question text-amber-300"></i><span>Belirtilerimi değerlendir</span>
 </button>
+</div>
 </div>
 </div>
 </div>
@@ -499,9 +496,9 @@
 <div>
 <h2 class="text-base font-bold text-navy-900 flex items-center gap-2" id="guideDailyProtocolTarget">
 <i class="fa-solid fa-clipboard-check text-medTeal-600"></i>
-                  Bugün Alınması Gereken Takviyeler &amp; Farmasötik Formlar
+                  Bugünkü takviyelerim
                 </h2>
-<p class="text-xs text-slate-500 mt-0.5">Bugünkü takviyelerinizi doğrudan işaretleyin; ilaç etkileşim denetimi için sağdaki ünlem kalkanına veya alt çekmeceye dokunun.</p>
+<p class="text-[11px] text-slate-500 mt-0.5">Aldıklarınızı işaretleyin. Liste her gün 00:00'da yenilenir.</p>
 </div>
 <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
 <button class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white border border-teal-700 transition flex items-center gap-1.5 cursor-pointer shadow-sm" id="btnOpenAddSupplementModal" onclick="if(window.SoundEffects) SoundEffects.playClick(); openAddSupplementModal()" type="button">
@@ -613,30 +610,22 @@
 <!-- ========================================================================= -->
 <section class="space-y-5 hidden" id="view-labs">
 <!-- Laboratuvar Hero Kartı -->
-<div class="bg-gradient-to-r from-navy-900 via-slate-900 to-sky-900 rounded-3xl p-5 sm:p-7 text-white shadow-xl relative overflow-hidden">
-<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-<div class="max-w-2xl">
-<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-bold border border-sky-400/40 mb-2.5">
-<i class="fa-solid fa-flask-vial"></i> Kan tahlilleriniz
-            </div>
-<h1 class="text-xl sm:text-2xl font-black tracking-tight" id="guideLabsTarget">Tahlil sonuçlarınızı ekleyin ve takip edin</h1>
-<p class="mt-1.5 text-xs text-slate-300">Sonuçları elle girebilir veya e-Nabız raporunuzdan aktarabilirsiniz.</p>
-</div>
-</div>
+<div class="bg-gradient-to-r from-navy-900 via-slate-900 to-sky-900 rounded-2xl px-4 py-3 text-white shadow-md relative overflow-hidden">
+<h1 class="text-base font-black tracking-tight flex items-center gap-2" id="guideLabsTarget"><i class="fa-solid fa-flask-vial text-sky-300"></i>Tahlillerim</h1>
 </div>
 <!-- Boylamsal Trend & İyileşme / Bırakma Uyarısı Şeridi -->
 <div class="hidden space-y-3" id="trendAlertSection"></div>
 <!-- Recharts Biyomarker Zaman Serisi Grafik Kartı -->
 <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden" id="biomarkerChartCard">
-<button aria-controls="acc-labtrend" aria-expanded="true" class="flex w-full items-center justify-between gap-3 p-4 sm:p-5 text-left hover:bg-slate-50 transition cursor-pointer" id="labTrendAccordionToggle" onclick="if(window.SoundEffects) SoundEffects.playClick(); toggleAccordionSection('acc-labtrend')" type="button">
+<button aria-controls="acc-labtrend" aria-expanded="false" class="flex w-full items-center justify-between gap-3 p-4 sm:p-5 text-left hover:bg-slate-50 transition cursor-pointer" id="labTrendAccordionToggle" onclick="if(window.SoundEffects) SoundEffects.playClick(); VitaLabTrend.toggle()" type="button">
 <span class="min-w-0">
 <span class="text-sm font-bold text-navy-900 flex items-center gap-2">
 <i class="fa-solid fa-chart-line text-medTeal-600"></i>
-              Tahlil gelişimim
+              Tahlil gelişim grafiği
             </span>
-<span class="block mt-0.5 text-[11px] text-slate-500">Değerleriniz zamanla nasıl değişti? Ayrıntı için bir satıra dokunun.</span>
+<span class="block mt-0.5 text-[11px] text-slate-500">Ölçüm trendini görüntülemek için açın.</span>
 </span>
-<span class="flex shrink-0 items-center gap-2 text-xs font-bold text-teal-700"><span id="label-acc-labtrend">Grafiği gizle</span><i class="fa-solid fa-chevron-up text-[10px] transition-transform duration-200" id="icon-acc-labtrend"></i></span>
+<span class="flex shrink-0 items-center gap-2 text-xs font-bold text-teal-700"><span id="label-acc-labtrend">Göster</span><i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" id="icon-acc-labtrend"></i></span>
 </button>
 <div class="accordion-content border-t border-slate-100 p-4 sm:p-5" id="acc-labtrend">
 <div id="labsRechartsMultiLineMount" class="w-full"></div>
@@ -650,8 +639,7 @@
 <i class="fa-solid fa-vials"></i>
 </span>
 <div>
-<h2 class="text-sm sm:text-base font-bold text-navy-900">Laboratuvar Kan Tahlili Verileri &amp; Tahlil Tarihi</h2>
-<p class="text-[11px] text-slate-500">Sonuçlarınızı manuel girebilir veya e-Nabız PDF'inden otomatik aktarabilirsiniz</p>
+<h2 class="text-sm font-bold text-navy-900">Yeni tahlil</h2>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -811,9 +799,8 @@
 <div>
 <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-navy-900 flex items-center gap-2">
 <i class="fa-solid fa-timeline text-teal-600"></i>
-<span>Kayıtlı Kan Tahlili Geçmişim (Tarih Sıralı Arşiv)</span>
+<span>Geçmiş tahlillerim</span>
 </h3>
-<p class="text-[11px] text-slate-500 mt-0.5">Kaydedilen tüm tahliller kronolojik olarak listelenir ve boylamsal trend analizinde kullanılır.</p>
 </div>
 <div class="flex items-center gap-2">
 <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200" id="labHistoryCountBadge">0 Tahlil Kayıtlı</span>
@@ -855,17 +842,8 @@
 </div>
 </div>
 <!-- Sonraki Adıma Yönlendirme Kartı -->
-<div class="bg-gradient-to-r from-navy-900 via-slate-900 to-teal-950 rounded-2xl p-4 sm:p-5 text-white shadow-lg border border-teal-500/40 flex flex-col sm:flex-row items-center justify-between gap-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/30 text-teal-300 flex items-center justify-center text-lg flex-shrink-0">
-<i class="fa-solid fa-wand-magic-sparkles"></i>
-</div>
-<div>
-<h4 class="text-xs sm:text-sm font-black text-white">Laboratuvar Verileriniz Karar Destek Motoruna Bağlandı</h4>
-<p class="text-[11px] text-slate-300 mt-0.5">Belirtilerinizi seçin; profiliniz ve varsa tahlilleriniz birlikte değerlendirilir.</p>
-</div>
-</div>
-<button class="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-teal-400 hover:from-amber-300 hover:to-teal-300 text-navy-950 font-black text-xs shadow-md transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(typeof proceedFromLabsToNeyim==='function') proceedFromLabsToNeyim(); else navigateToView('view-neyim')">
+<div class="flex">
+<button class="w-full px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-teal-400 hover:from-amber-300 hover:to-teal-300 text-navy-950 font-black text-xs shadow-md transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(typeof proceedFromLabsToNeyim==='function') proceedFromLabsToNeyim(); else navigateToView('view-neyim')">
 <span>Belirtilerimi değerlendir ➔</span>
 </button>
 </div>
@@ -1452,6 +1430,8 @@
 </div>
 <!-- Yazdırılabilir Konsültasyon Formu -->
 <div class="print-page bg-white rounded-2xl p-4 sm:p-7 shadow-sm border border-slate-200 space-y-4 sm:space-y-5 max-w-4xl mx-auto overflow-hidden" id="doctorReportPrintRoot" data-report-mode="concise">
+<!-- Kısa doktor özeti (js/report-simple.js) -->
+<section class="rs-doc" id="repSimple"></section>
 <!-- 1. HASTA BİLGİLERİ VE RAPOR TARİHİ (Resmi Üst Bilgi + Tekil Kompakt Demografik Özet) -->
 <div class="border-b-2 border-slate-900 pb-3.5 flex flex-col sm:flex-row items-start justify-between gap-2.5 report-avoid-break">
 <div class="flex items-center gap-3">
@@ -1774,8 +1754,7 @@ Bu belge, hastanın VitaTakip sistemine beyan ettiği demografik veriler, seçil
 <i class="fa-solid fa-sliders"></i>
 </div>
 <div>
-<h2 class="text-sm sm:text-base font-black text-white">Ayarlar &amp; Uygulama Yönetimi</h2>
-<p class="text-[11px] text-slate-300">Profil, bildirim izinleri, yapay zekâ bağlantısı, yardımcı araçlar ve yerel veri yedekleme merkezi.</p>
+<h2 class="text-sm sm:text-base font-black text-white">Ayarlar</h2>
 </div>
 </div>
 </div>
@@ -1785,7 +1764,7 @@ Bu belge, hastanın VitaTakip sistemine beyan ettiği demografik veriler, seçil
 <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5">
 <div class="flex items-center gap-2.5">
 <i class="fa-solid fa-id-card text-teal-600 text-sm"></i>
-<h3 class="text-xs sm:text-sm font-black text-navy-900">1. Profil ve Kişisel Bilgiler</h3>
+<h3 class="text-xs sm:text-sm font-black text-navy-900">Profil</h3>
 </div>
 <button class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition cursor-pointer flex items-center gap-1.5" onclick="if(window.SoundEffects) SoundEffects.playClick(); openProfileModal(true)" type="button">
 <i class="fa-solid fa-pen-to-square"></i>
@@ -1810,6 +1789,7 @@ Bu belge, hastanın VitaTakip sistemine beyan ettiği demografik veriler, seçil
 <strong class="text-rose-700 font-bold truncate block mt-0.5" id="settingsProfileMedsSummary">Yok</strong>
 </div>
 </div>
+<div id="settingsAgeStage"></div>
 </div>
 
 <!-- 5.2. Bildirimler, Kamera ve Cihaz İzinleri -->
@@ -1817,7 +1797,7 @@ Bu belge, hastanın VitaTakip sistemine beyan ettiği demografik veriler, seçil
 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
 <div class="flex items-center gap-2.5">
 <i class="fa-solid fa-shield-halved text-amber-500 text-sm"></i>
-<h3 class="text-xs sm:text-sm font-black text-navy-900">2. Bildirim, Kamera ve Cihaz İzinleri</h3>
+<h3 class="text-xs sm:text-sm font-black text-navy-900">Bildirim ve kamera</h3>
 </div>
 <div class="flex flex-wrap items-center gap-1.5">
 <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200" id="settingsBrowserPermBadge">Bildirim İzni: Kontrol Ediliyor</span>
@@ -1840,9 +1820,9 @@ Kapalı
 <div>
 <div class="font-bold text-navy-900 flex flex-wrap items-center gap-1.5">
 <i class="fa-solid fa-camera text-teal-600"></i>
-<span>Kamera Erişim Onayı (Barkod Okuyucu &amp; AI Fotoğraf Analizi)</span>
+<span>Kamera (barkod ve kutu fotoğrafı)</span>
 </div>
-<div class="text-[11px] text-slate-500 mt-0.5" id="settingsCameraPermHint">Mobilde ve tarayıcıda takviye/ilaç barkodu okutmak ve yapay zeka ile kutu fotoğrafı analiz etmek için kamera erişimini buradan onaylayın ve yönetin.</div>
+<div class="text-[11px] text-slate-500 mt-0.5" id="settingsCameraPermHint">Barkod okutmak ve kutu fotoğrafı çekmek için kamera izni gerekir.</div>
 </div>
 <div class="flex flex-wrap items-center gap-2 shrink-0">
 <button class="px-3.5 py-2 rounded-xl font-bold text-xs bg-teal-600 hover:bg-teal-700 text-white transition cursor-pointer flex items-center gap-1.5 shadow-2xs" id="settingsCameraPermBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); requestOrVerifyCameraPermission(true)" type="button">
@@ -1855,6 +1835,7 @@ Kapalı
 </div>
 </div>
 <!-- Kamera Erişim Onayı Alt Modül Durum Kartları ve Uygulama İçi Onay Anahtarı -->
+<details class="set-more"><summary>Kamera onay ayrıntıları</summary>
 <div class="rounded-2xl border border-teal-200/90 bg-gradient-to-br from-teal-50/60 via-white to-indigo-50/40 p-3 sm:p-3.5 space-y-2.5" id="settingsCameraApprovalCard">
 <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200/80">
 <label class="inline-flex items-center gap-2 cursor-pointer select-none" for="settingsCameraAppConsentCheckbox">
@@ -1889,10 +1870,8 @@ Kapalı
 <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shrink-0" id="cameraPermModuleAiPhotoBadge">Kontrol Ediliyor</span>
 </div>
 </div>
-<p class="text-[10px] text-slate-600 leading-relaxed">
-<i class="fa-solid fa-circle-info text-teal-600 mr-1"></i>Bu onay hem <strong>Barkod / Karekod Okuyucu</strong> hem de <strong>Yapay Zeka (AI) Fotoğraf Analizi</strong> modüllerinde işlem başlatılmadan önce otomatik olarak sorgulanır.
-</p>
 </div>
+</details>
 </div>
 </div>
 <!-- Ana sayfadan taşınan PWA Bildirim İzinleri & Hatırlatıcı Akıllı Kontrol Listesi -->
@@ -1904,11 +1883,11 @@ Kapalı
 </span>
 <div class="min-w-0">
 <div class="flex flex-wrap items-center gap-2">
-<span class="text-xs font-black text-navy-900">PWA Bildirim &amp; Kamera İzinleri Akıllı Kontrol Listesi</span>
+<span class="text-xs font-black text-navy-900">İzin kontrol listesi</span>
 <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200" id="pwaNotifDrawerStatusBadge">Denetleniyor</span>
 <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200" id="drawerPwaSmartChecklistBadge">4/7</span>
 </div>
-<p class="text-[11px] text-slate-500 mt-0.5" id="pwaNotifDrawerSummarySubtext">Tarayıcı Notification API, Kamera erişimi, Service Worker ve mobil izinleri tek listeden kontrol edin.</p>
+<p class="hidden" id="pwaNotifDrawerSummarySubtext"></p>
 </div>
 </div>
 <span class="text-[11px] font-bold text-sky-800 bg-white px-2.5 py-1 rounded-lg border border-sky-200 flex items-center gap-1.5 ml-auto">
@@ -1925,17 +1904,17 @@ Kapalı
 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
 <div class="flex items-center gap-2.5">
 <i class="fa-solid fa-robot text-teal-600 text-sm"></i>
-<h3 class="text-xs sm:text-sm font-black text-navy-900">3. Vita AI ve Gemini Bağlantısı</h3>
+<h3 class="text-xs sm:text-sm font-black text-navy-900">Yapay zekâ (isteğe bağlı)</h3>
 </div>
 <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 border border-slate-200" id="apiStatusBadge">Girilmedi</span>
 </div>
 <div class="space-y-2">
-<label class="text-xs font-bold text-slate-700 block" for="drawerGeminiApiKeyInput">Gemini API Anahtarı (Cihaz &amp; Oturum Belleği)</label>
+<label class="text-xs font-bold text-slate-700 block" for="drawerGeminiApiKeyInput">Gemini API anahtarı</label>
 <div class="flex flex-col sm:flex-row gap-2">
 <input autocomplete="off" class="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs text-navy-900 focus:outline-none focus:border-teal-500 font-mono" id="drawerGeminiApiKeyInput" onkeydown="if(event.key==='Enter'){event.preventDefault(); saveGeminiApiKey(this.value);}" placeholder="AIzaSy... anahtarınızı buraya yapıştırın" type="password"/>
 <button class="px-4 py-2 rounded-xl bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer shrink-0 flex items-center justify-center gap-1.5" id="btnSaveGeminiApiKey" onclick="if(window.SoundEffects) SoundEffects.playClick(); saveGeminiApiKey(document.getElementById('drawerGeminiApiKeyInput').value)" type="button">
 <i class="fa-solid fa-plug-circle-check text-teal-400"></i>
-<span>Kaydet &amp; Durumu Güncelle</span>
+<span>Kaydet</span>
 </button>
 <button class="hidden px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition cursor-pointer shrink-0 flex items-center justify-center gap-1" id="btnClearGeminiApiKey" onclick="if(window.SoundEffects) SoundEffects.playClick(); clearGeminiApiKeyFromSettings()" type="button">
 <i class="fa-solid fa-trash-can"></i>
@@ -1944,7 +1923,7 @@ Kapalı
 </div>
 <div aria-live="polite" class="hidden rounded-xl border p-2.5 text-xs font-bold" id="geminiApiSaveFeedbackBox"></div>
 <p class="text-[11px] text-slate-500 leading-relaxed">
-Gemini API anahtarınız kaydedildiğinde kutu fotoğrafı tanıma (Vision AI), klinik sentez ve VitaAI sohbetinde kademeli model zinciri (<code>gemini-3.5-flash-lite</code> → <code>gemini-3.1-flash-lite</code> → <code>gemini-2.5-flash</code>) aktif olur. Anahtar girilmediğinde veya kota dolduğunda yerel klinik karar destek motoru kesintisiz devreye girer.
+Anahtar girerseniz sohbet ve kutu fotoğrafı tanıma Gemini ile çalışır; girmezseniz cihazdaki yerel motor yanıtlar. Anahtar yalnızca bu hesapta saklanır.
 </p>
 </div>
 </div>
@@ -1953,13 +1932,13 @@ Gemini API anahtarınız kaydedildiğinde kutu fotoğrafı tanıma (Vision AI), 
 <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 space-y-2.5" id="settingsSectionTools">
 <div class="flex items-center gap-2.5 border-b border-slate-100 pb-2.5">
 <i class="fa-solid fa-screwdriver-wrench text-sky-600 text-sm"></i>
-<h3 class="text-xs sm:text-sm font-black text-navy-900">4. Kurulum ve Çizelge Araçları</h3>
+<h3 class="text-xs sm:text-sm font-black text-navy-900">Araçlar</h3>
 </div>
 <div class="divide-y divide-slate-100 text-xs">
 <div class="py-2.5 flex items-center justify-between gap-3">
 <div>
-<div class="font-bold text-navy-900">Web &amp; Mobil Uygulama Kurulumu (PWA)</div>
-<div class="text-[11px] text-slate-500">Telefon veya bilgisayar ana ekranına uygulama kısayolu olarak ekleyin.</div>
+<div class="font-bold text-navy-900">Ana ekrana ekle</div>
+<div class="text-[11px] text-slate-500">Uygulamayı telefona veya bilgisayara kurun.</div>
 </div>
 <button class="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-200 font-bold text-xs transition cursor-pointer shrink-0" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(window.openVitaWebMobileInstallModal) window.openVitaWebMobileInstallModal(this)" type="button">
 Kurulum Rehberi
@@ -1967,8 +1946,8 @@ Kurulum Rehberi
 </div>
 <div class="py-2.5 flex items-center justify-between gap-3">
 <div>
-<div class="font-bold text-navy-900">Buzdolabı Takviye &amp; Su Çizelgesi (A4)</div>
-<div class="text-[11px] text-slate-500">Günlük sabah, öğle, akşam protokolünüzü yazdırılabilir çizelge olarak hazırlar.</div>
+<div class="font-bold text-navy-900">Buzdolabı çizelgesi</div>
+<div class="text-[11px] text-slate-500">Günlük takviye ve su planınızı A4 olarak yazdırın.</div>
 </div>
 <button class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-xs transition cursor-pointer shrink-0" onclick="if(window.SoundEffects) SoundEffects.playClick(); printFridgeSchedule()" type="button">
 Çizelgeyi Yazdır
@@ -1982,7 +1961,7 @@ Kurulum Rehberi
 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
 <div class="flex items-center gap-2.5">
 <i class="fa-solid fa-database text-emerald-600 text-sm"></i>
-<h3 class="text-xs sm:text-sm font-black text-navy-900">5. Veriler ve Yedekleme</h3>
+<h3 class="text-xs sm:text-sm font-black text-navy-900">Veriler ve yedek</h3>
 </div>
 <span class="text-[10px] font-bold text-slate-500" id="settingsDataSummaryText">Yerel depolama aktif</span>
 </div>
@@ -2535,41 +2514,27 @@ Kapat
 <img src="icons/icon-192.png" alt="VitaTakip" class="w-12 h-12 rounded-2xl object-cover flex-shrink-0 shadow-lg shadow-teal-500/30"/>
 <div>
 <span class="text-[10px] font-black tracking-wider uppercase text-teal-800 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200">
-            VitaTakip Pro • Güncel Kullanım Rehberi
+            Kısa Rehber
           </span>
 <h3 class="text-base sm:text-lg font-black text-navy-900 mt-0.5">VitaTakip Nasıl Kullanılır?</h3>
 </div>
 </div>
-<p class="text-xs leading-relaxed text-slate-600">VitaTakip; laboratuvar tahlillerinizi (D3, B12, Ferritin, Hemoglobin, MCV, CRP, Kreatinin/eGFR, Folat, Magnezyum, Kalsiyum, Çinko, ALT) ve fiziksel belirtilerinizi birlikte değerlendirerek hekim görüşmesine hazırlık ve güvenli günlük takip sunar.</p>
-<div class="my-4 grid gap-2 sm:grid-cols-2">
-  <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); openProfileModal(true)" class="flex items-start gap-3 rounded-xl border border-teal-200 bg-teal-50 p-3 text-left hover:bg-teal-100">
-    <i class="fa-solid fa-user-pen mt-0.5 text-teal-700"></i><span><strong class="block text-xs text-navy-900">1. Profil ve İlaç Güvenliği</strong><span class="mt-0.5 block text-[11px] leading-relaxed text-slate-600">Yaş, boy, kilo, cinsiyet ve düzenli ilaçlarınızı (PPI, Metformin, Kan Sulandırıcı vb.) girin; VKİ, su hedefi ve eGFR böbrek hesabı otomatik güncellenir.</span></span>
-  </button>
-  <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); navigateToView('view-labs')" class="flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-left hover:bg-sky-100">
-    <i class="fa-solid fa-flask-vial mt-0.5 text-sky-700"></i><span><strong class="block text-xs text-navy-900">2. Tahlillerim &amp; Akıllı e-Nabız PDF</strong><span class="mt-0.5 block text-[11px] leading-relaxed text-slate-600">e-Nabız PDF yüklediğinizde <strong>tahlil tarihi</strong>, <strong>Hb/MCV/CRP dahil referans aralıkları</strong> ve <strong>Kreatinin → eGFR</strong> otomatik çekilir; dilerseniz elle de düzenleyebilirsiniz.</span></span>
-  </button>
-  <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); navigateToView('view-neyim')" class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left hover:bg-amber-100">
-    <i class="fa-solid fa-clipboard-question mt-0.5 text-amber-700"></i><span><strong class="block text-xs text-navy-900">3. NeyimVar? Sihirbazı &amp; Görsel (?) Örnekleri</strong><span class="mt-0.5 block text-[11px] leading-relaxed text-slate-600">7 adımda belirtilerinizi seçin. Kartların sağ üstündeki <strong>(?)</strong> düğmesine dokunarak dil, ağız kenarı, cilt, saç ve tırnak bulgularının gerçek görsel örneklerini inceleyin.</span></span>
-  </button>
-  <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); navigateToView('view-clinical-results')" class="flex items-start gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-left hover:bg-indigo-100">
-    <i class="fa-solid fa-chart-line mt-0.5 text-indigo-700"></i><span><strong class="block text-xs text-navy-900">4. Bileşik Klinik Analiz &amp; Sesli Dinleme</strong><span class="mt-0.5 block text-[11px] leading-relaxed text-slate-600">Hb, MCV ve CRP değerleriniz Ferritin, B12, Folat ve D3 ile çapraz yorumlanır (enflamasyon maskelemesi, anemi örüntüleri, eGFR/ALT güvenlik kalkanı). Sonuçları sesli dinleyebilirsiniz.</span></span>
-  </button>
-  <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); navigateToView('view-home')" class="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-left hover:bg-emerald-100">
-    <i class="fa-solid fa-calendar-check mt-0.5 text-emerald-700"></i><span><strong class="block text-xs text-navy-900">5. Günlük Protokol &amp; Barkod Okuyucu</strong><span class="mt-0.5 block text-[11px] leading-relaxed text-slate-600">Sabah, öğle ve akşam takviyelerinizi takip edin; Demir-Kalsiyum/Çinko çakışma kalkanı ve kutu barkod tarayıcı ile güvenli çizelge oluşturun.</span></span>
-  </button>
-  <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); navigateToView('view-report')" class="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-left hover:bg-rose-100">
-    <i class="fa-solid fa-file-waveform mt-0.5 text-rose-700"></i><span><strong class="block text-xs text-navy-900">6. Hekim Raporu &amp; Buzdolabı Çizelgesi</strong><span class="mt-0.5 block text-[11px] leading-relaxed text-slate-600">Boylamasına tahlil değişim tablosu, eGFR yorumu ve VitaAI klinik sentez özetini içeren Hekim Raporunu veya A4 Buzdolabı Çizelgesini yazdırın.</span></span>
-  </button>
-</div>
-<div class="grid gap-3 sm:grid-cols-2">
-  <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-    <h4 class="flex items-center gap-2 text-xs font-black text-navy-900"><i class="fa-solid fa-shield-halved text-teal-700"></i>İki Giriş Yöntemi &amp; Veri Güvenliği</h4>
-    <p class="mt-1 text-[11px] leading-relaxed text-slate-600">Uygulamaya <strong>Bulut (Firebase) ile Giriş</strong> yaparak verilerinizi Cloud Firestore üzerinde yedekleyebilir veya <strong>Yerel (Cihaz) Depolama ile Giriş</strong> yaparak kayıtlarınızı yalnızca telefonunuzda saklayabilirsiniz.</p>
-  </div>
+<p class="text-xs leading-relaxed text-slate-600">Tahlil sonuçlarınızı ve belirtilerinizi birlikte değerlendirip doktor görüşmesine hazırlar, günlük vitamin/su takibini kolaylaştırır. <strong>5 adımda</strong> kullanın:</p>
+<ol class="vg-steps my-3">
+  <li><button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); openProfileModal(true)"><b>1</b><span><strong>Profilinizi girin</strong><em>Yaş, boy, kilo ve kullandığınız ilaçlar. Su hedefi ve böbrek hesabı buna göre ayarlanır.</em></span></button></li>
+  <li><button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); navigateToView('view-labs')"><b>2</b><span><strong>Tahlillerim</strong><em>e-Nabız PDF'ini yükleyin ya da değerleri elle yazın. Tarihler ve referanslar otomatik gelir.</em></span></button></li>
+  <li><button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); navigateToView('view-neyim')"><b>3</b><span><strong>NeyimVar?</strong><em>Yaşadığınız belirtileri seçin. Kartlardaki (?) düğmesi örnek görseli gösterir.</em></span></button></li>
+  <li><button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); navigateToView('view-clinical-results')"><b>4</b><span><strong>Klinik Analiz</strong><em>Değerleriniz ve belirtileriniz tek ekranda: neye dikkat etmeli, hangi besinler ve hangi testler konuşulabilir.</em></span></button></li>
+  <li><button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); navigateToView('view-report')"><b>5</b><span><strong>Doktor Raporu</strong><em>Tek sayfalık özeti yazdırın veya PDF olarak kaydedin; doktora gösterin.</em></span></button></li>
+</ol>
+<div class="vg-tips">
+  <div><i class="fa-solid fa-house text-emerald-700"></i><span><strong>Ana Sayfa:</strong> bugünkü vitaminlerinizi işaretleyin, su ekleyin, barkodla yeni takviye ekleyin. Her gün 00:00'da liste ve su sayacı yenilenir.</span></div>
+  <div><i class="fa-solid fa-robot text-indigo-700"></i><span><strong>Vita AI:</strong> kısa sorular sorun. Anahtar girmezseniz cihazdaki yerel yanıt motoru, girerseniz Gemini yanıtlar. Anahtarınız yalnızca kendi hesabınızda saklanır.</span></div>
+  <div><i class="fa-solid fa-shield-halved text-teal-700"></i><span><strong>Gizlilik:</strong> bulutla giriş verilerinizi yedekler; yerel giriş yalnızca bu cihazda tutar. Uygulama tanı koymaz, karar için hekime danışın.</span></div>
 </div>
 <div class="mt-4 flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
   <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal()" class="min-h-10 rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200">Kapat</button>
-  <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); startVitaSpotlightTour(true)" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-medTeal-600 to-teal-500 px-4 py-2 text-xs font-black text-white shadow-md hover:from-medTeal-700"><i class="fa-solid fa-wand-magic-sparkles"></i>Ekranları sırayla göster (6 Adım)</button>
+  <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeOnboardingModal(); startVitaSpotlightTour(true)" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-medTeal-600 to-teal-500 px-4 py-2 text-xs font-black text-white shadow-md hover:from-medTeal-700"><i class="fa-solid fa-wand-magic-sparkles"></i>Ekranları sırayla göster</button>
 </div>
 </div>
 </div>
@@ -3231,30 +3196,30 @@ Kapat
 <!-- ========================================================================= -->
 <!--                      UYGULAMA JAVASCRIPT MOTORU                           -->
 <!-- ========================================================================= -->
-<script src="js/app/01-hash-ses-tts.js?v=61"></script>
-<script src="js/app/02-navigation.js?v=55"></script>
-<script src="js/app/03-global-search.js?v=32"></script>
-<script src="js/app/04-anamnesis-tabs.js?v=42"></script>
-<script src="js/app/05-clinical-rules.js?v=69"></script>
-<script src="js/app/06-state-lab-reference.js?v=69"></script>
-<script src="js/app/07-session-backup-fhir.js?v=32"></script>
+<script src="js/app/01-hash-ses-tts.js?v=76"></script>
+<script src="js/app/02-navigation.js?v=76"></script>
+<script src="js/app/03-global-search.js?v=76"></script>
+<script src="js/app/04-anamnesis-tabs.js?v=76"></script>
+<script src="js/app/05-clinical-rules.js?v=76"></script>
+<script src="js/app/06-state-lab-reference.js?v=76"></script>
+<script src="js/app/07-session-backup-fhir.js?v=76"></script>
 <script src="js/prescription_drugs_db.js?v=32"></script>
-<script src="js/app/08-pdf-onboarding-conflicts.js?v=69"></script>
-<script src="js/app/09-symptom-review-storage.js?v=66"></script>
+<script src="js/app/08-pdf-onboarding-conflicts.js?v=76"></script>
+<script src="js/app/09-symptom-review-storage.js?v=76"></script>
 <script src="js/supplement_db.js?v=32"></script>
-<script src="js/app/10-daily-tracking-deprescribing.js?v=69"></script>
-<script src="js/app/11-cdss-analysis.js?v=69"></script>
-<script src="js/app/12-report-notifications-ai-chat.js?v=32"></script>
-<script src="js/app/13-ai-summary-barcode.js?v=67"></script>
-<script src="js/app/14-spotlight-tour.js?v=32"></script>
-<script src="js/app/15-fridge-schedule.js?v=32"></script>
-<script src="js/app/16-lab-evidence.js?v=69"></script>
-<script src="js/app/17-lab-insights.js?v=32"></script>
-<script src="js/app/18-food-alternatives.js?v=50"></script>
-<script src="js/lab-trend.js?v=54"></script>
-<script src="js/recharts-lab-dashboard.js?v=53"></script>
+<script src="js/app/10-daily-tracking-deprescribing.js?v=76"></script>
+<script src="js/app/11-cdss-analysis.js?v=76"></script>
+<script src="js/app/12-report-notifications-ai-chat.js?v=76"></script>
+<script src="js/app/13-ai-summary-barcode.js?v=76"></script>
+<script src="js/app/14-spotlight-tour.js?v=76"></script>
+<script src="js/app/15-fridge-schedule.js?v=76"></script>
+<script src="js/app/16-lab-evidence.js?v=76"></script>
+<script src="js/app/17-lab-insights.js?v=76"></script>
+<script src="js/app/18-food-alternatives.js?v=76"></script>
+<script src="js/lab-trend.js?v=75"></script>
+<script src="js/recharts-lab-dashboard.js?v=76"></script>
 <script src="js/pwa-notification-checklist.js?v=32"></script>
-<script src="js/app/19-app-startup.js?v=32"></script>
+<script src="js/app/19-app-startup.js?v=76"></script>
 <!-- İnteraktif Spotlight Tur Katmanı -->
 <div aria-label="VitaTakip adım adım kullanım turu" aria-live="polite" class="hidden no-print" id="vitaSpotlightLayer">
 <div aria-hidden="true" id="vitaSpotlightHole"></div>
@@ -3279,7 +3244,10 @@ Kapat
 <script src="js/legal-onboarding.js?v=34"></script>
 <script src="js/medical-drawer.js?v=34"></script>
 <script src="js/doctor-tests.js?v=49"></script>
-<script src="js/clinical-simple.js?v=66"></script>
+<script src="js/clinical-simple.js?v=73"></script>
+<script src="js/report-simple.js?v=73"></script>
+<script src="js/age-stage.js?v=73"></script>
+<script src="js/day-compact.js?v=75"></script>
 <script src="js/add-sup-simple.js?v=64"></script>
 <script src="js/scanner-simple.js?v=64"></script>
 <script src="js/ui-enhancements.js"></script>

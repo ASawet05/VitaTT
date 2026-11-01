@@ -72,3 +72,48 @@
 
 ## 6. Testleri çalıştırma
 `tests/README.md` dosyasına bakın.
+
+## 7. Yaş evresine göre ihtiyaçlar ve yorum notları (`js/age-stage.js`)
+
+Eşikler **değiştirilmedi**; tahlil sınıflandırması `VitaLabEvidence`'ta kalır. Modül yalnızca yaş/cinsiyete göre günlük hedef (RDA) ve takviyeden üst sınır (UL) tablosu ile yorumu etkileyen yaş notları sunar. Gebelik/emzirme ve 19 yaş altında tablo üretilmez (uyarı gösterilir).
+
+| Konu | Uygulanan içerik | Kaynak |
+|---|---|---|
+| Kalsiyum | 19–50: 1000 mg; kadın 51+: 1200; erkek 51–70: 1000; 71+: 1200. UL 2500 (≤50) / 2000 (51+) | NIH ODS / IOM 2011 |
+| D vitamini | 19–70: 600 IU; 71+: 800 IU; UL 4000 IU | IOM 2011 |
+| B12, folat | 2,4 µg; 400 µg DFE (UL folat 1000 µg). 50+ için emilim notu | IOM 1998 |
+| Magnezyum, çinko, demir | Mg E 400/420, K 310/320 (UL yalnız takviyeden 350); Zn E 11, K 8 (UL 40); Fe E 8, K 18 → 51+ 8 (UL 45) | IOM 1997–2001 |
+| Protein | 0,8 g/kg; 65+ 1,0–1,2 g/kg | PROT-AGE 2013, ESPEN 2019 |
+| Böbrek/kas | 30–40 yaştan sonra eGFR ≈ yılda 1 mL/dk/1,73 m² azalır, kas kütlesi on yılda ≈ %3–8; 65+ kreatinin işlevi olduğundan iyi gösterebilir, eGFR 45–59'da sistatin C düşünülebilir | KDIGO 2012, EWGSOP2 2019 |
+| Demir eksikliği | Erkek ve 51+ kadında nedeni (GİS kaybı) hekimce araştırılmalı | AGA 2020 |
+
+**Doğrulanmadı / onay gerekir:** Bu değerler yazarın bilgisinden yukarıdaki kaynaklara göre girildi; çalışma sırasında kaynaklara çevrimiçi erişilmedi. Sağlık Bakanlığı **TÜBER (Türkiye Beslenme Rehberi)** değerleri ve PubMed kaynak künyeleri ayrıca karşılaştırılmadı. Yayın öncesi diyetisyen/klinik uzman onayı ve TÜBER ile çapraz kontrol önerilir. Test: `tests/yas-evresi.mjs`.
+
+## 8. Yayın öncesi uçtan uca inceleme (2026-11-01)
+
+**Kapsam:** 45 JS dosyası (≈22.400 satır) + `index.html`; sözdizimi (`node --check`), ESLint hata sınıfı, servis çalışanı varlık listesi, klinik kural motoru, takviye adayı mantığı, ilaç–besin kuralları, XSS/enjeksiyon, veri girişi doğrulaması, yedekten geri yükleme.
+
+### Düzeltilen hatalar
+| # | Önem | Sorun | Düzeltme |
+|---|---|---|---|
+| 1 | **Yüksek (hasta güvenliği)** | Referans içinde ama "yüksek-inceleme" olan değerler (ör. ferritin 180 [ref 15–200], D vit. 60, Mg 2,5) motor tarafından "sınırda" döndüğü için **eksiklik sayılıp takviye adayı üretiyordu** (ör. yüksek ferritinde demir). | Eksiklik yalnızca düşük tarafta sayılır (`lowSide`). |
+| 2 | **Yüksek** | Belirti modu, ilgili tahlil **ölçülmüş ve normal/yüksek** olsa bile aday üretiyordu (ferritin 400 + saç dökülmesi → demir). | Ölçülmüş ve düşük olmayan besin için aday yok. |
+| 3 | **Yüksek** | Böbrek kilidi "magnezyum önerilmez" derken Mg adayı yine üretiliyordu; belirti modunda böbrek/hiperkalsemi süzgeci eksikti. | Böbrek riskinde Mg/kreatin, hiperkalsemide D/Ca adayı üretilmez. |
+| 4 | **Yüksek (güvenlik)** | Barkod/QR içeriği ve içe aktarılan takviye kimliği satır içi `onclick` içine yalnızca HTML-kaçışla yazılıyordu; hazırlanmış bir QR kod JavaScript çalıştırabilirdi. Takviye adı bir uyarı şeridinde kaçışsızdı. | `safeJsStringAttribute` ve `escapeHtmlText` kullanıldı. |
+| 5 | Orta | Profil kaydında aralık denetimi yoktu (yaş 300, kilo 5 kabul). | Yaş 1–120, boy 45–250 cm, kilo 2–350 kg. |
+| 6 | Orta | Tahlil tarihi yedek yolu UTC kullanıyordu (Türkiye'de 00:00–03:00 arası "dün"); gelecek tarih kabul ediliyordu. | `vitaLocalToday()`, tarih alanına `max`, gelecek tarih reddi. |
+| 7 | Orta | Yedekten geri yükleme tür doğrulaması yapmıyor, eski analiz sonucunu (`lastCDSS`) olduğu gibi alıyordu. | Tür/tarih/belirti süzgeci, 10 MB sınırı, analiz yeniden hesaplanır. |
+| 8 | Orta | Makul aralık dışı değer (ör. Mg 0,9 mg/dL) yalnızca "birim hatası" diyordu; gerçek olabilecek ciddi düşüklük belirtilmiyordu. | "Değer doğruysa ciddi derecede düşük/yüksek olabilir; gecikmeden hekime" eklendi. |
+| 9 | Düşük | Yanlış kaynak atfı: kalsiyum eşikleri NIH ODS **D vitamini**, CRP >50 acil eşiği WHO **ferritin** kılavuzuna atfedilmişti; Hb 8,5 "WHO ağır anemi" deniyordu (WHO: <8). | Kaynak "doğrulanmadı" olarak işaretlendi; metin düzeltildi. |
+| 10 | Düşük | Kreatinin kadında 1,26 mg/dL'de "Kritik Yüksek" etiketi (abartılı). | "Yüksek (böbrek işlevi hekimce değerlendirilmeli)". |
+| 11 | Düşük | İlaç–besin metinlerinde doğrulanmamış yüzdeler (%40–70, %50–90, %60–80); metformin böbrek eşiğinde dağınık sabit (1,35/1,15). | Yüzdeler kaldırıldı; `getCreatinineUpperLimit()` kullanıldı. |
+| 12 | Düşük | Uyarı simgesi temizleme regex'i (⚠️) görünmez karakter bırakıyordu (ESLint). | `/^(?:⛔|⚠️?)\s*/u`. |
+
+### Doğrulanan (değişiklik gerekmeyen)
+- CKD-EPI 2021 katsayıları (κ, α, 1,012, 0,9938^yaş); 18 yaş altı ve gebelikte eGFR üretilmiyor.
+- Birim dönüşüm katsayıları (B12 1,355; D 0,4; ferritin 0,445; Mg 2,43; Ca 4,008; Zn 6,54; folat 0,4413; Hb 0,1; CRP 10).
+- 18 yaş altı, gebelik ve emzirmede takviye adayı üretilmiyor; tüm değerler normalse aday yok.
+- Servis çalışanı listesindeki tüm dosyalar mevcut; sayfadaki tüm yerel CSS/JS çevrimdışı önbellekte.
+
+### Yeni testler
+`tests/klinik-mantik.mjs` (21 klinik değişmez), `tests/guvenlik-xss.mjs` (tüm metin alanlarına zararlı içerik, tüm ekranlar).

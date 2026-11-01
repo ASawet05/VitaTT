@@ -165,7 +165,7 @@ function applyParsedPdfValues() {
           severityLabel: "Majör Emilim Blokajı (Şelasyon)",
           separationHours: 4,
           recommendedTiming: "Öğle",
-          mechanism: "Gastrointestinal lümende iki/üç değerlikli metal katyonları (Fe²⁺, Ca²⁺, Mg²⁺, Zn²⁺) levotiroksin molekülü ile çözünmeyen şelat kompleksleri oluşturarak tiroid hormonunun bağırsak emilimini %40–70 oranında düşürür ve hipotiroidi kontrolünü bozar.",
+          mechanism: "Gastrointestinal lümende iki/üç değerlikli metal katyonları (Fe²⁺, Ca²⁺, Mg²⁺, Zn²⁺) levotiroksinle bağırsakta bağlanarak emilimini belirgin şekilde azaltabilir ve tiroid kontrolünü bozabilir.",
           actionText: "Levotiroksin sabah aç karnına alınıyorsa Demir, Kalsiyum, Magnezyum ve Çinko takviyelerini en az 4 saat ara ile (Öğle veya Akşam) alınız.",
           source: "NIH ODS / ATA Thyroid Guidelines"
         },
@@ -205,7 +205,7 @@ function applyParsedPdfValues() {
           severity: "warning",
           severityLabel: "Biyoyararlanım Kaybı & İlaç Kaynaklı Eksiklik",
           separationHours: 2,
-          mechanism: "Proton pompa inhibitörleri (PPI) gastrik HCl salgısını baskılar. Non-hem demirin (Fe³⁺) emilebilir Fe²⁺ formuna indirgenmesi için asidik mide pH'ı şarttır; klasik demir tabletlerinin emilimi %50'den fazla düşer.",
+          mechanism: "Proton pompa inhibitörleri (PPI) gastrik HCl salgısını baskılar. Non-hem demirin (Fe³⁺) emilebilir Fe²⁺ formuna indirgenmesi için asidik mide pH'ı şarttır; uzun süreli PPI kullanımında demir emilimi azalabilir.",
           actionText: "PPI demir emilimini azaltabilir. Demir tedavisinin türü, süresi ve gerekirse PPI ihtiyacının gözden geçirilmesi hekim tarafından planlanmalıdır; kendi başınıza form değiştirmeyin.",
           source: "Gastroenterology / NIH ODS Iron Clinical Guide"
         },
@@ -245,7 +245,7 @@ function applyParsedPdfValues() {
           severityLabel: "Kritik Antibiyotik Tedavi Başarısızlığı Riski (Şelasyon)",
           separationHours: 4,
           recommendedTiming: "Öğle",
-          mechanism: "İki ve üç değerlikli metal iyonları (Mg²⁺, Fe²⁺, Ca²⁺, Zn²⁺) florokinolon ve tetrasiklin antibiyotiklerle bağırsakta çözünmeyen şelat oluşturarak antibiyotiğin kan düzeyini %50–90 oranında düşürür ve enfeksiyon tedavisini etkisizleştirebilir.",
+          mechanism: "İki ve üç değerlikli metal iyonları (Mg²⁺, Fe²⁺, Ca²⁺, Zn²⁺) florokinolon ve tetrasiklin antibiyotiklerle bağırsakta çözünmeyen şelat oluşturarak antibiyotiğin kan düzeyini belirgin şekilde düşürerek tedavinin etkisini azaltabilir.",
           actionText: "Mineral takviyesini antibiyotik dozundan en az 2 saat önce veya 4–6 saat sonra alınız; aynı zaman diliminde kesinlikle birleştirmeyiniz.",
           source: "FDA Drug Interactions"
         },
@@ -300,7 +300,7 @@ function applyParsedPdfValues() {
           recommendedTimingForA: "Öğle",
           recommendedTimingForB: "Akşam",
           title: "DMT1 Antagonizması: Demir & Kalsiyum Aynı Zaman Diliminde",
-          mechanism: "Demir ve Kalsiyum enterosit apikal zarındaki DMT1 (Divalent Metal Transporter 1) ve bazolateral Ferroportin taşıyıcıları için doğrudan rekabet eder; birlikte alımda demir emilimi %60–80 oranında baskılanır.",
+          mechanism: "Kalsiyum, aynı öğünde alınan demirin bağırsaktan emilimini azaltır; aynı öğünde alındığında demir emilimi azalabilir.",
           actionText: "Demir ve Kalsiyumu farklı öğünlere (en az 3–4 saat ara ile) ayırınız.",
           source: "AJCN / NIH ODS Iron & Calcium"
         },
@@ -1430,7 +1430,7 @@ function applyParsedPdfValues() {
         drugLabel: "Metformin (Glucophage / Matofin / Diaformin / Glifor)",
         keywords: ["metformin", "glucophage", "matofin", "diaformin", "glifor"],
         evaluate: function (creatinine, egfr, gender) {
-          const crHighThreshold = gender === "E" ? 1.35 : 1.15;
+          const crHighThreshold = getCreatinineUpperLimit(gender);
           if (egfr !== null && egfr < 30) {
             return {
               severity: "critical",

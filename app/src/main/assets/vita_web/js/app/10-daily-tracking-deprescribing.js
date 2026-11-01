@@ -45,14 +45,8 @@ function renderDailyTab() {
 
       if (total === 0) {
         checklistContainer.innerHTML = `
-          <div class="text-center py-10 px-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-2 text-xl shadow-sm">
-              <i class="fa-solid fa-pills"></i>
-            </div>
-            <h4 class="text-sm font-bold text-navy-900">Henüz Kayıtlı Bir Takviyeniz Bulunmuyor</h4>
-            <p class="text-xs text-slate-500 max-w-md mx-auto mt-1 leading-relaxed">
-              Günlük listenizde henüz ürün yok. Hekiminizin önerdiği ve takip etmek istediğiniz ürünü "Takviye Ekle" düğmesiyle kaydedebilirsiniz.
-            </p>
+          <div class="text-center py-3 px-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-xs text-slate-500">
+            <i class="fa-solid fa-pills text-amber-500 mr-1"></i> Henüz takviye yok. “Takviye Ekle” ile başlayın.
           </div>
         `;
       } else {
@@ -1287,7 +1281,11 @@ function renderDailyTab() {
 
     function saveCurrentLabRecordWithDate() {
       const dateInput = document.getElementById("inputLabDate");
-      const dateVal = (dateInput && dateInput.value) || new Date().toISOString().split('T')[0];
+      const dateVal = (dateInput && dateInput.value) || vitaLocalToday();
+      if (dateVal > vitaLocalToday()) {
+        showToast("Tarihi kontrol edin", "Tahlil tarihi bugünden sonra olamaz.", "warning");
+        return;
+      }
       const values = {
         d3: getParsedLabInput("inputLabD3"),
         b12: getParsedLabInput("inputLabB12"),
@@ -1407,7 +1405,7 @@ function renderDailyTab() {
 
     function persistCurrentLabInputsToState(options = {}) {
       const dateInput = document.getElementById("inputLabDate");
-      const dateVal = (dateInput && dateInput.value) || new Date().toISOString().split('T')[0];
+      const dateVal = (dateInput && dateInput.value) || vitaLocalToday();
       const enteredValues = {
         d3: getParsedLabInput("inputLabD3"),
         b12: getParsedLabInput("inputLabB12"),

@@ -1220,12 +1220,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      const isFerritinLow = ferEvalResult.isLow || ferEvalResult.isBorderline || ferEvalResult.status === "below_ref";
-      const isB12Low = b12EvalResult.isLow || b12EvalResult.isBorderline || b12EvalResult.status === "below_ref";
-      const isFolateLow = folEvalResult.isLow || folEvalResult.isBorderline || folEvalResult.status === "below_ref";
-      const isD3Low = d3EvalResult.isLow || d3EvalResult.isBorderline || d3EvalResult.status === "below_ref";
-      const isMgLow = mgEvalResult.isLow || mgEvalResult.isBorderline || mgEvalResult.status === "below_ref";
-      const isZnLow = znEvalResult.isLow || znEvalResult.isBorderline || znEvalResult.status === "below_ref";
+      /* "Sınırda" yalnızca DÜŞÜK taraftaysa eksiklik sayılır. Referans içinde ama yüksek-inceleme (ör. ferritin 180,
+         B12 950, D 60) durumları da "borderline" döner; bunlar takviye adayı üretmemelidir (güvenlik düzeltmesi). */
+      const lowSide = ev => Boolean(ev) && (ev.isLow || ev.status === "below_ref" || (ev.isBorderline && ev.tier === "borderline_low"));
+      const isFerritinLow = lowSide(ferEvalResult);
+      const isB12Low = lowSide(b12EvalResult);
+      const isFolateLow = lowSide(folEvalResult);
+      const isD3Low = lowSide(d3EvalResult);
+      const isMgLow = lowSide(mgEvalResult);
+      const isZnLow = lowSide(znEvalResult);
 
       const ironLowish = ferritin !== null && isFerritinLow;
       const anemia = hb !== null && hbEvalResult.clinical?.level === "low_likely";
@@ -1415,7 +1418,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      if (isMgLow) {
+      if (isMgLow && !hasKidneyRisk) { /* böbrek riskinde magnezyum adayı üretilmez (kilit metniyle tutarlı) */
         const mgConfig = FORM_DOSAGE_CONFIG["Magnezyum"];
         const defaultForm = mgConfig.defaultForm;
         const formEval = mgConfig.forms[defaultForm](weight);
@@ -1447,8 +1450,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Semptom-Öncelikli Mod (Tahlilsiz veya düşük tahlil saptanmamış ancak semptom seçilmiş durum):
       if (protocol.length === 0 && symptomCandidateFormKeys.size > 0 && !isPediatric) {
+        /* Belirti modu güvenlik süzgeci: ilgili tahlil ÖLÇÜLMÜŞ ve düşük değilse aday üretilmez
+           (ör. ferritin 400 + saç dökülmesi → demir önerilmez); böbrek riskinde Mg/kreatin, hiperkalsemide D/Ca yok. */
+        const measured = { D3_K2: d3, Demir: ferritin, B12: b12, Folat: folate, Magnezyum: mg, Çinko: zinc, Kalsiyum: ca };
+        const lowFlag = { D3_K2: isD3Low, Demir: isFerritinLow, B12: isB12Low, Folat: isFolateLow, Magnezyum: isMgLow, Çinko: isZnLow, Kalsiyum: lowSide(caEvalResult) };
         symptomCandidateFormKeys.forEach(fKey => {
           if (fKey === "D3_K2" && hasHypercalcemiaRisk) return;
+          if (fKey === "Kalsiyum" && hasHypercalcemiaRisk) return;
+          if ((fKey === "Magnezyum" || fKey === "Kreatin") && hasKidneyRisk) return;
+          if (Object.prototype.hasOwnProperty.call(measured, fKey) && measured[fKey] !== null && measured[fKey] !== undefined && !lowFlag[fKey]) return;
           const cfg = FORM_DOSAGE_CONFIG[fKey];
           if (!cfg) return;
           const defaultForm = cfg.defaultForm;
@@ -1491,14 +1501,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      const latestDate = (state.labHistory && state.labHistory.length > 0) ? state.labHistory[0].date : new Date().toISOString().split('T')[0];
+      const latestDate = (state.labHistory && state.labHistory.length > 0) ? state.labHistory[0].date : vitaLocalToday();
       const recallInfo = calculateRecallDate(latestDate);
 
       // Besinle destek bölümü için: referansın altındaki tahliller, belirtiyle ilişkili bileşenler ve güvenlik bağlamı
       const lowLabNutrients = [];
       const borderlineLabNutrients = [];
       [["D3_K2", d3EvalResult], ["B12", b12EvalResult], ["Demir", ferEvalResult], ["Folat", folEvalResult], ["Magnezyum", mgEvalResult], ["Kalsiyum", caEvalResult], ["Çinko", znEvalResult]]
-        .forEach(([nutrient, ev]) => { if ((ev.isBorderline || ev.status === "below_ref") && !ev.isLow) borderlineLabNutrients.push(nutrient); });
+        .forEach(([nutrient, ev]) => { if (lowSide(ev) && !ev.isLow) borderlineLabNutrients.push(nutrient); });
       if (d3EvalResult.isLow) lowLabNutrients.push("D3_K2");
       if (b12EvalResult.isLow) lowLabNutrients.push("B12");
       if (ferEvalResult.isLow) lowLabNutrients.push("Demir");

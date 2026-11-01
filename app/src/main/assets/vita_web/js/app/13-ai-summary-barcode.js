@@ -694,7 +694,7 @@ window.VitaAIChat = VitaAIChat;
       }
 
       resultsBox.innerHTML = matches.map(item => `
-        <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); handleBarcodeDetected('${escapeHtmlText(item.barcode)}', 'Adıyla Arama / Otomatik Tamamlama')" class="w-full text-left px-3 py-2 hover:bg-teal-50/80 transition flex items-center justify-between gap-2 cursor-pointer">
+        <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); handleBarcodeDetected(${safeJsStringAttribute(item.barcode)}, 'Adıyla Arama / Otomatik Tamamlama')" class="w-full text-left px-3 py-2 hover:bg-teal-50/80 transition flex items-center justify-between gap-2 cursor-pointer">
           <div class="min-w-0">
             <div class="text-xs font-black text-navy-900 truncate">${escapeHtmlText(item.name)}</div>
             <div class="text-[10px] text-slate-500 truncate">${escapeHtmlText(item.brand)} · ${escapeHtmlText(item.ingredients || item.form || 'Tablet/Kapsül')} · Kutu: ${escapeHtmlText(item.kutuAdedi || 30)} adet</div>
@@ -1281,7 +1281,7 @@ window.VitaAIChat = VitaAIChat;
               <div class="space-y-1.5">
                 <div class="font-black text-rose-900">Filtre Kısıtlaması: Bu Ürün Bir İlaçtır (${escapeHtmlText(product.name)})</div>
                 <p class="text-[11px] leading-relaxed text-rose-800"><strong>"Takviye Ekle"</strong> alanında yalnızca <strong>vitaminler ve gıda takviyeleri</strong> listelenebilir ve günlük takviye çizelgesine eklenebilir. Reçeteli veya genel ilaçları etkileşim kontrolü için <strong>"İlaç Seç ve Denetle"</strong> modülüne aktarabilirsiniz.</p>
-                <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchBarcodeScannerMode('medication'); applyBarcodeCatalogueMatch(lastScannedProductRecord, '${escapeHtmlText(barcode)}');" class="mt-1 px-3.5 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer">
+                <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchBarcodeScannerMode('medication'); applyBarcodeCatalogueMatch(lastScannedProductRecord, ${safeJsStringAttribute(barcode)});" class="mt-1 px-3.5 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer">
                   <i class="fa-solid fa-shield-halved"></i>
                   <span>"İlaç Seç ve Denetle" Moduna Geç ve Bu İlacı Denetle</span>
                 </button>
@@ -1303,7 +1303,7 @@ window.VitaAIChat = VitaAIChat;
               <div class="space-y-1.5">
                 <div class="font-black text-navy-900">Kategori Uyarısı: Bu Ürün Bir Vitamin / Gıda Takviyesidir (${escapeHtmlText(product.name)})</div>
                 <p class="text-[11px] leading-relaxed text-slate-700"><strong>"İlaç Seç ve Denetle"</strong> modalı reçeteli/reçetesiz genel ilaçları denetlemek içindir. Bu vitamin/takviyeyi günlük çizelgenize eklemek için <strong>"Takviye Ekle"</strong> moduna geçebilirsiniz.</p>
-                <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchBarcodeScannerMode('supplement'); applyBarcodeCatalogueMatch(lastScannedProductRecord, '${escapeHtmlText(barcode)}');" class="mt-1 px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer">
+                <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchBarcodeScannerMode('supplement'); applyBarcodeCatalogueMatch(lastScannedProductRecord, ${safeJsStringAttribute(barcode)});" class="mt-1 px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer">
                   <i class="fa-solid fa-capsules"></i>
                   <span>"Takviye Ekle" Moduna Geç ve Çizelgeye Ekle</span>
                 </button>
@@ -1711,11 +1711,7 @@ window.VitaAIChat = VitaAIChat;
       const resultText = document.getElementById("barcodeAiResultText");
       const original = button ? button.innerHTML : "";
 
-      const storedGeminiKey = String(
-        safeLocalStorageGetItem("vita_gemini_api_key") ||
-        (typeof getGeminiApiKey === "function" ? getGeminiApiKey() : "") ||
-        ""
-      ).trim();
+      const storedGeminiKey = String(typeof getGeminiApiKey === "function" ? getGeminiApiKey() : "").trim();
 
       try {
         if (button) {

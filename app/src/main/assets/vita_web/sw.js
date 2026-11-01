@@ -1,6 +1,6 @@
 /* VitaTakip servis çalışanı: çevrimdışı açılış için uygulama dosyalarını önbelleğe alır.
    Dosyalarda değişiklik yaptığınızda CACHE_VERSION değerini artırın ki kullanıcılar yeni sürümü alsın. */
-const CACHE_VERSION = 'vitatakip-v69';
+const CACHE_VERSION = 'vitatakip-v76';
 const CORE_FILES = [
   "./",
   "index.html",
@@ -11,6 +11,8 @@ const CORE_FILES = [
   "css/style.css",
   "css/auth.css",
   "css/clinical.css",
+  "css/report.css",
+  "css/compact.css",
   "css/home.css",
   "css/tailwind.css",
   "css/tools.css",
@@ -22,6 +24,9 @@ const CORE_FILES = [
   "js/medical-drawer.js",
   "js/doctor-tests.js",
   "js/clinical-simple.js",
+  "js/report-simple.js",
+  "js/age-stage.js",
+  "js/day-compact.js",
   "js/add-sup-simple.js",
   "js/scanner-simple.js",
   "js/lazy-icon-fonts.js",

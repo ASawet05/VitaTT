@@ -422,6 +422,7 @@ let currentAuthMode = "login";
       if (dateInput) {
         const now = new Date();
         dateInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        dateInput.max = dateInput.value; /* gelecek tarih seçilemez */
       }
 
       document.querySelectorAll('input[name="modal_chronic"]').forEach(cb => { cb.checked = false; });
@@ -524,6 +525,10 @@ let currentAuthMode = "login";
     }
 
     // Kullanıcı girdilerini HTML şablonlarına koymadan önce kaçırır; bu tek dosyalı prototipte XSS riskini azaltır.
+    /* Yerel (cihaz saat dilimi) bugünün tarihi YYYY-AA-GG. toISOString() UTC verir; Türkiye'de 00:00–03:00 arası "dün" olur. */
+    function vitaLocalToday() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+    window.vitaLocalToday = vitaLocalToday;
+
     function escapeHtmlText(value) {
       return String(value === null || value === undefined ? "" : value)
         .replace(/&/g, "&amp;")
@@ -1961,7 +1966,7 @@ let currentAuthMode = "login";
           `vitatakip_labs_${userId}`, `vitatakip_labhistory_${userId}`, `vitatakip_symptoms_${userId}`,
           `vitatakip_resolved_symptoms_${userId}`, `vitatakip_reviews_${userId}`, `vitatakip_cdss_${userId}`,
           `vitatakip_notes_${userId}`, `vitatakip_lastActiveDate_${userId}`, `vitatakip_labdraft_${userId}`,
-          `vitatakip_profiledraft_${userId}`, `vitatakip_anamnesis_category_${userId}`
+          `vitatakip_profiledraft_${userId}`, `vitatakip_anamnesis_category_${userId}`, `vita_gemini_api_key_${userId}`
         ];
         explicitKeys.forEach(key => safeLocalStorageRemoveItem(key));
         safeLocalStorageRemoveItem("vitatakip_active_session_id");

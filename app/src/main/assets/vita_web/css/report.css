@@ -1,0 +1,52 @@
+/* Doktora özet raporu — kompakt, tek sayfalık */
+.rs-doc{font-size:12.5px;line-height:1.4;color:#0f172a}
+.rs-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid #0f766e;padding-bottom:6px;margin-bottom:8px}
+.rs-head h1{font-size:17px;font-weight:800;margin:0;color:#0b1f3a}
+.rs-kicker{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#0f766e;font-weight:700}
+.rs-meta{text-align:right;font-size:11px;color:#475569;display:flex;flex-direction:column}
+.rs-sec{margin:0 0 8px}
+.rs-sec h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;color:#0f766e;margin:0 0 4px}
+.rs-sec h2 small{text-transform:none;letter-spacing:0;font-weight:500;color:#64748b}
+.rs-patient{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:7px 10px}
+.rs-row{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.rs-row b{font-size:14px}
+.rs-line{margin-top:3px;color:#334155}
+.rs-line i{font-style:normal;font-weight:700;color:#0b1f3a}
+.rs-tag{background:#fdf2f8;color:#9d174d;border:1px solid #fbcfe8;border-radius:999px;padding:0 8px;font-size:11px;font-weight:700}
+.rs-chips{display:flex;flex-wrap:wrap;gap:4px}
+.rs-chips span{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:1px 9px;font-size:11.5px}
+.rs-tests span{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+.rs-tests .rs-more{background:#fff;color:#64748b;border-color:#cbd5e1}
+.rs-muted{color:#64748b;margin:0}
+.rs-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.rs-tbl th{text-align:left;font-size:10px;text-transform:uppercase;color:#64748b;border-bottom:1px solid #cbd5e1;padding:2px 6px;font-weight:700}
+.rs-tbl td{padding:3px 6px;border-bottom:1px solid #eef2f7}
+.rs-tbl small{color:#64748b}
+.rs-tbl tr.rs-abn td:first-child{font-weight:700}
+.rs-low{color:#b45309;font-weight:700}.rs-high{color:#b91c1c;font-weight:700}.rs-border{color:#a16207;font-weight:700}.rs-ok{color:#047857}
+.rs-note{margin:4px 0 0;color:#334155;font-size:11.5px}
+.rs-list{margin:0;padding-left:16px}.rs-list li{margin:1px 0}
+.rs-list li.rs-crit{color:#b91c1c;font-weight:700}
+.rs-foot{margin:6px 0 0;font-size:10.5px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:5px}
+.rs-foot b{color:#0b1f3a}
+.rs-toggle{padding:6px 12px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;font-size:11.5px;font-weight:700;color:#334155;cursor:pointer}
+
+/* Seçim çubuğunu sadeleştir */
+#reportModeSelectorBar #reportActiveModeBadge,
+#reportModeSelectorBar > div:first-child p,
+#reportModeSelectorBar [role="group"]{display:none!important}
+#reportModeSelectorBar{padding:10px 14px!important;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+
+/* Kısa modda yalnızca özet + not/imza göster */
+#doctorReportPrintRoot[data-report-mode="concise"] > :not(#repSimple):not(#repMethodSafetyFooter){display:none!important}
+#doctorReportPrintRoot[data-report-mode="concise"] #repMethodSafetyFooter{padding-top:6px!important;margin-top:0}
+#doctorReportPrintRoot[data-report-mode="concise"] #repMethodSafetyFooter > div:first-child,
+#doctorReportPrintRoot[data-report-mode="concise"] #reportPrintFooterMeta{display:none!important}
+#doctorReportPrintRoot[data-report-mode="concise"] #repMethodSafetyFooter textarea{rows:2;min-height:44px}
+#doctorReportPrintRoot[data-report-mode="concise"]{padding:14px!important}
+/* Ayrıntılı modda özet de üstte kalsın ama eski bölümler görünür */
+@media print{
+  .rs-doc{font-size:11px}
+  .rs-tbl{font-size:10.5px}
+  .rs-sec{break-inside:avoid}
+}
