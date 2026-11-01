@@ -93,7 +93,7 @@ function renderDailyTab() {
               const hasKidneyChronic = (state.user.chronic || []).includes("kidney");
               const hasEgfrRisk = state.lastCDSS?.egfrResult && (state.lastCDSS.egfrResult.riskLevel === 'high' || state.lastCDSS.egfrResult.riskLevel === 'severe');
 
-              if (isCreatine && (bioStatus.val > 1.25 || hasKidneyChronic || hasEgfrRisk)) {
+              if (isCreatine && (bioStatus.val > getCreatinineUpperLimit() || hasKidneyChronic || hasEgfrRisk)) {
                 deprescribingBadgeHtml = `
                   <div class="mt-2.5 p-2.5 rounded-xl bg-rose-50 border-2 border-rose-400 text-rose-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm animate-bounce-short">
                     <span class="font-black text-[11px] text-rose-900">⛔ Yüksek Kreatinin Nedeniyle Yasaklı (${bioStatus.val} mg/dL)</span>
@@ -1202,6 +1202,14 @@ function renderDailyTab() {
       ["inputLabCreatinine", "creatinine"], ["inputLabFolate", "folate"], ["inputLabAlt", "alt"],
       ["inputLabHb", "hb"], ["inputLabMcv", "mcv"], ["inputLabCrp", "crp"]
     ];
+    // Kullanıcının elle boşalttığı tahlil alanları: boşaltılan alanın kayıttan da silinmesi için izlenir.
+    const labFieldTouched = new Set();
+    document.addEventListener("input", function (e) {
+      const id = e.target && e.target.id;
+      if (!id || !VITATAKIP_LAB_DRAFT_FIELDS.some(([fieldId]) => fieldId === id)) return;
+      // Yalnızca "son kullanıcı olayı alanı boş bıraktı" ise silme niyeti sayılır; programatik temizlik olay üretmez.
+      if (String(e.target.value || "").trim() === "") labFieldTouched.add(id); else labFieldTouched.delete(id);
+    });
     const VITA_LAB_REFERENCE_FIELDS = [
       ["inputLabRef-d3", "d3"], ["inputLabRef-b12", "b12"], ["inputLabRef-ferritin", "ferritin"],
       ["inputLabRef-mg", "mg"], ["inputLabRef-ca", "ca"], ["inputLabRef-zinc", "zinc"],
@@ -1265,6 +1273,7 @@ function renderDailyTab() {
 
     function clearLabDraft() {
       if (!activeUserId) return;
+      labFieldTouched.clear();
       try { safeLocalStorageRemoveItem(`vitatakip_labdraft_${activeUserId}`); } catch (e) {}
     }
 
@@ -1425,28 +1434,38 @@ function renderDailyTab() {
         state.labHistory = [];
       }
 
-      if (hasAnyEnteredValue) {
+      // Kullanıcı bir alana yazıp sonra bilerek boşalttıysa bu "silme" niyetidir: değer kayıttan da kazınır.
+      const existingForDate = state.labHistory.findIndex(item => item && item.date === dateVal);
+      const clearedKeys = VITATAKIP_LAB_DRAFT_FIELDS
+        .filter(([id, key]) => labFieldTouched.has(id) && enteredValues[key] === null)
+        .map(([, key]) => key);
+      const applyEdit = hasAnyEnteredValue || (clearedKeys.length > 0 && existingForDate >= 0);
+
+      if (applyEdit) {
         if (typeof invalidateClinicalAnalysisCache === "function") {
           invalidateClinicalAnalysisCache({ clearDOM: false });
         }
         const genderAtTest = state.user?.gender || "K";
-        const existingIndex = state.labHistory.findIndex(item => item && item.date === dateVal);
+        const existingIndex = existingForDate;
         const baseRecord = existingIndex >= 0 ? state.labHistory[existingIndex] : null;
+        const pickLabValue = key => enteredValues[key] !== null
+          ? enteredValues[key]
+          : (clearedKeys.includes(key) ? null : (baseRecord?.[key] ?? null));
         const mergedRecord = {
           id: baseRecord?.id || `lab_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
           date: dateVal,
-          d3: enteredValues.d3 !== null ? enteredValues.d3 : (baseRecord?.d3 ?? null),
-          b12: enteredValues.b12 !== null ? enteredValues.b12 : (baseRecord?.b12 ?? null),
-          ferritin: enteredValues.ferritin !== null ? enteredValues.ferritin : (baseRecord?.ferritin ?? null),
-          mg: enteredValues.mg !== null ? enteredValues.mg : (baseRecord?.mg ?? null),
-          ca: enteredValues.ca !== null ? enteredValues.ca : (baseRecord?.ca ?? null),
-          zinc: enteredValues.zinc !== null ? enteredValues.zinc : (baseRecord?.zinc ?? null),
-          creatinine: enteredValues.creatinine !== null ? enteredValues.creatinine : (baseRecord?.creatinine ?? null),
-          folate: enteredValues.folate !== null ? enteredValues.folate : (baseRecord?.folate ?? null),
-          alt: enteredValues.alt !== null ? enteredValues.alt : (baseRecord?.alt ?? null),
-          hb: enteredValues.hb !== null ? enteredValues.hb : (baseRecord?.hb ?? null),
-          mcv: enteredValues.mcv !== null ? enteredValues.mcv : (baseRecord?.mcv ?? null),
-          crp: enteredValues.crp !== null ? enteredValues.crp : (baseRecord?.crp ?? null),
+          d3: pickLabValue("d3"),
+          b12: pickLabValue("b12"),
+          ferritin: pickLabValue("ferritin"),
+          mg: pickLabValue("mg"),
+          ca: pickLabValue("ca"),
+          zinc: pickLabValue("zinc"),
+          creatinine: pickLabValue("creatinine"),
+          folate: pickLabValue("folate"),
+          alt: pickLabValue("alt"),
+          hb: pickLabValue("hb"),
+          mcv: pickLabValue("mcv"),
+          crp: pickLabValue("crp"),
           references: { ...(baseRecord?.references || {}), ...enteredRefs },
           applicationReferences: typeof getVitaAppLabReferenceMap === "function" ? getVitaAppLabReferenceMap(genderAtTest) : {},
           genderAtTest,
@@ -1454,12 +1473,28 @@ function renderDailyTab() {
           timeLabel: baseRecord?.timeLabel || new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
         };
 
-        if (existingIndex >= 0) {
+        // Tüm değerleri boşalan kayıt arşivde tutulmaz (tam temizlik).
+        const recordIsEmpty = ["d3", "b12", "ferritin", "mg", "ca", "zinc", "creatinine", "folate", "alt", "hb", "mcv", "crp"]
+          .every(k => mergedRecord[k] === null || mergedRecord[k] === undefined);
+        if (recordIsEmpty) {
+          if (existingIndex >= 0) state.labHistory.splice(existingIndex, 1);
+        } else if (existingIndex >= 0) {
           state.labHistory[existingIndex] = mergedRecord;
         } else {
           state.labHistory.push(mergedRecord);
         }
+        labFieldTouched.clear();
         state.labHistory.sort((a, b) => Number(b.timestamp || new Date(b.date || 0).getTime() || 0) - Number(a.timestamp || new Date(a.date || 0).getTime() || 0));
+        if (state.labHistory.length === 0) {
+          state.labValues = typeof createEmptyLabValuesState === "function" ? createEmptyLabValuesState() : {};
+          try {
+            if (activeUserId) {
+              ["labs", "labreferences", "labhistory", "labdraft"].forEach(k => safeLocalStorageRemoveItem(`vitatakip_${k}_${activeUserId}`));
+            }
+            safeLocalStorageRemoveItem("currentLabResults");
+            safeLocalStorageRemoveItem("labArchiveHistory");
+          } catch (_) {}
+        } else
         state.labValues = typeof buildLabValuesFromRecord === "function"
           ? buildLabValuesFromRecord(state.labHistory[0] || mergedRecord)
           : { ...enteredValues };
@@ -1897,7 +1932,7 @@ function renderDailyTab() {
       if (!window.Chart) {
         if (rangeText) rangeText.textContent = "Trend grafiği bileşeni yükleniyor… VitaTakip'in diğer bölümleri kullanılabilir.";
         if (!window.__vitaChartLoadingPromise) {
-          window.__vitaChartLoadingPromise = loadVitaOptionalScript("https://cdn.jsdelivr.net/npm/chart.js", "Chart", 12000)
+          window.__vitaChartLoadingPromise = loadVitaOptionalScript("vendor/chartjs/chart.umd.js", "Chart", 12000)
             .then(() => { window.__vitaChartLoadingPromise = null; renderBiomarkerTrendChart(); })
             .catch(error => {
               console.warn("Trend grafiği kitaplığı yüklenemedi; uygulamanın diğer bölümleri kullanılmaya devam edebilir.", error);
@@ -2042,13 +2077,8 @@ function renderDailyTab() {
       }
     }
 
-    function openNormalityPopup(alerts) {
-      const modal = document.getElementById("normalityPopupModal");
-      const content = document.getElementById("normalityPopupContent");
-      if (!modal || !content) return;
-      content.innerHTML = alerts.map(a => `<div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-950 font-bold leading-relaxed">${escapeHtmlText(a.message)}</div>`).join('');
-      modal.classList.remove("hidden");
-      modal.style.display = "flex";
+    function openNormalityPopup() {
+      return; // Tahlillerim sayfasında bildirim penceresi gösterilmez; yorumlar Klinik Analiz sayfasındadır.
     }
 
     function closeNormalityPopup() {
@@ -2066,7 +2096,7 @@ function renderDailyTab() {
         if (bio) {
           const isCreatine = (bio.key === 'creatinine');
           const hasKidneyChronic = (state.user?.chronic || []).includes("kidney");
-          if (isCreatine && (bio.val > 1.25 || hasKidneyChronic)) {
+          if (isCreatine && (bio.val > getCreatinineUpperLimit() || hasKidneyChronic)) {
             pendingDeprescribingItems.push({
               id: sup.id,
               name: sup.name,

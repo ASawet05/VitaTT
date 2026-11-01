@@ -1,0 +1,227 @@
+/* Klinik Analiz sayfası sadeleştirme (view-clinical-results) */
+[data-vt-hide]{display:none !important}
+
+/* Not: görünürlük ve yerleşim uygulamanın kendi hidden/inline display mantığına bırakıldı. */
+
+/* Sonuç özeti: kompakt başlık */
+#cdssResultsOverview{padding:14px 16px !important;border-radius:20px !important}
+#cdssResultsOverview #cdssOverviewSubtitle{display:none !important}
+#cdssResultsOverview h2{margin-top:6px !important}
+
+
+/* Yaşam evresi kartı: bilgi değeri düşük, tekrar eden metin */
+#lifeStageCard{display:none !important}
+
+/* AI sentez kartı: açıklama paragrafı gizli, küçük ve düzenli */
+#aiClinicalSynthesisCardShell{padding:14px 16px !important;border-radius:20px !important}
+#aiClinicalSynthesisCardShell > div:first-child{gap:12px !important}
+#aiClinicalSynthesisCardShell p.max-w-2xl{display:none !important}
+#aiClinicalSynthesisCardShell h3{font-size:14px !important;margin-top:4px !important}
+#aiClinicalSynthesisCardShell button#btnGenerateAiSummary{padding:10px 16px !important;width:100%}
+
+/* Böbrek uyarıları: tek ritim, sıkı iç boşluk */
+#contraindicationAlertContainer > div{padding:12px 14px !important}
+#cdssKidneySafetyWarningContainer > div{padding:12px 14px !important}
+
+/* Bulgu listesi */
+.vt-group{border:1px solid #bae6fd;background:#f0f9ff;border-radius:12px;padding:0 12px}
+.vt-group > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 0;font-size:12px;font-weight:800;color:#0c4a6e}
+.vt-group > summary::-webkit-details-marker{display:none}
+.vt-group > summary .vt-chev{margin-left:auto;font-size:10px;transition:transform .2s}
+.vt-group[open] > summary .vt-chev{transform:rotate(180deg)}
+.vt-group > summary .vt-count{background:#fff;border:1px solid #bae6fd;border-radius:999px;padding:1px 8px;font-size:11px}
+.vt-group-body{display:flex;flex-direction:column;gap:6px;padding:0 0 12px}
+.vt-group-body > *{background:#fff !important}
+
+/* Takip tablosu: dar ekranda yatay kaydırma */
+#protocolDetailsAccordion table{min-width:480px}
+#protocolDetailsAccordion .overflow-x-auto{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* Böbrek kartı: derlemede olmayan bg-amber-600 sınıfı yüzünden görünmeyen etiket ve ikon kutusu */
+[data-testid="kidney-safety-warning-card"] .bg-amber-600{background:#d97706 !important;color:#fff !important}
+
+/* Anamnez Triyaj & Böbrek Fonksiyon Raporu: Klinik Analiz sayfasından kaldırıldı */
+#clinicalResultsTriageEgfrBanner{display:none !important}
+
+/* Eski üst "test ve inceleme" paneli yerine sayfanın sonundaki yeni bölüm kullanılıyor */
+#triageLabRecommendationsContainer{display:none !important}
+
+/* Doktorla görüşmede değerlendirilebilecek test ve incelemeler */
+.dt-card{background:#fff;border:1px solid #fcd34d;border-radius:18px;padding:14px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.dt-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.dt-title{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.dt-title > i{width:34px;height:34px;flex:0 0 auto;border-radius:11px;background:#fef3c7;color:#b45309;display:flex;align-items:center;justify-content:center;font-size:15px}
+.dt-title h3{margin:0;font-size:14px;font-weight:900;color:#0f172a;line-height:1.3}
+.dt-title p{margin:3px 0 0;font-size:11.5px;color:#64748b;line-height:1.4}
+.dt-badge{flex:0 0 auto;font-size:11px;font-weight:800;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.dt-group{margin-top:12px}
+.dt-gtitle{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#475569;margin-bottom:8px}
+.dt-gtitle i{color:#0d9488}
+.dt-item{border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;margin-bottom:8px;background:#f8fafc}
+.dt-item.dt-crit{border-color:#fda4af;background:#fff1f2}
+.dt-irow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px}
+.dt-irow strong{font-size:13px;color:#0f172a}
+.dt-tag{font-size:10px;font-weight:800;border-radius:999px;padding:2px 8px;border:1px solid}
+.dt-low{color:#9a3412;background:#ffedd5;border-color:#fdba74}
+.dt-high{color:#075985;background:#e0f2fe;border-color:#7dd3fc}
+.dt-prio{color:#fff;background:#e11d48;border-color:#e11d48}
+.dt-src{margin-left:auto;font-size:10px;color:#94a3b8;font-weight:600}
+.dt-chips{display:flex;flex-wrap:wrap;gap:6px}
+.dt-chip{display:inline-block;font-size:12px;font-weight:700;color:#134e4a;background:#ccfbf1;border:1px solid #99f6e4;border-radius:10px;padding:4px 9px;line-height:1.3}
+.dt-why{margin:8px 0 0;font-size:11.5px;color:#64748b;line-height:1.45}
+.dt-list{display:flex;flex-direction:column;gap:6px}
+.dt-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;background:#f8fafc}
+.dt-for{font-size:11px;color:#64748b;font-weight:600}
+.dt-note,.dt-empty{margin:8px 0 0;font-size:11.5px;color:#64748b}
+.dt-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;font-size:11px;color:#94a3b8}
+.dt-copy{border:1px solid #99f6e4;background:#f0fdfa;color:#0f766e;font-size:12px;font-weight:800;border-radius:10px;padding:7px 12px;cursor:pointer}
+.dt-copy:hover{background:#ccfbf1}
+.dt-more{margin-top:6px}
+.dt-more > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border:1px dashed #cbd5e1;border-radius:12px;font-size:12px;font-weight:800;color:#0f766e;background:#fff}
+.dt-more > summary::-webkit-details-marker{display:none}
+.dt-more[open] > summary i{transform:rotate(180deg)}
+.dt-more > .dt-list{margin-top:6px}
+
+/* ===== Sade Klinik Analiz görünümü (js/clinical-simple.js) ===== */
+/* Eski kalabalık bloklar varsayılan gizli; "Tüm teknik ayrıntıları göster" ile açılır. */
+#cdssResultsOverview{display:none !important}
+#contraindicationAlertContainer,
+#cdssKidneySafetyWarningContainer,
+#aiClinicalSynthesisCardShell,
+#doctorTestsSection,
+#cdssRecallContainer,
+#vitaSimpleFooter{display:none !important}
+
+#vitaSimpleHost{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+#vitaSimpleHost.hidden{display:none}
+.vs-card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.vs-h{margin:0 0 10px;font-size:14px;font-weight:900;color:#0f172a;display:flex;align-items:center;gap:8px}
+.vs-h i{color:#0d9488}
+
+.vs-hero{background:linear-gradient(135deg,#0f172a 0%,#115e59 70%,#14b8a6 130%);border:0;color:#fff}
+.vs-hero-top{display:flex;gap:12px;align-items:flex-start}
+.vs-hero-ico{width:40px;height:40px;flex:0 0 auto;border-radius:13px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:18px}
+.vs-hero h2{margin:0;font-size:18px;font-weight:900;line-height:1.25}
+.vs-hero p{margin:4px 0 0;font-size:13px;color:#ccfbf1;line-height:1.45}
+.vs-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.vs-pill{font-size:12px;font-weight:800;border-radius:999px;padding:4px 11px;background:#fff;color:#0f172a}
+.vs-pill.vs-low{background:#ffedd5;color:#9a3412}
+.vs-pill.vs-high{background:#e0f2fe;color:#075985}
+.vs-pill.vs-border{background:#fef9c3;color:#854d0e}
+.vs-steps{margin-top:14px;background:rgba(255,255,255,.1);border-radius:14px;padding:12px}
+.vs-steps-title{font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#99f6e4;margin-bottom:8px}
+.vs-steps ol{margin:0;padding:0;list-style:none;counter-reset:vs;display:flex;flex-direction:column;gap:9px}
+.vs-steps li{counter-increment:vs;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;font-weight:700;line-height:1.35}
+.vs-steps li::before{content:counter(vs);width:22px;height:22px;flex:0 0 auto;border-radius:50%;background:#14b8a6;color:#042f2e;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.vs-steps li span{flex:1 1 150px;min-width:0}
+.vs-hero-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.vs-btn{border:0;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;cursor:pointer;background:#14b8a6;color:#042f2e}
+.vs-btn:hover{filter:brightness(1.07)}
+.vs-btn-ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25)}
+
+.vs-val{border:1px solid #e2e8f0;border-radius:14px;margin-bottom:8px;background:#f8fafc}
+.vs-val.vs-val-crit{border-color:#fda4af;background:#fff1f2}
+.vs-val > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:11px 12px}
+.vs-val > summary::-webkit-details-marker{display:none}
+.vs-val-name{font-size:14px;font-weight:800;color:#0f172a;flex:1 1 auto;min-width:0}
+.vs-val-num{font-size:14px;font-weight:900;color:#0f172a;white-space:nowrap}
+.vs-val-num small{font-size:11px;font-weight:600;color:#64748b}
+.vs-chip{font-size:11px;font-weight:800;border-radius:999px;padding:3px 9px;border:1px solid;white-space:nowrap}
+.vs-chip.vs-low{background:#ffedd5;color:#9a3412;border-color:#fdba74}
+.vs-chip.vs-high{background:#e0f2fe;color:#075985;border-color:#7dd3fc}
+.vs-chip.vs-border{background:#fef9c3;color:#854d0e;border-color:#fde047}
+.vs-chip.vs-ok{background:#dcfce7;color:#166534;border-color:#86efac}
+.vs-chev{font-size:10px;color:#94a3b8;transition:transform .2s}
+.vs-val[open] .vs-chev{transform:rotate(180deg)}
+.vs-val-body{padding:0 12px 12px;font-size:13px;line-height:1.5;color:#334155}
+.vs-val-body p{margin:0 0 6px}
+.vs-ref{font-size:11.5px;color:#94a3b8}
+.vs-line{margin-top:6px;font-size:13px;line-height:1.5;color:#334155}
+.vs-line b{color:#0f766e}
+.vs-muted{color:#94a3b8}
+.vs-okrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;padding-top:8px;border-top:1px dashed #e2e8f0}
+.vs-ok-title{font-size:11px;font-weight:900;color:#166534;background:#dcfce7;border-radius:999px;padding:2px 9px}
+.vs-okchip{font-size:12px;color:#475569;background:#f1f5f9;border-radius:999px;padding:3px 10px}
+.vs-okchip b{color:#0f172a}
+.vs-sym{border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;margin-bottom:8px;background:#f8fafc}
+.vs-sym-name{font-size:14px;font-weight:800;color:#0f172a}
+.vs-more > summary{list-style:none;cursor:pointer;text-align:center;padding:8px;border:1px dashed #cbd5e1;border-radius:12px;font-size:12px;font-weight:800;color:#0f766e;margin-bottom:8px}
+.vs-more > summary::-webkit-details-marker{display:none}
+
+/* Tekrarların kaldırılması: besin bölümü */
+.vita-food-item[open] .preview{display:none !important}   /* açıkken önizleme çipleri zaten aşağıda tam listelenir */
+.vita-food-foot{display:none !important}                    /* genel uyarı sayfa altındaki şeritte ve adımlarda zaten var */
+
+/* Birleşik test kartı ve sade belirti satırı */
+.vs-h-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.vs-h-row .vs-h{margin:0}
+.vs-copy{border:1px solid #99f6e4;background:#f0fdfa;color:#0f766e;font-size:12px;font-weight:800;border-radius:10px;padding:6px 11px;cursor:pointer;white-space:nowrap}
+.vs-copy:hover{background:#ccfbf1}
+.vs-test{display:flex;flex-direction:column;gap:2px;padding:9px 12px;margin-bottom:6px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc}
+.vs-test-name{font-size:14px;font-weight:800;color:#0f172a}
+.vs-test-why{font-size:12px;color:#64748b;line-height:1.4}
+.vs-sym-for{margin-top:2px;font-size:12.5px;color:#64748b}
+.vs-sym{padding:9px 12px}
+
+/* Test listesi artık yalnızca "Doktordan isteyebileceğiniz testler" kartında: eski bölüm her modda gizli */
+#doctorTestsSection{display:none !important}
+
+/* ===== Tahlil gelişimim (js/lab-trend.js) ===== */
+#acc-labtrend{padding:12px !important}
+.lt-sum{display:flex;justify-content:space-between;gap:8px;margin:0 0 8px;font-size:12px;font-weight:700;color:#64748b}
+.lt-sum-warn{color:#c2410c}.lt-sum-ok{color:#15803d}
+.lt-row{border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;margin-bottom:6px;overflow:hidden}
+.lt-row > summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:10px minmax(64px,1fr) 92px auto auto 12px;align-items:center;gap:8px;padding:9px 12px}
+.lt-row > summary::-webkit-details-marker{display:none}
+.lt-dot{width:9px;height:9px;border-radius:50%}
+.lt-name{font-size:13px;font-weight:800;color:#0f172a;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lt-spark{width:92px;height:30px;display:block}
+.lt-val{text-align:right;white-space:nowrap;line-height:1.1}
+.lt-val b{font-size:14px;color:#0f172a}
+.lt-val small{display:block;font-size:10px;color:#94a3b8;font-weight:600}
+.lt-chip{font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 8px;border:1px solid;white-space:nowrap}
+.lt-ok{background:#dcfce7;color:#166534;border-color:#86efac}
+.lt-low{background:#ffedd5;color:#9a3412;border-color:#fdba74}
+.lt-high{background:#e0f2fe;color:#075985;border-color:#7dd3fc}
+.lt-chev{font-size:10px;color:#94a3b8;transition:transform .2s}
+.lt-row[open] .lt-chev{transform:rotate(180deg)}
+.lt-body{padding:2px 12px 12px;background:#fff;border-top:1px solid #eef2f7}
+.lt-big{width:100%;height:auto;display:block;max-height:210px}
+.lt-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12px;margin-top:4px}
+.lt-trend{font-weight:800}.lt-good{color:#15803d}.lt-bad{color:#c2410c}.lt-flat{color:#64748b}
+.lt-ref{color:#94a3b8}
+.lt-empty{display:flex;gap:12px;align-items:center;padding:14px;border:1px dashed #cbd5e1;border-radius:14px;background:#f8fafc;color:#475569}
+.lt-empty i{font-size:22px;color:#0d9488}
+.lt-empty strong{display:block;font-size:13px;color:#0f172a}
+.lt-empty span{font-size:12px}
+@media (max-width:380px){.lt-row > summary{grid-template-columns:8px minmax(52px,1fr) 70px auto auto 10px;gap:6px;padding:9px 10px}.lt-spark{width:70px}}
+
+/* Güvenlik uyarıları (başlığın altında, kompakt) */
+.vs-safety{border-color:#fcd34d;background:#fffbeb;padding:12px 14px}
+.vs-safety .vs-h{color:#92400e;margin-bottom:8px}
+.vs-safety .vs-h i{color:#d97706}
+.vs-count{margin-left:2px;font-size:11px;font-weight:900;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:999px;padding:0 8px}
+.vs-warn{border-radius:10px;background:#fff;border:1px solid #fde68a;margin-bottom:5px}
+.vs-warn.vs-warn-crit{border-color:#fda4af;background:#fff1f2}
+.vs-warn > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:8px 10px}
+.vs-warn > summary::-webkit-details-marker{display:none}
+.vs-warn-t{flex:1 1 auto;font-size:12.5px;font-weight:800;color:#78350f;line-height:1.35}
+.vs-warn-crit .vs-warn-t{color:#9f1239}
+.vs-warn[open] .vs-chev{transform:rotate(180deg)}
+.vs-warn-body{padding:0 10px 9px;font-size:12px;line-height:1.5;color:#57534e}
+.vs-safe-line{color:#9a3412;font-weight:700}
+.vs-safe-line i{margin-right:4px}
+.vs-recall{margin-top:8px;padding-top:8px;border-top:1px dashed #e2e8f0;font-size:12px;color:#64748b;display:flex;align-items:center;gap:6px}
+.vs-recall b{color:#0f766e}
+.vs-recall i{color:#0d9488}
+.vs-card-slim{padding:10px 14px}
+.vs-card-slim .vs-recall{margin:0;padding:0;border:0}
+
+/* Tahlillerim: giriş alanı altındaki uzun yorum metinleri kaldırıldı; yorumlar Klinik Analiz sayfasında */
+[id^="vitaLabFeedback-"]{display:none !important}
+
+/* Tahlillerim: trend/“Hekim Danışmanlığı” şeridi kaldırıldı; gelişim bilgisi Klinik Analiz ve gelişim grafiğinde */
+#trendAlertSection{display:none !important}
+#normalityPopupModal{display:none !important}
+.vs-trend{font-size:12.5px;margin:0 0 6px;color:#475569}
+.vs-t-good b{color:#15803d}.vs-t-bad b{color:#c2410c}.vs-t-flat b{color:#64748b}

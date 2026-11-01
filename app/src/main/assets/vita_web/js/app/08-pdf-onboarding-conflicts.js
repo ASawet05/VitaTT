@@ -72,7 +72,7 @@ function applyParsedPdfValues() {
     }
 
     /* =========================================================================
-       KLİNİK İLAÇ–BESİN VE TAKVİYE ETKİLEŞİM VERİTABANI (NIH ODS / Lexicomp / TİTCK)
+       KLİNİK İLAÇ–BESİN VE TAKVİYE ETKİLEŞİM VERİTABANI (NIH ODS, FDA, KDIGO kaynaklı yerleşik kurallar)
        ========================================================================= */
     const VITA_CLINICAL_DRUG_NUTRIENT_DB = {
       quickMedicationClasses: [
@@ -114,7 +114,7 @@ function applyParsedPdfValues() {
             { key: "ca", label: "Kalsiyum (Ca)", unit: "mg/dL", optimalHint: "8.8 – 10.2 mg/dL" },
             { key: "ferritin", label: "Ferritin (Demir Deposu)", unit: "ng/mL", optimalHint: "> 30 ng/mL" }
           ],
-          recommendedSupplementNote: "Mide asidinden bağımsız emilen Magnezyum Bisglisinat/Sitrat, Kalsiyum Sitrat, Lipozomal Demir ve Dilaltı B12 formları hekimle görüşülebilir."
+          recommendedSupplementNote: "Mide asidinden bağımsız emilebilen Magnezyum Bisglisinat/Sitrat ve Kalsiyum Sitrat gibi formlar hekim veya eczacı onayıyla değerlendirilebilir."
         },
         statin: {
           code: "statin",
@@ -167,7 +167,7 @@ function applyParsedPdfValues() {
           recommendedTiming: "Öğle",
           mechanism: "Gastrointestinal lümende iki/üç değerlikli metal katyonları (Fe²⁺, Ca²⁺, Mg²⁺, Zn²⁺) levotiroksin molekülü ile çözünmeyen şelat kompleksleri oluşturarak tiroid hormonunun bağırsak emilimini %40–70 oranında düşürür ve hipotiroidi kontrolünü bozar.",
           actionText: "Levotiroksin sabah aç karnına alınıyorsa Demir, Kalsiyum, Magnezyum ve Çinko takviyelerini en az 4 saat ara ile (Öğle veya Akşam) alınız.",
-          source: "NIH ODS / ATA Thyroid Guidelines / Lexicomp"
+          source: "NIH ODS / ATA Thyroid Guidelines"
         },
         {
           id: "DN_WARFARIN_K2",
@@ -181,7 +181,7 @@ function applyParsedPdfValues() {
           recommendedForm: "Saf_D3_Damla_K2siz",
           mechanism: "K2 vitamini (Menakinon-7), karaciğerde VKORC1 enzimini aktive ederek pıhtılaşma faktörlerini (II, VII, IX, X) sentezler ve Varfarin/Coumadin'in antikoagülan etkisini doğrudan antagonize ederek INR düşüşüne ve tromboz riskine yol açar.",
           actionText: "K2 içeren D3+K2 kombinasyonu yerine hekiminizle görüşerek 'K2'siz Saf D3' formuna geçiniz veya INR takibi olmadan K2 kullanmayınız.",
-          source: "FDA Boxed Warning / Lexicomp / TİTCK"
+          source: "NIH ODS Vitamin K Fact Sheet / varfarin ürün bilgisi"
         },
         {
           id: "DN_BLOOD_THINNER_OMEGA3",
@@ -201,12 +201,12 @@ function applyParsedPdfValues() {
           drugName: "Mide Koruyucu PPI / Antiasit (Omeprazol, Pantoprazol, Lansoprazol)",
           nutrientMatchers: ["demir", "iron", "ferro", "ferröz"],
           unsafeFormMatchers: ["tablet", "kapsul", "kapsül"],
-          recommendedForm: "Lipozomal_Sase",
+          recommendedForm: null,
           severity: "warning",
           severityLabel: "Biyoyararlanım Kaybı & İlaç Kaynaklı Eksiklik",
           separationHours: 2,
           mechanism: "Proton pompa inhibitörleri (PPI) gastrik HCl salgısını baskılar. Non-hem demirin (Fe³⁺) emilebilir Fe²⁺ formuna indirgenmesi için asidik mide pH'ı şarttır; klasik demir tabletlerinin emilimi %50'den fazla düşer.",
-          actionText: "Hekim onayıyla mide asidine ihtiyaç duymadan M-hücrelerinden emilen 'Lipozomal Saşe' demir formuna geçiniz.",
+          actionText: "PPI demir emilimini azaltabilir. Demir tedavisinin türü, süresi ve gerekirse PPI ihtiyacının gözden geçirilmesi hekim tarafından planlanmalıdır; kendi başınıza form değiştirmeyin.",
           source: "Gastroenterology / NIH ODS Iron Clinical Guide"
         },
         {
@@ -219,8 +219,8 @@ function applyParsedPdfValues() {
           severity: "warning",
           severityLabel: "İntrinsik Faktör & Gastrik Asit Emilim Kaybı",
           separationHours: null,
-          mechanism: "PPI kullanımı gastrik asit ve pepsin salınımını azaltarak kobalaminin besin/kapsül matrisinden ayrışmasını ve İntrinsik Faktör aracılı ileal emilimini bozar.",
-          actionText: "Mide-bağırsak emilim yolunu baypas eden 'Dilaltı (Sublingual) Metilkobalamin Tablet veya Sprey' formunu tercih ediniz.",
+          mechanism: "PPI kullanımı mide asidini azaltarak B12'nin gıdalardaki proteinlerden ayrışmasını bozar; uzun süreli kullanımda B12 düzeyi düşebilir. Kristalin (takviye) B12 asit gerektirmez.",
+          actionText: "PPI veya metformin kullanıyorsanız B12 düzeyinizi hekiminizle izleyin; eksiklik doğrulanırsa form ve doz (oral, dilaltı veya enjeksiyon) hekim tarafından belirlenir.",
           source: "JAMA / NIH ODS Vitamin B12 Fact Sheet"
         },
         {
@@ -233,7 +233,7 @@ function applyParsedPdfValues() {
           separationHours: 2,
           recommendedForm: "Dilalti_Tablet",
           mechanism: "Metformin, terminal ileumda kalsiyum bağımlı İntrinsik Faktör-B12 kompleksinin hücre zarından alımını bloke eder; uzun süreli kullanımda B12 eksikliği ve periferik nöropati riskini artırır.",
-          actionText: "Metformin kullanan bireylerde yıllık B12/Homosistein takibi ve hekim önerisiyle Dilaltı Aktif B12 (Metilkobalamin) desteği önerilir.",
+          actionText: "Metformin kullananlarda B12 düzeyinin düzenli aralıklarla izlenmesi önerilir; eksiklik varsa takviye türü ve dozu hekimle belirlenir.",
           source: "ADA Diabetes Care / MHRA Drug Safety Update"
         },
         {
@@ -247,7 +247,7 @@ function applyParsedPdfValues() {
           recommendedTiming: "Öğle",
           mechanism: "İki ve üç değerlikli metal iyonları (Mg²⁺, Fe²⁺, Ca²⁺, Zn²⁺) florokinolon ve tetrasiklin antibiyotiklerle bağırsakta çözünmeyen şelat oluşturarak antibiyotiğin kan düzeyini %50–90 oranında düşürür ve enfeksiyon tedavisini etkisizleştirebilir.",
           actionText: "Mineral takviyesini antibiyotik dozundan en az 2 saat önce veya 4–6 saat sonra alınız; aynı zaman diliminde kesinlikle birleştirmeyiniz.",
-          source: "FDA Drug Interactions / Lexicomp / TİTCK"
+          source: "FDA Drug Interactions"
         },
         {
           id: "DN_BISPHOSPHONATE_CATIONS",
@@ -260,7 +260,7 @@ function applyParsedPdfValues() {
           recommendedTiming: "Öğle",
           mechanism: "Bisfosfonatların oral biyoyararlanımı çok düşüktür (%1-2); Kalsiyum, Magnezyum veya Demir ile yakın saatte alındığında ilaç tamamen bağlanarak emilimi sıfırlanır.",
           actionText: "Bisfosfonat sabah aç karnına sadece suyla alındıktan sonra Kalsiyum/Magnezyum/Demir için en az 2 saat (tercihen Öğle/Akşam) bekleyiniz.",
-          source: "Endocrine Society / Lexicomp"
+          source: "Endocrine Society"
         },
         {
           id: "DN_DIURETIC_MG_D3",
@@ -537,7 +537,7 @@ function applyParsedPdfValues() {
           severityLabel: "Mide Asidi Baskılanması (PPI) Uyarısı",
           title: "💊 Mide Koruyucu (PPI) & Mikrobesin Emilim Uyarısı",
           desc: "Düzenli PPI kullanımı mide asidini baskılayarak B12, Demir, Magnezyum ve Kalsiyum emilimini azaltabilir.",
-          actionText: "Takviye ekleyeceğiniz zaman hekim onayıyla Dilaltı (Sublingual) veya Lipozomal formları tercih ediniz.",
+          actionText: "Takviye eklemeden önce eksikliğin doğrulanması ve uygun formun seçimi için hekim veya eczacıya danışınız.",
           source: "FDA / Gastroenterology",
           separationHours: null,
           supplementId: null,
@@ -570,7 +570,7 @@ function applyParsedPdfValues() {
                   title: `⚠️ ${rx.urunAdi} (${rx.etkenMadde}) × ${sup.name}`,
                   desc: `${rx.etkilesimKurali}${rx.klinikUyari ? " • " + rx.klinikUyari : ""}`,
                   actionText: `Önerilen İlaç Kullanımı: ${rx.zamanBloku} — ${rx.aclikDurumu}. ${rx.etkilesimKurali}`,
-                  source: "TİTCK Kısa Ürün Bilgisi (KÜB) / Lexicomp",
+                  source: "TİTCK Kısa Ürün Bilgisi (KÜB)",
                   separationHours: 4,
                   supplementId: sup.id || null,
                   supplementName: sup.name,
@@ -927,7 +927,7 @@ function applyParsedPdfValues() {
             ${depletionRule ? `
               <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); openDrugNutrientDepletionDrawer(${safeJsStringAttribute(cls.code)})" class="misantha-depletion-tag" title="İlaç-Vitamin Tüketim Analizini Göster (${escapeHtmlText(depletionRule.depletedNutrients)})">
                 <i class="fa-solid fa-flask-vial text-amber-700"></i>
-                <span>İlaç-Vitamin Etkileşimi</span>
+                <span>Etkileşim</span>
               </button>
             ` : ''}
           </div>
@@ -943,7 +943,7 @@ function applyParsedPdfValues() {
             ${matchedDepletionCode ? `
               <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); openDrugNutrientDepletionDrawer(${safeJsStringAttribute(matchedDepletionCode)}, ${safeJsStringAttribute(med)})" class="misantha-depletion-tag ml-0.5" title="Bu ilacın vitamin/mineral tüketim analizini aç">
                 <i class="fa-solid fa-flask-vial text-amber-700"></i>
-                <span>İlaç-Vitamin Etkileşimi</span>
+                <span>Etkileşim</span>
               </button>
             ` : ''}
             <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); removeCustomMedication(${safeJsStringAttribute(med)})" class="hover:text-rose-300 ml-0.5 cursor-pointer" title="Kaldır">
@@ -1074,14 +1074,14 @@ function applyParsedPdfValues() {
       }
       if (summarySubtext) {
         summarySubtext.textContent = activeCount > 0
-          ? `${activeCount} kayıtlı ilaç/kronik durum aktif olarak takviyelerinizle karşılaştırılıyor. İlaç-Vitamin Etkileşimi etiketine tıklayarak tüketim analizini inceleyin.`
-          : "Kullandığınız reçeteli ilaçları seçmek veya denetlemek için dokunun (Kayıt/Profil bilgilerinizle senkronizedir).";
+          ? `${activeCount} ilaç/durum takviyelerinizle karşılaştırılıyor.`
+          : "İlaçlarınızı ekleyin; takviyelerle çakışma kontrol edilir.";
       }
 
       if (statusBadge) {
         statusBadge.textContent = activeCount > 0
           ? `${activeCount} Aktif İlaç/Durum İzleniyor`
-          : "NIH ODS • Lexicomp • TİTCK Aktif";
+          : "Yerleşik kural seti";
         statusBadge.className = activeCount > 0
           ? "text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200"
           : "text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200";
@@ -1470,7 +1470,7 @@ function applyParsedPdfValues() {
         drugLabel: "Diüretik / İdrar Söktürücü (Lasix / Furosemid / Fludex / Hidroklorotiyazid / Aldactone)",
         keywords: ["diüretik", "idrar söktürücü", "furosemid", "lasix", "indapamid", "fludex", "hidroklorotiyazid", "spironolakton", "aldactone", "aldactazide", "desal"],
         evaluate: function (creatinine, egfr, gender) {
-          const crHighThreshold = gender === "E" ? 1.25 : 1.10;
+          const crHighThreshold = getCreatinineUpperLimit(gender);
           if ((egfr !== null && egfr < 60) || (creatinine !== null && creatinine > crHighThreshold)) {
             return {
               severity: egfr !== null && egfr < 30 ? "critical" : "warning",
@@ -1478,7 +1478,7 @@ function applyParsedPdfValues() {
               title: "⚠️ Böbrek Güvenliği Uyarısı (Kidney Safety): Diüretik Kullanımı & Böbrek Fonksiyonu",
               mechanism: `Diüretik tedavisi altında Kreatinin (${creatinine !== null ? creatinine + " mg/dL" : "—"}) yüksekliği veya düşük eGFR (${egfr !== null ? egfr + " mL/dk/1.73m²" : "—"}) saptanması; intravasküler hacim azalmasına (prerenal azotemi) veya kronik böbrek etkilenmesine işaret edebilir. Potasyum tutucu diüretiklerde (Spironolakton) hiperkalemi, kıvrım/tiyazid diüretiklerde hipomagnezemi ve hipokalemi riski artar.`,
               recommendation: "Sıvı alım hedefini ve diüretik dozunu kendi başınıza değiştirmeden hekiminizle Serum Potasyum (K⁺), Sodyum (Na⁺), Magnezyum ve Üre/Kreatinin kontrolü planlayınız.",
-              source: "KDIGO Blood Pressure in CKD / Lexicomp"
+              source: "KDIGO Blood Pressure in CKD"
             };
           }
           return null;
@@ -1490,7 +1490,7 @@ function applyParsedPdfValues() {
         drugLabel: "Bisfosfonat (Fosamax / Alendronat / Bonviva / Zoledronat)",
         keywords: ["alendronat", "fosamax", "risedronat", "actonel", "ibandronat", "bonviva", "zoledronat", "aclasta", "bisfosfonat"],
         evaluate: function (creatinine, egfr, gender) {
-          const crHighThreshold = gender === "E" ? 1.30 : 1.10;
+          const crHighThreshold = getCreatinineUpperLimit(gender);
           if ((egfr !== null && egfr < 35) || (creatinine !== null && creatinine >= 1.6)) {
             return {
               severity: "critical",
@@ -1520,7 +1520,7 @@ function applyParsedPdfValues() {
         drugLabel: "Antibiyotik (Siprofloksasin / Levofloksasin / Doksisiklin)",
         keywords: ["siprofloksasin", "cipro", "levofloksasin", "tavanic", "moksifloksasin", "doksisiklin", "monodoks", "tetrasiklin", "gentamisin", "amikasin", "vankomisin", "kinolon"],
         evaluate: function (creatinine, egfr, gender) {
-          const crHighThreshold = gender === "E" ? 1.25 : 1.10;
+          const crHighThreshold = getCreatinineUpperLimit(gender);
           if ((egfr !== null && egfr < 50) || (creatinine !== null && creatinine > crHighThreshold)) {
             return {
               severity: egfr !== null && egfr < 30 ? "critical" : "warning",
@@ -1528,7 +1528,7 @@ function applyParsedPdfValues() {
               title: "⚠️ Böbrek Güvenliği Uyarısı (Kidney Safety): Antibiyotik Renal Klirens Uyarısı",
               mechanism: `Florokinolon (Siprofloksasin, Levofloksasin) ve birçok antibiyotik ağırlıklı olarak böbrek yoluyla atılır. eGFR < 50 mL/dk/1.73m² (mevcut eGFR: ${egfr !== null ? egfr : "—"}, Kreatinin: ${creatinine !== null ? creatinine + " mg/dL" : "—"}) durumunda standart dozlarda ilaç birikimi, kristalüri ve nörotoksisite/tendon riski artar.`,
               recommendation: "Reçete eden hekiminize veya eczacınıza güncel eGFR/Kreatinin sonucunuzu bildirerek böbrek doz ayarlaması gerekip gerekmediğini teyit ediniz.",
-              source: "Sanford Guide / Lexicomp Renal Dosing"
+              source: "Genel böbrek dozlama kılavuzları"
             };
           }
           return null;
@@ -1540,7 +1540,7 @@ function applyParsedPdfValues() {
         drugLabel: "NSAİİ Ağrı Kesici veya ACEİ/ARB Tansiyon İlacı",
         keywords: ["ibuprofen", "naproksen", "diklofenak", "ketoprofen", "meloksikam", "deksketoprofen", "arveles", "majezik", "voltaren", "apranax", "brufen", "advil", "dolorex", "ramipril", "enalapril", "lisinopril", "perindopril", "valsartan", "losartan", "kandesartan", "telmisartan", "irbesartan", "delix", "cozaar", "atacand", "micardis"],
         evaluate: function (creatinine, egfr, gender) {
-          const crHighThreshold = gender === "E" ? 1.25 : 1.10;
+          const crHighThreshold = getCreatinineUpperLimit(gender);
           if ((egfr !== null && egfr < 60) || (creatinine !== null && creatinine > crHighThreshold)) {
             return {
               severity: "critical",
@@ -1610,7 +1610,7 @@ function applyParsedPdfValues() {
       } else if (rawSource && typeof rawSource === "object") {
         // 2. temporarilyParsedLabResults veya özel lab nesnesi verildiyse
         if (rawSource.creatinine !== undefined && rawSource.creatinine !== null) {
-          const rawCr = typeof rawSource.creatinine === "object" ? rawSource.creatinine.value : rawSource.creatinine;
+          const rawCr = (rawSource.creatinine !== null && typeof rawSource.creatinine === "object") ? rawSource.creatinine.value : rawSource.creatinine;
           const numCr = parseFloat(String(rawCr).replace(",", "."));
           if (Number.isFinite(numCr) && numCr > 0) {
             extractedCr = numCr > 25 ? Math.round((numCr / 88.4) * 100) / 100 : numCr;
@@ -1619,7 +1619,7 @@ function applyParsedPdfValues() {
         }
         if (rawSource.gfr !== undefined || rawSource.egfr !== undefined) {
           const rawG = rawSource.gfr !== undefined ? rawSource.gfr : rawSource.egfr;
-          const valG = typeof rawG === "object" ? rawG.value : rawG;
+          const valG = (rawG !== null && typeof rawG === "object") ? rawG.value : rawG;
           const numG = parseFloat(String(valG).replace(",", "."));
           if (Number.isFinite(numG) && numG > 0) extractedGfr = Math.round(numG);
         }
@@ -1644,7 +1644,7 @@ function applyParsedPdfValues() {
         ? extractedGfr
         : (ckdEpiResult && Number.isFinite(ckdEpiResult.egfr) ? ckdEpiResult.egfr : null);
 
-      const crUpperLimit = gender === "E" ? 1.25 : 1.10;
+      const crUpperLimit = getCreatinineUpperLimit(gender);
       const isCreatinineElevated = extractedCr !== null && extractedCr > crUpperLimit;
       const isEgfrReduced = effectiveEgfr !== null && effectiveEgfr < 60;
       const isMildlyReducedEgfr = effectiveEgfr !== null && effectiveEgfr >= 60 && effectiveEgfr < 90;

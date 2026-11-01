@@ -443,7 +443,7 @@ function checkMidnightReset(userId) {
     }
 
     if (typeof pdfjsLib !== 'undefined') {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdfjs/pdf.worker.min.js';
     }
 
     function openENabizModal() {
@@ -511,10 +511,10 @@ function checkMidnightReset(userId) {
 
       try {
         if (!window.pdfjsLib) {
-          await loadVitaOptionalScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", "pdfjsLib", 12000);
+          await loadVitaOptionalScript("vendor/pdfjs/pdf.min.js", "pdfjsLib", 12000);
         }
         if (!window.pdfjsLib) throw new Error("PDF.js is unavailable");
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdfjs/pdf.worker.min.js";
         const fileReader = new FileReader();
         fileReader.onload = async function() {
           try {

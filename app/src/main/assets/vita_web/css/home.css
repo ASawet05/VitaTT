@@ -1,0 +1,132 @@
+/* Ana sayfa: sade "Takviye ekle" penceresi, ilaç kalkanı ve barkod okuyucu (.vsa-* / .vsm-*) */
+
+/* ---------- Takviye ekle penceresi ---------- */
+.vsa-card{position:relative;width:100%;max-width:460px;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:#fff;border-radius:24px;padding:18px 18px 20px;box-shadow:0 25px 60px rgba(0,0,0,.4);border:1px solid #e2e8f0;font-size:13px}
+.vsa-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}
+.vsa-head h3{margin:0;font-size:18px;font-weight:900;color:#0f172a}
+.vsa-head p{margin:3px 0 0;font-size:12px;color:#64748b}
+.vsa-x{width:34px;height:34px;flex:0 0 auto;border:0;border-radius:10px;background:#f1f5f9;color:#64748b;cursor:pointer}
+.vsa-x:hover{background:#e2e8f0}
+
+.vsa-find{display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid #99f6e4;border-radius:18px;background:linear-gradient(180deg,#f0fdfa,#fff)}
+.vsa-search{position:relative}
+.vsa-search > i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:14px;pointer-events:none}
+.vsa-search input{width:100%;box-sizing:border-box;height:46px;padding:0 14px 0 38px;border:1.5px solid #cbd5e1;border-radius:14px;background:#fff;font-size:16px;font-weight:700;color:#0f172a}
+.vsa-search input:focus{outline:none;border-color:#14b8a6;box-shadow:0 0 0 4px rgba(20,184,166,.15)}
+.vsa-suggest{border:1px solid #e2e8f0;border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+.vsa-suggest.hidden{display:none}
+.vsa-sg{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-bottom:1px solid #f1f5f9;background:#fff;text-align:left;cursor:pointer}
+.vsa-sg:last-child{border-bottom:0}
+.vsa-sg:hover,.vsa-sg:focus-visible{background:#f0fdfa;outline:none}
+.vsa-sg-ico{width:30px;height:30px;flex:0 0 auto;border-radius:9px;background:#ccfbf1;color:#0f766e;display:flex;align-items:center;justify-content:center;font-size:13px}
+.vsa-sg-ico.rx{background:#e0e7ff;color:#4338ca}
+.vsa-sg-t{min-width:0;flex:1}
+.vsa-sg-t b{display:block;font-size:13px;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vsa-sg-t small{display:block;font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vsa-sg-tag{font-size:10px;font-weight:800;border-radius:999px;padding:2px 8px;background:#e0e7ff;color:#3730a3;white-space:nowrap}
+.vsa-sg-empty{padding:12px;font-size:12px;color:#64748b;display:flex;flex-direction:column;gap:6px}
+.vsa-sg-empty button{align-self:flex-start;border:1px solid #99f6e4;background:#f0fdfa;color:#0f766e;font-weight:800;font-size:12px;border-radius:10px;padding:6px 10px;cursor:pointer}
+
+.vsa-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vsa-btn{min-height:44px;border:1px solid #cbd5e1;border-radius:13px;background:#fff;color:#0f172a;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;padding:0 10px}
+.vsa-btn:hover{background:#f8fafc}
+.vsa-btn.vsa-btn-main{background:linear-gradient(90deg,#0f766e,#14b8a6);border-color:transparent;color:#fff}
+.vsa-btn.vsa-btn-main:hover{filter:brightness(1.06)}
+.vsa-btn.vsa-btn-stop{background:#e11d48;border-color:transparent;color:#fff;grid-column:1/-1}
+.vsa-btn.hidden{display:none}
+
+.vsa-cam{border-radius:16px;background:#020617;padding:8px;text-align:center}
+.vsa-cam.hidden{display:none}
+.vsa-cam-box{position:relative;border-radius:12px;overflow:hidden;background:#0f172a;min-height:200px;display:flex;align-items:center;justify-content:center}
+.vsa-cam-box video{width:100%;max-height:260px;object-fit:cover}
+.vsa-cam-box #addSupQrReader{width:100%}
+.vsa-cam-box #addSupQrReader video{width:100% !important;max-height:260px;object-fit:cover}
+.vsa-frame{position:absolute;inset:18% 12%;border:2px solid rgba(94,234,212,.9);border-radius:14px;box-shadow:0 0 0 999px rgba(2,6,23,.38);pointer-events:none}
+.vsa-frame::after{content:"";position:absolute;left:6%;right:6%;top:50%;height:2px;background:#2dd4bf;box-shadow:0 0 14px 4px rgba(45,212,191,.5);animation:vsaScan 1.8s ease-in-out infinite alternate}
+@keyframes vsaScan{from{top:12%}to{top:88%}}
+.vsa-cam p{margin:7px 0 2px;font-size:12px;color:#99f6e4;font-weight:700}
+.vsa-torch{position:absolute;right:10px;bottom:10px;width:40px;height:40px;border:0;border-radius:50%;background:rgba(15,23,42,.7);color:#fde68a;font-size:16px;cursor:pointer;z-index:3}
+.vsa-torch.on{background:#fbbf24;color:#451a03}
+.vsa-torch.hidden{display:none}
+
+.vsa-feedback{border-radius:12px;padding:9px 11px;font-size:12px;line-height:1.45;border:1px solid #bae6fd;background:#f0f9ff;color:#075985}
+.vsa-feedback.hidden{display:none}
+.vsa-fallback{border:1px solid #fcd34d;background:#fffbeb;border-radius:14px;padding:10px 12px;font-size:12px;color:#78350f}
+.vsa-fallback.hidden{display:none}
+.vsa-fallback p{margin:0 0 8px;font-weight:700}
+.vsa-fb-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vsa-legacy{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);opacity:0;pointer-events:none}
+
+.vsa-form{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.vsa-row{display:grid;grid-template-columns:1fr 110px;gap:10px}
+.vsa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vsa-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.vsa-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.vsa-field > span{font-size:11.5px;font-weight:800;color:#475569}
+.vsa-field input,.vsa-field select{width:100%;box-sizing:border-box;height:42px;padding:0 11px;border:1.5px solid #e2e8f0;border-radius:12px;background:#f8fafc;font-size:15px;font-weight:600;color:#0f172a}
+.vsa-field input:focus,.vsa-field select:focus{outline:none;border-color:#14b8a6;background:#fff;box-shadow:0 0 0 3px rgba(20,184,166,.14)}
+.vsa-more{border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc}
+.vsa-more > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:11px 13px;font-size:13px;font-weight:800;color:#334155}
+.vsa-more > summary::-webkit-details-marker{display:none}
+.vsa-more > summary small{font-weight:600;color:#94a3b8}
+.vsa-more > summary i{font-size:11px;color:#94a3b8;transition:transform .2s}
+.vsa-more[open] > summary i{transform:rotate(180deg)}
+.vsa-more-body{display:flex;flex-direction:column;gap:10px;padding:0 13px 13px}
+.vsa-formbox{border:1px solid #99f6e4;border-radius:12px;background:#f0fdfa;padding:10px;display:flex;flex-direction:column;gap:8px}
+.vsa-formbox.hidden{display:none}
+.vsa-pills{display:flex;flex-wrap:wrap;gap:6px}
+.vsa-formline{display:flex;justify-content:space-between;font-size:12px;color:#475569}
+.vsa-formbox p{margin:0;font-size:11.5px;color:#0f766e;font-style:italic}
+.vsa-stock{border:1px solid #c7d2fe;border-radius:12px;background:#eef2ff;padding:10px}
+.vsa-stock-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px;font-weight:800;color:#312e81}
+.vsa-stock-head b{font-size:11px;background:#fff;border:1px solid #c7d2fe;border-radius:999px;padding:2px 8px}
+.vsa-live{margin-top:10px;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.45;border:1px solid #fcd34d;background:#fffbeb;color:#78350f}
+.vsa-live.hidden{display:none}
+.vsa-submit{width:100%;margin-top:12px;min-height:50px;border:0;border-radius:14px;background:linear-gradient(90deg,#0f766e,#14b8a6);color:#fff;font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 10px 22px -8px rgba(13,148,136,.6)}
+.vsa-submit:active{transform:scale(.99)}
+@media (max-width:380px){.vsa-row{grid-template-columns:1fr 96px}.vsa-grid{grid-template-columns:1fr}}
+
+/* ---------- İlaç kontrolü çekmecesi ---------- */
+.vsd{border:1px solid #e2e8f0;border-radius:18px;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.05);overflow:hidden}
+.vsd-sum{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 14px}
+.vsd-sum::-webkit-details-marker{display:none}
+.vsd-ico{width:38px;height:38px;flex:0 0 auto;border-radius:12px;background:#ccfbf1;color:#0f766e;display:flex;align-items:center;justify-content:center;font-size:16px}
+.vsd-title{display:flex;flex-direction:column;min-width:0;flex:1}
+.vsd-title b{font-size:14px;color:#0f172a;font-weight:900}
+.vsd-title small{font-size:11.5px;color:#64748b;line-height:1.35}
+.vsd-cta{flex:0 0 auto;font-size:11px;font-weight:800;color:#0f766e;background:#f0fdfa;border:1px solid #99f6e4;border-radius:999px;padding:4px 10px;white-space:nowrap}
+.vsd-chev{font-size:11px;color:#94a3b8;transition:transform .2s}
+.vsd[open] .vsd-chev{transform:rotate(180deg)}
+.vsd-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #f1f5f9;padding-top:12px;background:#f8fafc}
+.vsd-add{display:flex;gap:8px}
+.vsd-input{position:relative;flex:1;min-width:0}
+.vsd-input > i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:13px;pointer-events:none}
+.vsd-input input{width:100%;box-sizing:border-box;height:44px;padding:0 12px 0 34px;border:1.5px solid #cbd5e1;border-radius:13px;background:#fff;font-size:15px;font-weight:600;color:#0f172a}
+.vsd-input input:focus{outline:none;border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.15)}
+.vsd-btn{height:44px;flex:0 0 auto;border:0;border-radius:13px;padding:0 14px;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;cursor:pointer}
+.vsd-btn-scan{background:linear-gradient(90deg,#0f766e,#14b8a6);color:#fff}
+.vsd-suggest{border:1px solid #e2e8f0;border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+.vsd-suggest.hidden{display:none}
+.vsd-label{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#64748b}
+.vsd-legacy{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);opacity:0;pointer-events:none}
+/* Seçili ilaç grupları: daha küçük ve düzenli */
+#dailyProtocolQuickMedChips button{font-size:11.5px !important}
+#dailyProtocolQuickMedChips .misantha-depletion-tag{font-size:10.5px !important;padding:3px 8px !important}
+
+/* ---------- Barkod okuyucu (ilaç ekle): sade düzen ---------- */
+#barcodeScannerModal.vsm .vsm-hide{display:none !important}
+#barcodeScannerModal.vsm #barcodeScannerHeaderBar{background:linear-gradient(135deg,#0f172a,#312e81) !important;padding:14px 16px !important}
+#barcodeScannerModal.vsm #barcodeScannerHeaderBar .flex-wrap{display:none !important}
+#barcodeScannerModal.vsm #barcodeScannerTitle{font-size:17px;margin:0}
+#barcodeScannerModal.vsm #barcodeScannerSubtitle{margin-top:2px;font-size:12px;color:#c7d2fe}
+#barcodeScannerModal.vsm > section{max-width:480px}
+#barcodeScannerModal.vsm #scannerChannelPanelName{background:#fff;border-color:#c7d2fe}
+#barcodeScannerModal.vsm #scannerChannelPanelName > div:first-child span{display:none}
+#barcodeScannerModal.vsm #barcodeNameAutocompleteInput{height:46px;font-size:16px !important;border-radius:14px}
+#barcodeScannerModal.vsm #scannerChannelPanelCamera{padding:10px !important}
+#barcodeScannerModal.vsm #barcodeCameraPlaceholder p{display:none}
+#barcodeScannerModal.vsm #barcodeCameraPlaceholder{padding:14px 10px}
+#barcodeScannerModal.vsm #barcodeCameraPlaceholder i{font-size:30px}
+#barcodeScannerModal.vsm #barcodeStartCameraBtn{min-height:46px;width:100%;font-size:14px}
+#barcodeScannerModal.vsm #barcodeCameraViewport{position:relative}
+.vsm-online{display:flex;align-items:center;justify-content:center;gap:7px;width:calc(100% - 20px);margin:6px 10px 10px;min-height:40px;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:12px;font-size:12.5px;font-weight:800;cursor:pointer}

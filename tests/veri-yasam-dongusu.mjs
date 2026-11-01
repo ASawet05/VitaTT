@@ -1,0 +1,48 @@
+import { boot, sleep } from './lib.mjs';
+const results = [];
+const log = (n, ok, d) => { results.push(ok); console.log((ok ? 'OK   ' : 'FAIL ') + n + (d ? '  -> ' + d : '')); };
+const { b, p, errs } = await boot();
+await p.setViewport({ width: 400, height: 850 });
+await p.evaluate(() => closeProfileModal()); await sleep(1200);
+await p.evaluate(() => document.getElementById('vitaSpotlightLayer')?.classList.add('hidden'));
+await p.evaluate(() => { navigateToView('view-labs'); for (const [id, v] of Object.entries({ inputLabFerritin: '9.37', inputLabB12: '187', inputLabCreatinine: '1.5' })) { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); } saveCurrentLabRecordWithDate(); }); await sleep(600);
+await p.evaluate(() => navigateToView('view-neyim')); await sleep(400);
+const sym = await p.evaluate(() => { const c = [...document.querySelectorAll('.anamnesis-card')].slice(0, 2); c.forEach(x => x.click()); return [...state.selectedSymptoms]; }); await sleep(300);
+// kaldırılacak belirtinin (ilk) tüm yazılış biçimleri
+const tokens = await p.evaluate((k) => { const m = ANAMNESIS_DICTIONARY[k]; return [m.symptomName, m.medicalName, m.question.slice(8, 34)].filter(Boolean); }, sym[0]);
+const has = (t) => tokens.some(x => t.includes(x));
+const text = id => p.evaluate(id => document.getElementById(id).innerText, id);
+await p.evaluate(() => navigateToView('view-clinical-results')); await sleep(1500);
+const an0 = await text('view-clinical-results');
+await p.evaluate(() => navigateToView('view-report')); await sleep(900);
+const rep1 = await text('view-report');
+log('ön koşul: analiz ve rapor belirtiyi içeriyor', has(an0) && has(rep1), tokens.join(' / '));
+log('ön koşul: rapor 9.37 içeriyor', rep1.includes('9.37'));
+
+const id = await p.evaluate(() => state.labHistory[0].id);
+await p.evaluate(id => deleteLabRecord(id), id); await sleep(600);
+await p.evaluate(() => navigateToView('view-report')); await sleep(900);
+const rep2 = await text('view-report');
+log('tahlil silindi: rapor 9.37/187 içermiyor', !/9\.37|187/.test(rep2));
+await p.evaluate(() => navigateToView('view-clinical-results')); await sleep(1500);
+const an1 = await text('view-clinical-results');
+log('tahlil silindi: analiz 9.37/187 içermiyor', !/9\.37|187/.test(an1));
+
+await p.evaluate(() => navigateToView('view-neyim')); await sleep(500);
+await p.evaluate(() => { document.querySelectorAll('.anamnesis-card')[0].click(); }); await sleep(400);
+const stillSel = await p.evaluate((k) => state.selectedSymptoms.has(k), sym[0]);
+log('belirti seçimden çıktı', !stillSel);
+await p.evaluate(() => navigateToView('view-clinical-results')); await sleep(1500);
+const an2 = await text('view-clinical-results');
+log('kaldırılan belirti analizde hiçbir biçimde yok', !has(an2), (tokens.find(x => an2.includes(x)) || ''));
+log('kaldırılan belirti hekim test listesinde yok', !has(await text('doctorTestsSection')));
+await p.evaluate(() => navigateToView('view-report')); await sleep(900);
+const rep3 = await text('view-report');
+log('kaldırılan belirti raporda hiçbir biçimde yok', !has(rep3), (tokens.find(x => rep3.includes(x)) || ''));
+await p.reload({ waitUntil: 'networkidle2' }); await sleep(1500);
+await p.evaluate(() => { document.getElementById('vitaSpotlightLayer')?.classList.add('hidden'); navigateToView('view-clinical-results'); }); await sleep(1500);
+const an3 = await text('view-clinical-results');
+log('yenileme sonrası belirti ve tahlil dirilmedi', !has(an3) && !/9\.37|187/.test(an3));
+console.log('errs', errs.join('|'));
+console.log('ÖZET', results.filter(Boolean).length + '/' + results.length);
+await b.close();
