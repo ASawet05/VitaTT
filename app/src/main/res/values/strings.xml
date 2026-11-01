@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Vita Takip Pro</string>
+    <string name="app_tagline">Sağlık, Vitamin, İlaç &amp; Yaşam Takip Platformu</string>
+    <string name="auth_title">Vita Takip Pro</string>
+    <string name="auth_subtitle">Günlük vitamin, ilaç, su tüketimi, tansiyon, nabız ve sağlık giderlerinizi bulut senkronizasyonuyla güvenle takip edin.</string>
+    <string name="sign_in_with_google">Google ile Giriş Yap</string>
+    <string name="sign_out">Çıkış Yap</string>
+    <string name="tab_overview">Özet</string>
+    <string name="tab_supplements">Vitamin &amp; İlaç</string>
+    <string name="tab_vitals">Vital &amp; Ölçüm</string>
+    <string name="tab_analytics">Analiz &amp; Profil</string>
+    <string name="vita_score_label">Günlük Vita Skoru</string>
+    <string name="water_tracker_title">Günlük Su Takibi</string>
+    <string name="quick_add_250">+250 ml Bardak</string>
+    <string name="quick_add_500">+500 ml Şişe</string>
+    <string name="add_supplement">Yeni Takviye / İlaç Ekle</string>
+    <string name="add_vital_log">Yeni Ölçüm / Kayıt Ekle</string>
+    <string name="seed_starter_pack">Örnek Rutin Paketi Yükle</string>
+    <string name="reset_daily_routine">Günlük Dozları Sıfırla</string>
+    <string name="empty_supplements_title">Henüz vitamin veya ilaç eklenmedi</string>
+    <string name="empty_supplements_desc">Günlük D3, Omega-3, Magnezyum veya ilaç rutinlerinizi ekleyerek başlayın ya da örnek paketi yükleyin.</string>
+    <string name="empty_vitals_title">Henüz ölçüm kaydı bulunmuyor</string>
+    <string name="empty_vitals_desc">Su tüketimi, tansiyon, nabız, kan şekeri, kilo, uyku veya sağlık gideri ekleyerek geçmişinizi izleyin.</string>
+</resources>

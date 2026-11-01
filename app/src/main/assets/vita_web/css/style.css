@@ -1,0 +1,712 @@
+/* ===== Ana stiller ===== */
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100vw;
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100%;
+      box-sizing: border-box;
+      -webkit-text-size-adjust: 100%;
+    }
+    *, ::before, ::after {
+      box-sizing: border-box;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    @media print {
+      body {
+        background: white !important;
+        color: #0f172a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .no-print {
+        display: none !important;
+      }
+      #view-home, #view-labs, #view-neyim, #view-clinical-results, #view-settings, #headerProfileDropdownMenu, #authModal, #cloudSyncModal, #barcodeScannerModal, #feedbackModal, #kvkkInfoModal, #labDateConflictModal, #labReferenceGuideModal, #doctorQuestionsModal, #vitaSpotlightLayer, #normalityPopupModal, #deprescribingModal, #eNabizModal, #profileModal, #addSupplementModal, #symptomReviewModal, #onboardingModal, #appDrawer, #drawerBackdrop, #vita-ai-widget, .vita-mobile-nav, header, footer, #viewHeaderBar {
+        display: none !important;
+      }
+      main {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: none !important;
+      }
+      #view-report {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      #doctorReportPrintRoot {
+        display: block !important;
+        visibility: visible !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+      .print-page {
+        box-shadow: none !important;
+        border: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        overflow: visible !important;
+        font-size: 9.5pt !important;
+        line-height: 1.38 !important;
+      }
+      .print-page thead {
+        display: table-header-group !important;
+      }
+      .print-page tfoot {
+        display: table-footer-group !important;
+      }
+      .print-page h1, .print-page h2, .print-page h3 {
+        break-after: avoid-page;
+        page-break-after: avoid;
+      }
+      .print-page tr, .print-page .report-avoid-break, .print-page .grid > div,
+      .print-page #repAnamnesisTableBody tr, .print-page #repTrendTableBody tr,
+      .print-page #repFindingsContainer > div, .print-page #repCurrentSupplements tr,
+      .print-page #repConciseClinicalPointsList > div,
+      .print-page .signature-box {
+        page-break-inside: avoid !important;
+        break-inside: avoid-page !important;
+      }
+      .print-page p, .print-page td, .print-page th, .print-page li { orphans: 2; widows: 2; }
+    }
+    .pulse-danger {
+      animation: dangerPulse 2s infinite;
+    }
+    @keyframes dangerPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.45); }
+      50% { box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+    }
+    .pulse-amber {
+      animation: amberPulse 2s infinite;
+    }
+    @keyframes amberPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45); }
+      50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+    }
+    @keyframes bounceShort {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-bounce-short {
+      animation: bounceShort 0.5s ease-in-out;
+    }
+    .accordion-content {
+      transition: all 0.25s ease-in-out;
+    }
+    @keyframes vitaScannerSweep { 0% { transform: translateY(-75px); opacity: .25; } 50% { opacity: 1; } 100% { transform: translateY(75px); opacity: .25; } }
+    .vita-scanner-line { animation: vitaScannerSweep 1.65s ease-in-out infinite alternate; }
+    @media (prefers-reduced-motion: reduce) { .vita-scanner-line { animation: none !important; } }
+    #appDrawer {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #drawerBackdrop {
+      transition: opacity 0.3s ease-in-out;
+    }
+  
+    /* VitaTakip açılış ekranı: position: absolute ile yalnızca ilk yükleme aşamasında yüksek z-index alır, uygulama başlatıldığında tamamen gizlenir/kaldırılır. */
+    #vitaSplash {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      width: 100%;
+      min-height: 100%;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: #fff;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 35%, rgba(20,184,166,.22), transparent 36%),
+                  linear-gradient(135deg, #020617 0%, #0f172a 52%, #0f766e 100%);
+      transition: opacity .3s ease, visibility .3s ease;
+    }
+    body.vita-initialized #vitaSplash,
+    #vitaSplash.splash-leaving,
+    #vitaSplash[hidden] {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      z-index: -1 !important;
+      width: 0 !important;
+      height: 0 !important;
+      min-height: 0 !important;
+    }
+    .vita-splash-logo {
+      width: 76px; height: 76px; border-radius: 24px; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px; font-size: 32px; color: white;
+      background: linear-gradient(135deg, #0d9488, #14b8a6, #34d399);
+      box-shadow: 0 0 28px rgba(45,212,191,.42), 0 0 72px rgba(20,184,166,.18);
+      animation: vitaLogoGlow 1.8s ease-in-out infinite;
+    }
+    .vita-splash-title { letter-spacing: -.045em; text-shadow: 0 0 24px rgba(94,234,212,.2); }
+    .vita-splash-ecg { display: block; width: min(82vw, 440px); height: 86px; margin: 10px auto 0; overflow: visible; }
+    .vita-splash-ecg path { fill: none; stroke: #5eead4; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 6px rgba(94,234,212,.85)); stroke-dasharray: 780; stroke-dashoffset: 780; animation: vitaEcgFlow 1.45s linear infinite; }
+    @keyframes vitaEcgFlow { 0% { stroke-dashoffset: 780; opacity: .45; } 45% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: .9; } }
+    @keyframes vitaLogoGlow { 0%,100% { transform: translateY(0); box-shadow: 0 0 24px rgba(45,212,191,.32), 0 0 60px rgba(20,184,166,.15); } 50% { transform: translateY(-3px); box-shadow: 0 0 36px rgba(45,212,191,.55), 0 0 86px rgba(20,184,166,.25); } }
+    @keyframes vitaViewEnter { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+    .vita-view-enter { animation: vitaViewEnter .36s cubic-bezier(.2,.75,.25,1) both; }
+    .vita-audio-visualizer { display: inline-flex; height: 15px; align-items: center; justify-content: center; gap: 2px; margin-left: 2px; }
+    .vita-audio-visualizer.hidden { display: none; }
+    .vita-audio-visualizer span { display: block; width: 3px; height: 4px; border-radius: 999px; background: currentColor; transform-origin: center; }
+    .vita-audio-visualizer.is-active span { animation: vitaAudioBars .55s ease-in-out infinite alternate; }
+    .vita-audio-visualizer.is-active span:nth-child(2) { animation-delay: .12s; }
+    .vita-audio-visualizer.is-active span:nth-child(3) { animation-delay: .24s; }
+    .vita-audio-visualizer.is-active span:nth-child(4) { animation-delay: .08s; }
+    .vita-audio-visualizer.is-active span:nth-child(5) { animation-delay: .19s; }
+    @keyframes vitaAudioBars { from { height: 3px; } to { height: 14px; } }
+    @media (prefers-reduced-motion: reduce) {
+      .vita-splash-logo, .vita-splash-ecg path, .vita-audio-visualizer.is-active span { animation-duration: 2.5s; }
+      .vita-view-enter { animation-duration: .01ms; }
+    }
+
+
+
+    /* VitaTakip Kullanılabilirlik Katmanı: mevcut navy/teal tasarımına ek mikro etkileşimler. */
+    html { scroll-behavior: smooth; }
+    button, [role="button"], .anamnesis-card { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    button:not(:disabled), [role="button"], .anamnesis-card { transition: transform .14s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease; }
+    button.vita-is-pressed, [role="button"].vita-is-pressed, .anamnesis-card.vita-is-pressed { transform: scale(.985); }
+    button:disabled { opacity: .66; cursor: wait !important; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+      outline: 3px solid rgba(20,184,166,.48); outline-offset: 2px;
+    }
+    input:not([type="checkbox"]):not([type="radio"]), select, textarea { scroll-margin-bottom: 112px; }
+    .vita-feedback-enter { animation: vitaFeedbackEnter .22s ease-out both; }
+    @keyframes vitaFeedbackEnter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .vita-category-progress { height: 4px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
+    .vita-category-progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#0d9488,#2dd4bf); transition: width .22s ease; }
+    .vita-mobile-nav { display: none; }
+    .vita-first-run-notice { display: none; }
+    .vita-first-run-notice.is-visible { display: flex; animation: vitaFeedbackEnter .22s ease-out both; }
+    @media (max-width: 767px) {
+      main { padding-bottom: calc(6.25rem + env(safe-area-inset-bottom)) !important; }
+      .vita-mobile-nav {
+        display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
+        padding: 7px 7px max(7px, env(safe-area-inset-bottom)); gap: 3px;
+        background: rgba(255,255,255,.96); border-top: 1px solid rgba(203,213,225,.9);
+        box-shadow: 0 -8px 28px rgba(15,23,42,.08); backdrop-filter: blur(14px);
+      }
+      .vita-mobile-nav button { min-width: 0; min-height: 53px; flex: 1; border-radius: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 5px 2px; color: #64748b; font-size: 9px; font-weight: 800; }
+      .vita-mobile-nav button .fa-solid { font-size: 16px; }
+      .vita-mobile-nav button[aria-current="page"] { color: #0f766e; background: #f0fdfa; box-shadow: inset 0 0 0 1px #ccfbf1; }
+      body > footer { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)) !important; }
+      #vita-ai-widget { bottom: calc(4.65rem + env(safe-area-inset-bottom)) !important; right: 12px !important; }
+      #vita-ai-chatbox { max-height: min(76vh, 620px) !important; height: min(540px, 76vh) !important; }
+      #authModal > div, #profileModal > div { max-height: 92vh; overflow-y: auto; overscroll-behavior: contain; }
+      #authModal { align-items: center; overflow-y: auto; }
+      #authModal > div { margin-top: 12px; margin-bottom: 12px; }
+      #anamnesisCategoryTabButtons { scroll-snap-type: x proximity; }
+      #anamnesisCategoryTabButtons > button { scroll-snap-align: start; }
+    }
+    @media (min-width: 768px) {
+      main { padding-bottom: 1.5rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      button, [role="button"], .anamnesis-card, .vita-category-progress > span { transition-duration: .01ms !important; }
+      .vita-feedback-enter, .vita-first-run-notice.is-visible { animation-duration: .01ms !important; }
+    }
+
+
+    /* Adım adım VitaTakip rehberi: mevcut navy/teal kimliği korunur. */
+    #vitaSpotlightLayer { position: fixed; inset: 0; z-index: 9990; pointer-events: none; }
+    #vitaSpotlightHole { position: fixed; border: 3px solid #14b8a6; border-radius: 16px; box-shadow: 0 0 0 9999px rgba(2,6,23,.78), 0 0 22px rgba(20,184,166,.45); pointer-events: none; transition: top .22s ease, left .22s ease, width .22s ease, height .22s ease; }
+    #vitaTourTooltip { position: fixed; z-index: 9992; width: min(390px, calc(100vw - 28px)); pointer-events: auto; }
+    .vita-tour-control { min-height: 40px; }
+    @media (prefers-reduced-motion: reduce) { #vitaSpotlightHole { transition: none !important; } }
+    .vita-lab-live-status { min-height: 17px; margin-top: 4px; font-size: 10px; line-height: 1.35; font-weight: 700; }
+    .vita-lab-live-status.vita-neutral { color: #64748b; }
+    .vita-lab-live-status.vita-good { color: #047857; }
+    .vita-lab-live-status.vita-warn { color: #92400e; }
+    .vita-lab-live-status.vita-danger { color: #be123c; }
+    .vita-pwa-guide summary { cursor: pointer; list-style: none; }
+    .vita-pwa-guide summary::-webkit-details-marker { display: none; }
+    .vita-pwa-guide summary:focus-visible { outline: 2px solid #14b8a6; outline-offset: 3px; border-radius: 8px; }
+    #vitaFridgePrintSheet, #vitaLabHistoryPrintSheet { display: none; }
+    .fridge-print-sheet, .lab-history-print-sheet { color: #0f172a; background: #fff; font-family: Inter, sans-serif; }
+    .fridge-print-header { border-bottom: 2px solid #0f172a; padding-bottom: 9px; margin-bottom: 12px; }
+    .fridge-print-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .fridge-print-card { border: 1.5px solid #cbd5e1; border-radius: 14px; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
+    .fridge-print-card-head { display: flex; align-items: center; gap: 8px; padding: 12px; font-size: 14px; font-weight: 900; }
+    .fridge-print-card-body { padding: 10px; min-height: 170px; }
+    .fridge-print-item { border-bottom: 1px solid #e2e8f0; padding: 8px 0; font-size: 11px; line-height: 1.35; break-inside: avoid; page-break-inside: avoid; }
+    .fridge-print-empty { color: #64748b; font-size: 11px; padding: 12px 0; }
+    .fridge-water-row { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
+    .fridge-water-cup { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 1px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 8px; }
+    .fridge-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .fridge-note-box { border: 1px solid #94a3b8; border-radius: 10px; padding: 9px; min-height: 76px; font-size: 10px; break-inside: avoid; page-break-inside: avoid; }
+    .fridge-writing-lines { margin-top: 9px; height: 32px; border-bottom: 1px dashed #cbd5e1; }
+    body.vita-lab-history-print-mode { background: #fff !important; color: #0f172a !important; }
+    body.vita-lab-history-print-mode > *:not(#vitaLabHistoryPrintSheet) { display: none !important; }
+    body.vita-lab-history-print-mode #vitaLabHistoryPrintSheet { display: block !important; visibility: visible !important; width: 100%; max-width: 960px; margin: 0 auto; padding: 16px; position: static; }
+    body.vita-doctor-report-print-mode { background: #fff !important; color: #0f172a !important; }
+    body.vita-doctor-report-print-mode > header,
+    body.vita-doctor-report-print-mode > footer,
+    body.vita-doctor-report-print-mode > #viewHeaderBar,
+    body.vita-doctor-report-print-mode > .vita-mobile-nav,
+    body.vita-doctor-report-print-mode > #vita-ai-widget,
+    body.vita-doctor-report-print-mode .no-print,
+    body.vita-doctor-report-print-mode #reportModeSelectorBar,
+    body.vita-doctor-report-print-mode #view-home,
+    body.vita-doctor-report-print-mode #view-labs,
+    body.vita-doctor-report-print-mode #view-neyim,
+    body.vita-doctor-report-print-mode #view-clinical-results,
+    body.vita-doctor-report-print-mode #view-settings { display: none !important; }
+    body.vita-doctor-report-print-mode > main { display: block !important; max-width: 100% !important; width: 100% !important; padding: 8px !important; margin: 0 !important; }
+    body.vita-doctor-report-print-mode #view-report { display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 !important; padding: 0 !important; }
+    body.vita-doctor-report-print-mode #doctorReportPrintRoot { display: block !important; visibility: visible !important; opacity: 1 !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 16px !important; box-shadow: none !important; border: 1px solid #cbd5e1 !important; overflow: visible !important; }
+    @media print {
+      @page { size: A4 portrait; margin: 10mm; }
+      #vitaFridgePrintSheet, #vitaLabHistoryPrintSheet { display: none !important; }
+      body.vita-fridge-print-mode { background: #fff !important; color: #0f172a !important; }
+      body.vita-fridge-print-mode > *:not(#vitaFridgePrintSheet) { display: none !important; }
+      body.vita-fridge-print-mode #vitaFridgePrintSheet { display: block !important; visibility: visible !important; width: 100%; max-width: none; margin: 0; padding: 0; position: static; }
+      body.vita-fridge-print-mode .fridge-print-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+      body.vita-fridge-print-mode .fridge-print-card-head { padding: 9px; font-size: 12px; }
+      body.vita-fridge-print-mode .fridge-print-card-body { min-height: 142px; padding: 8px; }
+      body.vita-fridge-print-mode .fridge-print-item { font-size: 10px; }
+      body.vita-fridge-print-mode .fridge-water-row { gap: 3px; }
+      body.vita-fridge-print-mode .fridge-water-cup { padding: 5px 0; }
+      body.vita-fridge-print-mode .fridge-note-box { min-height: 72px; }
+      body.vita-fridge-print-mode table, body.vita-fridge-print-mode tr, body.vita-fridge-print-mode td, body.vita-fridge-print-mode .fridge-print-card, body.vita-fridge-print-mode .fridge-note-box { break-inside: avoid-page !important; page-break-inside: avoid !important; }
+      body.vita-lab-history-print-mode { background: #fff !important; color: #0f172a !important; }
+      body.vita-lab-history-print-mode > *:not(#vitaLabHistoryPrintSheet) { display: none !important; }
+      body.vita-lab-history-print-mode #vitaLabHistoryPrintSheet { display: block !important; visibility: visible !important; width: 100%; max-width: none; margin: 0; padding: 0; position: static; }
+      body.vita-lab-history-print-mode table, body.vita-lab-history-print-mode tr, body.vita-lab-history-print-mode td, body.vita-lab-history-print-mode .lab-print-record-card { break-inside: avoid-page !important; page-break-inside: avoid !important; }
+      body.vita-doctor-report-print-mode #doctorReportPrintRoot { border: 0 !important; padding: 0 !important; }
+    }
+
+  
+/* ===== vitatakip-user-improvements-v2 ===== */
+  #labReferenceGuideModal .lab-ref-range { font-size: 1.05rem; font-weight: 900; color: #0f766e; }
+
+/* ===== vitatakip-calm-clinical-ui ===== */
+  /* Reduce visual noise in the laboratory entry cards while preserving the original brand. */
+  #inputLabD3, #inputLabB12, #inputLabFerritin, #inputLabMg, #inputLabCa,
+  #inputLabZinc, #inputLabCreatinine, #inputLabFolate, #inputLabAlt {
+    min-height: 38px;
+  }
+  .vita-lab-compact-info { border-radius: 10px; }
+  #labReferenceGuideModal .lab-ref-range { font-size: 1.15rem; font-weight: 900; color: #0f766e; }
+  #labReferenceGuideModal .lab-ref-detail { line-height: 1.65; }
+  #labReferenceGuideModal button:focus-visible,
+  #labReferenceGuideModal summary:focus-visible { outline: 2px solid #0d9488; outline-offset: 2px; }
+  details > summary::-webkit-details-marker { display: none; }
+
+/* ===== vita-simplification-v2 ===== */
+/* Daha sade mobil görünüm: kısa bilgi satırları ve kompakt uyarı kontrolleri. */
+.vita-lab-live-status.vita-neutral:empty { display:none !important; }
+@media (max-width: 640px) { #view-labs .text-\[11px\].text-slate-500 { line-height:1.35; } }
+
+/* ===== vita-extra-cleanup ===== */ .vita-repeated-profile-badges{display:none!important}
+/* ===== vitatakip-calm-v5 ===== */
+/* V5: VitaTakip'in orijinal renklerini ve kontrastını koru; yalnızca yoğunluğu azalt. */
+html { scroll-behavior: auto !important; }
+/* Kartlarda gölgeyi ve köşe sertliğini hafifçe azalt; arka plan/renkleri değiştirme. */
+main .shadow-xl, main .shadow-2xl, main .shadow-lg, main .shadow-md {
+  box-shadow: 0 1px 5px rgba(15, 23, 42, .08) !important;
+}
+main .rounded-3xl { border-radius: 1.15rem !important; }
+main .rounded-2xl { border-radius: .9rem !important; }
+main .border-2 { border-width: 1px !important; }
+main h1 { line-height: 1.25 !important; letter-spacing: -.02em; }
+main h2, main h3 { line-height: 1.35 !important; letter-spacing: -.01em; }
+main p { line-height: 1.55; }
+/* Göz yoran sürekli hareket ve parlayan efektleri durdur; renkleri koru. */
+.pulse-danger, .pulse-amber, .animate-bounce-short,
+main [class*="animate-pulse"], main [class*="animate-bounce"] {
+  animation: none !important;
+}
+main .border-2.border-amber-300, main .border-2.border-amber-400,
+main .border-2.border-rose-500, main .border-2.border-rose-400 {
+  border-width: 1px !important;
+}
+@media (max-width: 767px) {
+  main { padding-left: 12px !important; padding-right: 12px !important; }
+  main > section, main > div { margin-bottom: 14px !important; }
+  .vita-mobile-nav {
+    padding: 5px 6px max(5px, env(safe-area-inset-bottom)) !important;
+    box-shadow: 0 -2px 10px rgba(15,23,42,.08) !important;
+  }
+  .vita-mobile-nav button { min-height: 49px !important; border-radius: 10px !important; font-weight: 700 !important; }
+  #vita-ai-widget { right: 10px !important; bottom: calc(4.35rem + env(safe-area-inset-bottom)) !important; }
+  #vita-ai-widget > button, #vita-ai-widget button[aria-label*="AI"], #vita-ai-widget button[title*="AI"] {
+    box-shadow: 0 2px 8px rgba(15,23,42,.18) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+
+/* ===== vitatakip-uiux-cleanup ===== */
+/* VitaTakip UI/UX cleanup — original palette retained; no business logic changes. */
+#view-home > .grid.grid-cols-1.lg\:grid-cols-3 {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 1rem !important;
+}
+#view-home > .grid.grid-cols-1.lg\:grid-cols-3 > :first-child {
+  grid-column: 1 / -1 !important;
+  min-width: 0;
+}
+#view-home > .grid.grid-cols-1.lg\:grid-cols-3 > :nth-child(2) {
+  display: none !important; /* Absorption/interaction panel and duplicate profile card */
+}
+#view-home [onclick*="openAddSupplementModal"] { }
+/* Keep one add action in the checklist; suppress duplicate quick-add actions in the welcome area. */
+#view-home > div:first-child [onclick*="openAddSupplementModal"] { display: none !important; }
+#view-home #supplementChecklistContainer { gap: .65rem !important; }
+#view-home #supplementChecklistContainer > * { border-radius: .85rem !important; }
+#view-home .vita-home-checklist-heading { margin-bottom: .35rem !important; }
+#view-home .vita-home-add-label { font-size: .8rem !important; }
+/* Keep the chrononutrition panel available but closed on initial load. */
+#view-home details[id*="chrono"], #view-home details:has(#chrononutritionTimelineContainer) { }
+#view-home .vita-chrononutrition-collapsed > :not(summary) { display: none !important; }
+/* Remove repeated explanatory text from symptom cards while preserving question and selected state. */
+#view-neyim .vita-symptom-extra { display: none !important; }
+#view-neyim .vita-data-included-badge {
+  display: inline-flex; align-items: center; gap: .45rem;
+  width: fit-content; max-width: 100%;
+  padding: .55rem .8rem; border-radius: .75rem;
+  border: 1px solid #99f6e4; background: #f0fdfa; color: #115e59;
+  font-size: .78rem; font-weight: 700; line-height: 1.35;
+}
+#view-clinical-results #cdssResultContainer:not(.hidden), #view-neyim #cdssResultContainer:not(.hidden) { gap: 1rem !important; }
+#view-clinical-results #cdssResultContainer > div, #view-neyim #cdssResultContainer > div { margin-top: 0 !important; }
+#view-clinical-results #cdssResultContainer > div:nth-of-type(8), #view-neyim #cdssResultContainer > div:nth-of-type(8) { border-width: 1px !important; }
+#view-clinical-results #cdssResultContainer > div:last-child, #view-neyim #cdssResultContainer > div:last-child { margin-bottom: .5rem !important; }
+/* Lab ranges remain optional and closed; shorten the visible cards. */
+#view-labs details:has(input[id^="inputLabRef"]) { margin-top: .45rem !important; }
+#view-labs details:has(input[id^="inputLabRef"]) summary { min-height: 2.35rem; }
+#view-labs .vita-lab-helper { display: none !important; }
+/* Calm down motion without replacing VitaTakip's recognizable colors. */
+#view-home [class*="animate-pulse"], #view-home [class*="animate-bounce"],
+#view-neyim [class*="animate-pulse"], #view-neyim [class*="animate-bounce"],
+#view-labs [class*="animate-pulse"], #view-labs [class*="animate-bounce"] {
+  animation: none !important;
+}
+#view-home .shadow-xl, #view-home .shadow-2xl,
+#view-neyim .shadow-xl, #view-neyim .shadow-2xl,
+#view-labs .shadow-xl, #view-labs .shadow-2xl {
+  box-shadow: 0 2px 8px rgba(15,23,42,.10) !important;
+}
+#view-home h2, #view-neyim h2, #view-labs h2 { line-height: 1.35; }
+#view-home p, #view-neyim p, #view-labs p { line-height: 1.5; }
+@media (max-width: 767px) {
+  #view-home, #view-neyim, #view-labs { gap: .9rem !important; }
+  #view-home > .grid.grid-cols-1.lg\:grid-cols-3 { gap: .85rem !important; }
+  #view-home > .grid.grid-cols-1.lg\:grid-cols-3 > :first-child { padding: 1rem !important; }
+  #view-home > div:first-child { padding: 1.1rem !important; }
+  #view-neyim > .bg-white.rounded-2xl { padding: 1rem !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* ===== vita-compact-labs-neyim-v3 ===== */
+/* Keep VitaTakip's original navy/teal/indigo palette; reduce density rather than changing colors. */
+#view-labs .vita-lab-reference-trigger, #view-labs button[onclick*="showLabReferenceGuide"] { display:none !important; }
+#view-labs details:has(input[id^="inputLabRef-"]) { display:none !important; }
+#view-labs .vita-lab-compact-row { display:flex; align-items:center; gap:.65rem; flex-wrap:wrap; }
+#view-labs .vita-lab-compact-row > label { margin-bottom:0 !important; }
+#view-labs .vita-range-settings-trigger { display:inline-flex; align-items:center; gap:.45rem; padding:.55rem .8rem; border:1px solid #99f6e4; border-radius:.7rem; background:#f0fdfa; color:#115e59; font-size:.75rem; font-weight:800; }
+#vitaLabRangesModal { position:fixed; inset:0; z-index:10050; display:none; align-items:center; justify-content:center; padding:1rem; background:rgba(15,23,42,.58); }
+#vitaLabRangesModal.is-open { display:flex; }
+#vitaLabRangesModal .vita-modal-panel { width:min(100%,620px); max-height:85vh; overflow:auto; background:#fff; color:#0f172a; border:1px solid #cbd5e1; border-radius:1rem; padding:1rem; box-shadow:0 18px 50px rgba(15,23,42,.22); }
+#vitaLabRangesModal input { width:100%; min-height:40px; border:1px solid #cbd5e1; border-radius:.55rem; padding:.55rem .65rem; font-size:.85rem; }
+#view-neyim .vita-data-included-badge { display:inline-flex; margin:.25rem 0 .75rem; }
+#view-neyim .anamnesis-card { display:inline-flex !important; flex-direction:column; vertical-align:top; width:auto !important; min-width:0; max-width:100%; padding:.48rem .72rem !important; margin:0 !important; border-radius:999px !important; box-shadow:none !important; background:#fff; }
+#view-neyim .anamnesis-card > div:first-child { display:none !important; }
+#view-neyim .anamnesis-card h4 { margin:0 !important; font-size:.78rem !important; line-height:1.3 !important; font-weight:700 !important; }
+#view-neyim .anamnesis-card p { display:none !important; }
+#view-neyim .anamnesis-card.is-selected, #view-neyim .anamnesis-card.selected, #view-neyim .anamnesis-card[aria-pressed="true"] { background:#ccfbf1 !important; border-color:#0d9488 !important; color:#115e59 !important; }
+#view-neyim .vita-symptom-chip-wrap { display:flex !important; flex-wrap:wrap; align-items:flex-start; gap:.45rem; }
+#view-clinical-results #cdssResultContainer:not(.hidden), #view-neyim #cdssResultContainer:not(.hidden) { display:flex; flex-direction:column; gap:.75rem !important; }
+#view-clinical-results #cdssResultContainer > div, #view-neyim #cdssResultContainer > div { border-radius:1rem !important; box-shadow:0 1px 3px rgba(15,23,42,.07) !important; }
+#view-clinical-results #cdssResultContainer .vita-technical-details, #view-neyim #cdssResultContainer .vita-technical-details { border:1px solid #cbd5e1; border-radius:.8rem; padding:.75rem; }
+#view-clinical-results #cdssResultContainer .vita-technical-details > summary, #view-neyim #cdssResultContainer .vita-technical-details > summary { cursor:pointer; font-weight:800; color:#334155; padding:.35rem; }
+@media(max-width:640px){ #view-labs .grid { row-gap:.6rem; } #view-neyim .anamnesis-card { padding:.5rem .65rem !important; } }
+
+/* ===== vita-home-simplification-v1 ===== */
+  /* Original VitaTakip navy/teal palette is intentionally preserved. */
+  #view-home > * { min-width: 0; }
+  #view-home .rounded-3xl, #view-home .rounded-2xl { scroll-margin-top: 5rem; }
+  #appDrawer .px-4.pb-3 { padding: .25rem .75rem .5rem !important; }
+  #appDrawer > .p-4.border-t.border-navy-800 { padding: .55rem .75rem !important; }
+  #appDrawer > .p-4.border-t.border-navy-800 button { min-height: 38px; padding: .5rem .65rem !important; }
+  @media (max-width: 640px) {
+    #view-home { gap: 1rem; }
+    #view-home > .bg-gradient-to-r.rounded-3xl { padding: 1rem; }
+    #view-home .vita-home-secondary-actions { gap: .5rem; }
+  }
+
+/* ==========================================================================
+   GÖREV 3: "BULUT EŞİTLEME" VE GOOGLE ENTEGRASYON ALANI CSS / ARAYÜZ DÜZELTMESİ
+   - Z-index katman izolasyonu (diğer modal/çekmecelerle çakışmayı önler)
+   - Flexbox & Grid metin taşması / iç içe geçme (overlap) düzeltmesi
+   - Mobil ve masaüstü form/buton hizalama standardizasyonu
+   ========================================================================== */
+#cloudSyncModal,
+.vita-cloud-sync-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483000 !important;
+  background-color: rgba(2, 6, 23, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  padding: clamp(0.75rem, 2.5vw, 1.25rem) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  isolation: isolate !important;
+}
+
+body.vita-cloud-modal-open {
+  overflow: hidden !important;
+}
+
+body.vita-cloud-modal-open > header,
+body.vita-cloud-modal-open > main,
+body.vita-cloud-modal-open > footer,
+body.vita-cloud-modal-open > #viewHeaderBar,
+body.vita-cloud-modal-open > .vita-mobile-nav {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#cloudSyncModal .vita-cloud-sync-dialog,
+#cloudSyncModal > div {
+  position: relative !important;
+  z-index: 2147483001 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 2px solid #6366f1 !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65) !important;
+  width: min(100%, 34rem) !important;
+  max-height: min(90dvh, 46rem) !important;
+  margin: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Bulut Eşitleme, Profil Açılır Menüsü, Giriş Bulut Kartı ve Ayarlar Yedekleme
+   konteynerlerindeki tüm alt öğelerde metin çakışmasını (overlap) engelle */
+#cloudSyncModal *,
+#headerProfileDropdownMenu *,
+#authCloudMethodCard *,
+#settingsSectionBackup * {
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#cloudSyncModal p,
+#cloudSyncModal span,
+#cloudSyncModal h3,
+#cloudSyncModal label,
+#headerProfileDropdownMenu p,
+#headerProfileDropdownMenu span,
+#authCloudMethodCard p,
+#authCloudMethodCard span,
+#settingsSectionBackup p,
+#settingsSectionBackup span {
+  white-space: normal !important;
+  line-height: 1.45 !important;
+}
+
+/* Durum rozetleri ve kaynak etiketleri tek satırda dengeli kalsın, taşarsa sarsın */
+#cloudModalTopBadge,
+#cloudModalSourceTag,
+#profileMenuCloudStateBadge {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap !important;
+  max-width: 100%;
+  flex-shrink: 0;
+  line-height: 1.25 !important;
+}
+
+/* Durum kartı başlık ve etiket satırı: dar ekranlarda üst üste binmeden sarsın */
+#cloudSyncAccountStatusCard > div:first-child {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.5rem !important;
+}
+
+/* Bulut Eşitleme form girdileri ve butonları için standart yükseklik ve hizalama */
+#cloudSyncModal input[type="text"],
+#cloudSyncModal input[type="email"] {
+  width: 100% !important;
+  min-height: 44px !important;
+  padding: 0.625rem 0.875rem !important;
+  line-height: 1.35 !important;
+}
+
+#cloudSyncModal button:not(.absolute) {
+  min-height: 44px !important;
+  padding: 0.625rem 0.9rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.45rem !important;
+  text-align: center !important;
+  line-height: 1.3 !important;
+}
+
+/* Sağ üst profil menüsü Bulut Eşitleme durum çubuğu izolasyonu */
+#headerProfileDropdownMenu {
+  z-index: 10070 !important;
+  width: min(92vw, 21rem) !important;
+  max-width: calc(100vw - 1.25rem) !important;
+  overflow: hidden !important;
+}
+
+@media (max-width: 640px) {
+  #cloudSyncModal .vita-cloud-sync-dialog,
+  #cloudSyncModal > div {
+    padding: 1.15rem !important;
+    border-radius: 1.35rem !important;
+    max-height: 94dvh !important;
+  }
+  #cloudSyncModal .grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  #cloudSyncModal .flex.items-center.justify-between {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* ==========================================================================
+   GÖREV 1 & GÖREV 2 EK BİLEŞEN STİLLERİ + MİSANTHA 4 TEMEL SİSTEM STİLLERİ
+   ========================================================================== */
+#barcodeScannerModal {
+  z-index: 10080 !important;
+}
+#neyimTriageEgfrResultContainer {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Misantha Kamera Optimizasyonu: Mobil ve Android WebView'da tam ekrana fırlamayı engelle */
+#html5QrCodeReaderContainer video,
+#barcodeCameraVideo {
+  width: 100% !important;
+  max-height: 260px !important;
+  object-fit: cover !important;
+  border-radius: 0.75rem;
+}
+
+/* Misantha Kutu, Stok ve Kalan Gün Sayacı Rozetleri */
+.misantha-stock-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e2e8f0;
+}
+.misantha-stock-critical-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 900;
+  background: #fff1f2;
+  color: #be123c;
+  border: 1.5px solid #fda4af;
+  box-shadow: 0 1px 4px rgba(225, 29, 72, 0.12);
+}
+.misantha-stock-normal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 800;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+}
+.misantha-refill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.55rem;
+  font-size: 10px;
+  font-weight: 800;
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+  cursor: pointer;
+}
+.misantha-refill-btn:hover {
+  background: #e0e7ff;
+}
+
+/* Misantha İlaç-Vitamin Etkileşimi Etiketi */
+.misantha-depletion-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 9.5px;
+  font-weight: 900;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  cursor: pointer;
+}
+.misantha-depletion-tag:hover {
+  background: #fde68a;
+}
+
+/* Takviye Ekle Modalı -> Kutu ve Barkod / Karekod Kamera Video Konfigürasyonu */
+#addSupQrReader video,
+#addSupCameraVideo {
+  max-height: 220px !important;
+  width: 100% !important;
+  object-fit: cover !important;
+  border-radius: 0.75rem;
+}
+
+#view-clinical-results.show:not(.hidden) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+

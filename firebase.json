@@ -1,0 +1,29 @@
+{
+  "firestore": [
+    {
+      "database": "ai-studio-android-vitataki-30dafd02-0558-4d73-b7fe-5a4d4b429296",
+      "rules": "firestore.rules"
+    }
+  ],
+  "emulators": {
+    "firestore": {
+      "host": "127.0.0.1",
+      "port": 8085
+    },
+    "auth": {
+      "host": "127.0.0.1",
+      "port": 9099
+    },
+    "ui": {
+      "enabled": false
+    }
+  },
+  "hosting": {
+    "public": "app/src/main/assets/vita_web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "public": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/app/src/main/assets/vita_web/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/app/src/main/assets/vita_web/$1"
+    }
+  ]
+}

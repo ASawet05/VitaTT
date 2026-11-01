@@ -1,0 +1,37 @@
+/* Besinle destek (takviye yerine doğal kaynaklar) bölümü */
+.vita-food-card{background:#fff;border:1px solid rgba(16,185,129,.35);border-radius:1rem;padding:1rem;box-shadow:0 1px 2px rgba(15,23,42,.06)}
+.vita-food-head{display:flex;align-items:flex-start;gap:.75rem}
+.vita-food-head h3{margin:0;font-size:.95rem;font-weight:900;color:#0f172a;display:flex;align-items:center;gap:.5rem}
+.vita-food-head h3 i{color:#059669}
+.vita-food-head p{margin:.25rem 0 0;font-size:.75rem;line-height:1.5;color:#64748b}
+.vita-food-drawer{margin-top:.75rem;border:1px solid #e2e8f0;border-radius:.75rem;background:rgba(248,250,252,.7)}
+.vita-food-drawer>summary,.vita-food-item>summary{cursor:pointer;list-style:none}
+.vita-food-drawer>summary::-webkit-details-marker,.vita-food-item>summary::-webkit-details-marker{display:none}
+.vita-food-drawer>summary{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.75rem;font-size:.75rem;font-weight:700;color:#334155}
+.vita-food-drawer>summary .vita-food-count{margin-left:.5rem;border:1px solid #a7f3d0;background:#ecfdf5;color:#065f46;border-radius:.5rem;padding:.1rem .45rem;font-size:.625rem;font-weight:900}
+.vita-food-chev{color:#64748b;font-size:.7rem;transition:transform .2s}
+details[open]>summary .vita-food-chev{transform:rotate(180deg)}
+.vita-food-body{padding:0 .75rem .75rem;display:flex;flex-direction:column;gap:.6rem}
+.vita-food-group-title{margin:.25rem 0 0;font-size:.625rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#64748b}
+.vita-food-note{border-radius:.75rem;padding:.6rem .75rem;font-size:.6875rem;line-height:1.5}
+.vita-food-note.warn{background:#fffbeb;border:1px solid #fcd34d;color:#78350f}
+.vita-food-note.info{background:#f0fdfa;border:1px solid #99f6e4;color:#134e4a}
+.vita-food-note strong{font-weight:900}
+.vita-food-item{border:1px solid #e2e8f0;border-radius:.75rem;background:#fff}
+.vita-food-item>summary{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.6rem .75rem}
+.vita-food-title{min-width:0;display:block}
+.vita-food-title .name{font-size:.8125rem;font-weight:900;color:#0f172a}
+.vita-food-title .name .em{margin-right:.35rem}
+.vita-food-title .preview{display:block;margin-top:.15rem;font-size:.6875rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vita-food-badges{display:inline-flex;flex-wrap:wrap;gap:.25rem;margin-left:.4rem;vertical-align:middle}
+.vita-food-badge{border-radius:999px;padding:.05rem .45rem;font-size:.5625rem;font-weight:900;border:1px solid}
+.vita-food-badge.lab{background:#fef3c7;border-color:#fcd34d;color:#78350f}
+.vita-food-badge.protocol{background:#f0fdfa;border-color:#99f6e4;color:#115e59}
+.vita-food-badge.symptom{background:#eef2ff;border-color:#c7d2fe;color:#3730a3}
+.vita-food-chips{display:flex;flex-wrap:wrap;gap:.4rem;padding:0 .75rem}
+.vita-food-chip{display:inline-flex;align-items:center;gap:.3rem;border-radius:999px;border:1px solid #a7f3d0;background:#ecfdf5;padding:.3rem .65rem;font-size:.6875rem;font-weight:700;color:#064e3b}
+.vita-food-chip .sub{font-weight:500;color:#047857}
+.vita-food-tip{margin:.5rem .75rem .75rem;font-size:.6875rem;line-height:1.5;color:#475569}
+.vita-food-tip i{color:#059669;margin-right:.3rem}
+.vita-food-item .vita-food-extra{margin:.5rem .75rem 0;font-size:.6875rem;line-height:1.5;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:.6rem;padding:.4rem .6rem}
+.vita-food-foot{font-size:.625rem;line-height:1.5;color:#64748b}

@@ -1,0 +1,183 @@
+{
+  "entities": {
+    "Supplement": {
+      "title": "Supplement",
+      "description": "Represents a vitamin, medication, or daily health supplement routine tracked by a user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated owner."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the vitamin, supplement, or medication (1-80 chars)."
+        },
+        "dosage": {
+          "type": "string",
+          "description": "Dosage description such as 1000 IU, 500 mg, or 1 Kapsül (1-40 chars)."
+        },
+        "category": {
+          "type": "string",
+          "description": "Supplement category.",
+          "enum": ["Vitamin", "Mineral", "Ilac", "Takviye"]
+        },
+        "timeOfDay": {
+          "type": "string",
+          "description": "Scheduled time of day.",
+          "enum": ["Sabah", "Ogle", "Aksam", "Gece"]
+        },
+        "takenToday": {
+          "type": "boolean",
+          "description": "Whether the dose has been taken today."
+        },
+        "stockCount": {
+          "type": "integer",
+          "description": "Remaining pill/capsule count in stock (0-10000)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional usage instructions or notes (up to 200 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "dosage",
+        "category",
+        "timeOfDay",
+        "takenToday",
+        "stockCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "VitalLog": {
+      "title": "VitalLog",
+      "description": "Represents a health vital measurement, hydration log, or wellness expense entry.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated owner."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of vital or wellness log.",
+          "enum": ["Su", "Tansiyon", "Nabiz", "Kilo", "Seker", "Uyku", "Gider"]
+        },
+        "title": {
+          "type": "string",
+          "description": "Label or title for the measurement (1-80 chars)."
+        },
+        "primaryValue": {
+          "type": "integer",
+          "description": "Primary measurement value (e.g. ml of water, systolic BP, BPM, weight kg, glucose mg/dL, sleep hours, expense TL)."
+        },
+        "secondaryValue": {
+          "type": "integer",
+          "description": "Secondary measurement value (e.g. diastolic BP, or 0 if not applicable)."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Measurement unit (e.g. ml, mmHg, BPM, kg, mg/dL, saat, TL)."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional note about the measurement (up to 200 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "type",
+        "title",
+        "primaryValue",
+        "secondaryValue",
+        "unit",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PortalState": {
+      "title": "PortalState",
+      "description": "Stores the authenticated user's synchronized VitaTakip portal state (profile, lab history, supplements, hydration, symptoms, and clinical notes) in Cloud Firestore.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated owner."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user (1-100 chars)."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the authenticated Google user (1-120 chars)."
+        },
+        "payloadJson": {
+          "type": "string",
+          "description": "Serialized VitaTakip portal state JSON (2-250000 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "displayName",
+        "email",
+        "payloadJson",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/supplements/{supplementId}": {
+      "schema": {
+        "$ref": "#/entities/Supplement"
+      },
+      "description": "Per-user collection of daily vitamins, medications, and supplements."
+    },
+    "/users/{userId}/vital_logs/{logId}": {
+      "schema": {
+        "$ref": "#/entities/VitalLog"
+      },
+      "description": "Per-user collection of hydration, vital signs, sleep, and health expense logs."
+    },
+    "/users/{userId}/portal_state/{stateId}": {
+      "schema": {
+        "$ref": "#/entities/PortalState"
+      },
+      "description": "Per-user synchronized VitaTakip portal clinical state document."
+    }
+  }
+}

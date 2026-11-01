@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidSupplement(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 80 &&
+             data.dosage is string && data.dosage.size() >= 1 && data.dosage.size() <= 40 &&
+             data.category is string && data.category in ['Vitamin', 'Mineral', 'Ilac', 'Takviye'] &&
+             data.timeOfDay is string && data.timeOfDay in ['Sabah', 'Ogle', 'Aksam', 'Gece'] &&
+             data.takenToday is bool &&
+             data.stockCount is int && data.stockCount >= 0 && data.stockCount <= 10000 &&
+             (!('notes' in data) || data.notes == null || (data.notes is string && data.notes.size() <= 200)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidVitalLog(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.type is string && data.type in ['Su', 'Tansiyon', 'Nabiz', 'Kilo', 'Seker', 'Uyku', 'Gider'] &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 80 &&
+             data.primaryValue is int && data.primaryValue >= 0 && data.primaryValue <= 100000 &&
+             data.secondaryValue is int && data.secondaryValue >= 0 && data.secondaryValue <= 100000 &&
+             data.unit is string && data.unit.size() >= 1 && data.unit.size() <= 20 &&
+             (!('note' in data) || data.note == null || (data.note is string && data.note.size() <= 200)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/supplements/{supplementId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(supplementId) && existing().userId == request.auth.uid;
+      allow list: if isOwner(userId) && existing().userId == request.auth.uid;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(supplementId) &&
+                       incoming().keys().hasAll(['userId', 'name', 'dosage', 'category', 'timeOfDay', 'takenToday', 'stockCount', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'name', 'dosage', 'category', 'timeOfDay', 'takenToday', 'stockCount', 'notes', 'createdAt', 'updatedAt']) &&
+                       isValidSupplement(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(supplementId) &&
+                       isValidSupplement(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'dosage', 'category', 'timeOfDay', 'takenToday', 'stockCount', 'notes', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(supplementId) && existing().userId == request.auth.uid;
+    }
+
+    match /users/{userId}/vital_logs/{logId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(logId) && existing().userId == request.auth.uid;
+      allow list: if isOwner(userId) && existing().userId == request.auth.uid;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(logId) &&
+                       incoming().keys().hasAll(['userId', 'type', 'title', 'primaryValue', 'secondaryValue', 'unit', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'type', 'title', 'primaryValue', 'secondaryValue', 'unit', 'note', 'createdAt', 'updatedAt']) &&
+                       isValidVitalLog(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(logId) &&
+                       isValidVitalLog(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['type', 'title', 'primaryValue', 'secondaryValue', 'unit', 'note', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(logId) && existing().userId == request.auth.uid;
+    }
+  }
+}
