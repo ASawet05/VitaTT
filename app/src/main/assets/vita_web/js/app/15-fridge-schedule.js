@@ -59,7 +59,7 @@ function renderFridgeScheduleSheet() {
       if (!records.length && state.labValues) {
         const hasAnyCurrent = VITA_PDF_BIOMARKER_SPECS.some(spec => parseVitaLabDecimal(state.labValues[spec.key]) !== null);
         if (hasAnyCurrent) {
-          const fallbackDate = document.getElementById("inputLabDate")?.value || new Date().toISOString().slice(0, 10);
+          const fallbackDate = document.getElementById("inputLabDate")?.value || (typeof vitaLocalToday === "function" ? vitaLocalToday() : new Date().toISOString().slice(0, 10));
           records.push({
             date: fallbackDate,
             timestamp: Date.now(),

@@ -303,6 +303,8 @@
       if (adv && adv.meaning) html += '<p>' + esc(adv.meaning) + '</p>';
       if (r.prev && r.trend) html += '<p class="vs-trend ' + r.trendCls + '">Önceki ölçüm: ' + esc(fmt(r.prev.value)) + ' (' + esc(r.prev.date.split("-").reverse().join(".")) + ') → şimdi ' + esc(fmt(r.value)) + ' · <b>' + esc(r.trend) + '</b></p>';
       if (r.kidneyNote) html += '<p class="vs-safe-line"><i class="fa-solid fa-shield-heart" aria-hidden="true"></i> İlaç ve takviye (özellikle ağrı kesici ve mineral) kullanmadan önce hekime danışın.</p>';
+      var an = window.VitaAgeStage ? VitaAgeStage.labNote(r.key, r.dir) : "";
+      if (an) html += '<p class="vs-age">' + esc(an) + '</p>';
       if (r.ref) html += '<p class="vs-ref">Referans: ' + esc(r.ref) + '</p>';
       html += '</div></details>';
     });
@@ -371,7 +373,7 @@
     try { m = build(); } catch (e) { console.warn("[VitaTakip] clinical-simple:", e); return; }
     current = m;
     /* Sıra: özet → güvenlik uyarıları → değerlerim → belirtiler → testler (+ hatırlatma) */
-    host.innerHTML = summaryHtml(m) + safetyHtml(m) + valuesHtml(m) + symptomsHtml(m) + testsHtml(m);
+    host.innerHTML = summaryHtml(m) + safetyHtml(m) + valuesHtml(m) + (window.VitaAgeStage ? VitaAgeStage.cardHtml() : "") + symptomsHtml(m) + testsHtml(m);
     host.classList.remove("hidden");
   }
 
@@ -399,4 +401,6 @@
 
   document.addEventListener("click", onClick);
   window.renderVitaSimple = render;
+  /* Rapor sayfası (js/report-simple.js) aynı veri modelini kullanır: tek doğruluk kaynağı */
+  window.VitaSimpleModel = { build: build, fmt: fmt, CHIP: CHIP };
 })();

@@ -144,7 +144,7 @@
             return { level: "adequate", sources: ["WHO2011_HB"], text: "" };
           }
           const limit = ctx.gender === "E" ? 13 : 12;
-          if (v < 8.5) return { level: "urgent", side: "low", sources: ["WHO2011_HB"], text: "Hemoglobin 8,5 g/dL altında: belirgin/ağır anemi düzeyi. Doku oksijenlenmesi ve kardiyovasküler yük açısından gecikmeden yüz yüze dahiliye/hematoloji değerlendirmesi gerekir." };
+          if (v < 8.5) return { level: "urgent", side: "low", sources: ["WHO2011_HB"], text: "Hemoglobin 8,5 g/dL altında: belirgin anemi (WHO ağır anemi sınırı 8 g/dL). Doku oksijenlenmesi ve kardiyovasküler yük açısından gecikmeden yüz yüze dahiliye/hematoloji değerlendirmesi gerekir." };
           if (v > 18.5) return { level: "urgent", side: "high", sources: ["WHO2011_HB"], text: "Hemoglobin 18,5 g/dL üzerinde: belirgin eritrositoz/polisitemi eğilimi. Kan viskozitesi ve altta yatan nedenler açısından gecikmeden hekim değerlendirmesi gerekir." };
           if (v < limit) return { level: "low_likely", sources: ["WHO2011_HB"], text: `Hemoglobin ${limit} g/dL altında: WHO ölçütüne göre anemi ile uyumlu (gebelikte sınır 11 g/dL'dir). Nedeni (demir, B12, folat, kronik hastalık, kanama) hekimce araştırılmalıdır.` };
           const hiLimit = ctx.gender === "E" ? 17.5 : 16;
@@ -152,10 +152,10 @@
           return { level: "adequate", sources: ["WHO2011_HB"], text: "" };
         },
         ca(v) {
-          if (v > 11.5) return { level: "urgent", side: "high", sources: ["ODS_D"], text: "Total kalsiyum 11,5 mg/dL üzerinde: belirgin hiperkalsemi riski. D vitamini ve kalsiyum takviyelerini kesinlikle kullanmayın; PTH, albümin, fosfor ve böbrek fonksiyonları için gecikmeden dahiliye/endokrinoloji değerlendirmesi gerekir." };
-          if (v < 7.5) return { level: "urgent", side: "low", sources: ["ODS_D"], text: "Total kalsiyum 7,5 mg/dL altında: ciddi hipokalsemi / nöromüsküler tetani riski (albümin düzeltmesi gerekir). Gecikmeden hekim değerlendirmesi isteyin." };
-          if (v > 10.2) return { level: "high_review", sources: ["ODS_D"], text: "Total kalsiyum 10,2 mg/dL üzerinde (hiperkalsemi eğilimi). D vitamini veya kalsiyum takviyesi başlanmamalı; albümin ile düzeltilmiş kalsiyum ve paratiroid hormonu (PTH) hekimce değerlendirilmelidir." };
-          if (v < 8.6) return { level: "low_likely", sources: ["ODS_D"], text: "Total kalsiyum 8,6 mg/dL altında. Total kalsiyum serum albümin düzeyine bağlıdır (albümin düşüklüğünde yalancı düşük görünebilir); 25(OH)D, magnezyum, albümin ve PTH ile birlikte değerlendirilmelidir." };
+          if (v > 11.5) return { level: "urgent", side: "high", sources: ["UNVERIFIED"], text: "Total kalsiyum 11,5 mg/dL üzerinde: belirgin hiperkalsemi riski. D vitamini ve kalsiyum takviyelerini kesinlikle kullanmayın; PTH, albümin, fosfor ve böbrek fonksiyonları için gecikmeden dahiliye/endokrinoloji değerlendirmesi gerekir." };
+          if (v < 7.5) return { level: "urgent", side: "low", sources: ["UNVERIFIED"], text: "Total kalsiyum 7,5 mg/dL altında: ciddi hipokalsemi / nöromüsküler tetani riski (albümin düzeltmesi gerekir). Gecikmeden hekim değerlendirmesi isteyin." };
+          if (v > 10.2) return { level: "high_review", sources: ["UNVERIFIED"], text: "Total kalsiyum 10,2 mg/dL üzerinde (hiperkalsemi eğilimi). D vitamini veya kalsiyum takviyesi başlanmamalı; albümin ile düzeltilmiş kalsiyum ve paratiroid hormonu (PTH) hekimce değerlendirilmelidir." };
+          if (v < 8.6) return { level: "low_likely", sources: ["UNVERIFIED"], text: "Total kalsiyum 8,6 mg/dL altında. Total kalsiyum serum albümin düzeyine bağlıdır (albümin düşüklüğünde yalancı düşük görünebilir); 25(OH)D, magnezyum, albümin ve PTH ile birlikte değerlendirilmelidir." };
           return { level: "adequate", sources: ["UNVERIFIED"], text: "" };
         },
         zinc(v) {
@@ -169,7 +169,7 @@
           return { level: "adequate", sources: ["UNVERIFIED"], text: "" };
         },
         crp(v) {
-          if (v > 50) return { level: "urgent", side: "high", sources: ["WHO2020_FERR"], text: "CRP 50 mg/L üzerinde: belirgin akut bakteriyel enfeksiyon veya ciddi sistemik enflamasyon olasılığı. Ateş, titreme, nefes darlığı veya odak belirtileriyle birlikte gecikmeden hekime başvurun; aktif enfeksiyon sırasında demir takviyesi kullanımı hekime danışılmalıdır." };
+          if (v > 50) return { level: "urgent", side: "high", sources: ["UNVERIFIED"], text: "CRP 50 mg/L üzerinde: belirgin akut bakteriyel enfeksiyon veya ciddi sistemik enflamasyon olasılığı. Ateş, titreme, nefes darlığı veya odak belirtileriyle birlikte gecikmeden hekime başvurun; aktif enfeksiyon sırasında demir takviyesi kullanımı hekime danışılmalıdır." };
           if (v > 5) return { level: "high_review", sources: ["WHO2020_FERR"], text: "CRP 5 mg/L üzerinde: sistemik enflamasyon/akut faz yanıtı göstergesi. Bu durumda ferritin akut faz reaktanı olarak yükselir (WHO <70 ng/mL eşiğini kullanır) ve serum çinko/demir düzeyleri geçici olarak düşebilir." };
           return { level: "adequate", sources: ["WHO2020_FERR"], text: "" };
         }
@@ -201,7 +201,7 @@
         const [lo, hi] = P.plausible;
         if (value < lo || value > hi) {
           const suspect = ref && ref.compatible && ref.converted ? ` Referans ${ref.unit.replace("ug", "µg").replace("umol", "µmol")} biriminde yazılmış; değer ${P.unit} olarak girilmiş olmalıdır.` : ` Alan ${P.unit} birimindedir; değeri ve birimi kontrol edin.`;
-          out.message = `Girilen değer (${fmt(value)}) ${P.unit} için beklenen aralığın (${fmt(lo)}–${fmt(hi)}) dışında.${suspect} Birim doğrulanamadığı için güvenilir değerlendirme yapılmadı.`;
+          out.message = `Girilen değer (${fmt(value)}) ${P.unit} için beklenen aralığın (${fmt(lo)}–${fmt(hi)}) dışında.${suspect} Birim doğrulanamadığı için güvenilir değerlendirme yapılmadı. Değer ve birim raporla aynıysa sonuç ciddi derecede ${value < lo ? "düşük" : "yüksek"} olabilir; gecikmeden hekime danışın.`;
           out.flags.push("unit_or_range_suspect");
           return out;
         }

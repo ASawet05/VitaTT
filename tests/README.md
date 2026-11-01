@@ -20,5 +20,12 @@ Gerçek Chrome ile (puppeteer-core) uygulamayı açıp kullanıcı gibi dener.
 | `esik-hizalama.mjs` | Hb ve kreatinin eşikleri ekrandaki aralıkla aynı (sınır değerler, cinsiyet, gebelik, tüm parametrelerde tutarlılık) |
 | `gebelik.mjs` | Gebelik referans seti: Hb (WHO/CDC), kreatinin, ALT, ferritin, eGFR kapatma, emzirme, uçtan uca |
 | `neyimvar-son-adim.mjs` | "Sonuçları Gör" düğmesi yalnızca son adımda görünür |
+| `yas-evresi.mjs` | Yaş/cinsiyete göre RDA tablosu, yaş notları, Klinik Analiz/Ayarlar/Rapor entegrasyonu |
+| `belirti-kontrol.mjs` | Günlük "belirti hâlâ var mı" kartı |
+| `gun-ai-anahtar.mjs` | Hesaba özel API anahtarı, gece sıfırlama, kompakt yerel yanıt |
+| `rapor.mjs` | Kısa doktor özeti |
+| `klinik-mantik.mjs` | Takviye adayı güvenlik değişmezleri (yüksek değerde aday yok, böbrek/hiperkalsemi kilidi, gebelik/çocuk, eGFR) |
+| `guvenlik-xss.mjs` | Kullanıcı girdisinin kod olarak çalışmaması (XSS) |
+| `ana-sayfa-grafik.mjs` | Ana sayfa karşılama kartı ve tahlil gelişim grafiği |
 
 Çalıştırma: `node smoke.mjs` (her biri bağımsızdır).

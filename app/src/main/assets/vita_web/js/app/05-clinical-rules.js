@@ -106,7 +106,7 @@ const KDSSRuleEngine = {
             if (val < 0.5) { statusText = 'Düşük (Kas Kütlesi / Beslenme)'; color = 'yellow'; tier = 'borderline_low'; isLow = true; }
             else if (val <= crUpperNormal) { statusText = 'Optimal / Normal'; color = 'green'; tier = 'optimal'; }
             else if (val <= crBorderline) { statusText = 'Sınırda Yüksek'; color = 'yellow'; tier = 'borderline_high'; isHigh = true; }
-            else { statusText = 'Kritik Yüksek (Renal Risk)'; color = 'red'; tier = 'critical_high'; isHigh = true; isToxic = true; }
+            else { statusText = 'Yüksek (böbrek işlevi hekimce değerlendirilmeli)'; color = 'red'; tier = 'critical_high'; isHigh = true; isToxic = true; }
             break;
           }
 

@@ -1,0 +1,55 @@
+/* Kompakt görünüm: rehber, yapay zekâ yanıtları, genel boşluklar */
+.vg-steps{list-style:none;margin:12px 0;padding:0;display:grid;gap:6px}
+.vg-steps button{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:8px 10px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;cursor:pointer}
+.vg-steps button:hover{background:#ecfdf5;border-color:#99f6e4}
+.vg-steps b{flex:0 0 22px;height:22px;border-radius:999px;background:#0f766e;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+.vg-steps strong{display:block;font-size:12px;color:#0b1f3a}
+.vg-steps em{display:block;font-style:normal;font-size:11px;line-height:1.35;color:#475569}
+.vg-tips{display:grid;gap:6px}
+.vg-tips>div{display:flex;gap:8px;font-size:11px;line-height:1.4;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:7px 10px}
+.vg-tips i{margin-top:2px}
+.vg-tips strong{color:#0b1f3a}
+
+.vita-ai-compact{font-size:12.5px;line-height:1.4}
+.vita-ai-badge{display:inline-flex;gap:5px;align-items:center;font-size:10px;font-weight:700;color:#0f766e;background:#ccfbf1;border-radius:999px;padding:1px 8px;margin-bottom:5px}
+.vita-ai-topic{padding:5px 0;border-bottom:1px solid #eef2f7}
+.vita-ai-topic:last-of-type{border-bottom:0}
+.vita-ai-t{font-weight:800;color:#0b1f3a}
+.vita-ai-tip{color:#0f766e;margin-top:2px}
+.vita-ai-more{margin-top:3px;font-size:11.5px;color:#475569}
+.vita-ai-more summary{cursor:pointer;color:#64748b;font-weight:700;list-style:none}
+.vita-ai-more summary::before{content:"▸ "}
+.vita-ai-more[open] summary::before{content:"▾ "}
+.vita-ai-warn{margin-top:5px;padding:5px 8px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;color:#78350f;font-size:11.5px}
+.vita-ai-note{margin-top:5px;font-size:10.5px;color:#94a3b8}
+
+/* Sayfalar arası boşluk ve kartlar biraz daha sıkı */
+#view-home,#view-labs,#view-neyim,#view-clinical-results,#view-report{row-gap:10px}
+#view-labs>*,#view-home>*{margin-top:0}
+
+/* Günlük belirti kontrolü */
+.sdc{background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:8px 10px}
+.sdc-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;font-size:12.5px;color:#78350f}
+.sdc-all{font-size:11px;font-weight:700;color:#92400e;background:#fff;border:1px solid #fcd34d;border-radius:999px;padding:2px 10px;cursor:pointer}
+.sdc-r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-top:1px solid #fef3c7;font-size:12px;color:#1e293b}
+.sdc-b{display:flex;gap:4px;flex:0 0 auto}
+.sdc-b button{font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
+.sdc-yes{color:#92400e}.sdc-no{background:#ecfdf5!important;border-color:#6ee7b7!important;color:#047857}
+
+/* Yaş evresi kartı */
+.as-card{margin-top:8px;border:1px solid #bae6fd;background:#f0f9ff;border-radius:12px;padding:0;overflow:hidden}
+.as-card summary{cursor:pointer;list-style:none;padding:8px 10px;font-size:12px;color:#0c4a6e;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.as-card summary::after{content:"▾";margin-left:auto;color:#0369a1}
+.as-card[open] summary::after{content:"▴"}
+.as-card summary span{font-size:11px;color:#475569}
+.as-notes{margin:0;padding:0 12px 4px 26px;font-size:11.5px;line-height:1.4;color:#334155}
+.as-notes i{color:#64748b;font-style:normal;font-size:10.5px}
+.as-tbl{width:calc(100% - 20px);margin:4px 10px;border-collapse:collapse;font-size:11.5px}
+.as-tbl th{text-align:left;font-size:10px;text-transform:uppercase;color:#64748b;padding:2px 4px;border-bottom:1px solid #bae6fd}
+.as-tbl td{padding:3px 4px;border-bottom:1px solid #e0f2fe;vertical-align:top}
+.as-tbl small{display:block;color:#64748b;font-size:10px}
+.as-ul{color:#64748b}
+.as-p,.as-foot{margin:0;padding:0 10px 8px;font-size:11px;color:#475569;line-height:1.4}
+.vs-age{font-size:11.5px;color:#075985;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:5px 8px;margin:4px 0 0}
+.set-more{margin-top:6px}
+.set-more>summary{cursor:pointer;font-size:11px;font-weight:700;color:#0369a1;padding:4px 2px}

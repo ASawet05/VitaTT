@@ -17,7 +17,7 @@ const an0 = await text('view-clinical-results');
 await p.evaluate(() => navigateToView('view-report')); await sleep(900);
 const rep1 = await text('view-report');
 log('ön koşul: analiz ve rapor belirtiyi içeriyor', has(an0) && has(rep1), tokens.join(' / '));
-log('ön koşul: rapor 9.37 içeriyor', rep1.includes('9.37'));
+log('ön koşul: rapor 9.37 içeriyor', /9[.,]37/.test(rep1));
 
 const id = await p.evaluate(() => state.labHistory[0].id);
 await p.evaluate(id => deleteLabRecord(id), id); await sleep(600);

@@ -1,6 +1,5 @@
-/* Tahlillerim: "Tahlil gelişimim" — sade, kompakt gelişim grafiği.
-   Her biyobelirteç için tek satır: son değer, durum, mini grafik (referans bandıyla) ve değişim.
-   Satıra basınca tek ölçekli, değer etiketli ayrıntılı grafik açılır. Çizgi karışıklığı yoktur. */
+/* Tahlillerim: "Tahlil gelişim grafiği" — açılır/kapanır kart, tek biyobelirteç seçimi,
+   o tahlile göre dinamik Y ekseni, referans bandı, tarih ekseni, dokununca ayrıntı. */
 (function () {
   "use strict";
 
@@ -23,23 +22,26 @@
     ca: [8.6, 10.2], zinc: [70, 120], creatinine: [0.6, 1.2], alt: [7, 35], mcv: [80, 100], crp: [0, 5]
   };
 
+  var selectedKey = null;
+  var closed = true; /* varsayılan: kapalı */
+
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); }
   function num(v) { if (v === null || v === undefined || v === "") return null; var n = Number(String(v).replace(",", ".")); return isFinite(n) ? n : null; }
-  function fmt(n) { var r = Math.round(n * 100) / 100; return String(r).replace(".", ","); }
-  function shortDate(d) { var p = String(d).split("-"); return p.length === 3 ? p[2] + "." + p[1] + "." + p[0].slice(2) : String(d); }
+  function fmtD(n, dec) { return Number(n).toFixed(dec).replace(".", ","); }
+  function dmy(d) { var p = String(d).split("-"); return p.length === 3 ? p[2] + "." + p[1] + "." + p[0] : String(d); }
+  function dmyShort(d) { var p = String(d).split("-"); return p.length === 3 ? p[2] + "." + p[1] + "." + p[0].slice(2) : String(d); }
 
-  /* Referans aralığı: kullanıcının girdiği aralık > uygulama genel aralığı > yedek değer */
   function parseRange(text) {
     var m = String(text || "").replace(/,/g, ".").match(/(\d+(?:\.\d+)?)\s*[–\-—]\s*(\d+(?:\.\d+)?)/);
     if (!m) return null;
     var a = Number(m[1]), b = Number(m[2]);
     return a < b ? [a, b] : null;
   }
+  /* Referans: kullanıcının rapor aralığı > uygulama genel aralığı > yedek */
   function rangeFor(key) {
     try {
-      var own = state.labReferences && state.labReferences[key];
-      var r = parseRange(own);
+      var r = parseRange(state.labReferences && state.labReferences[key]);
       if (r) return r;
       if (typeof getVitaAppLabReference === "function") {
         r = parseRange(getVitaAppLabReference(key, (state.user && state.user.gender) || "K"));
@@ -54,152 +56,179 @@
     hist = hist.filter(function (r) { return r && r.date; }).sort(function (a, b) {
       return new Date(a.date + "T00:00:00").getTime() - new Date(b.date + "T00:00:00").getTime();
     });
-    var out = [];
+    var list = [];
     META.forEach(function (m) {
       var pts = [];
       hist.forEach(function (r) { var v = num(r[m.key]); if (v !== null) pts.push({ date: r.date, v: v }); });
-      if (pts.length) out.push({ meta: m, pts: pts, range: rangeFor(m.key) });
+      if (pts.length) list.push({ meta: m, pts: pts, range: rangeFor(m.key) });
     });
-    return { dates: hist.length, list: out };
+    return { dates: hist.length, list: list };
   }
 
-  function statusOf(v, range) {
-    if (!range) return "ok";
-    if (v < range[0]) return "low";
-    if (v > range[1]) return "high";
-    return "ok";
+  /* "Güzel" eksen basamağı (1, 2, 2.5, 5 × 10ⁿ) ve gereken ondalık sayısı */
+  function niceStep(span, target) {
+    var raw = span / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+    var nf = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10;
+    return nf * mag;
   }
-  function dist(v, range) {
-    if (!range) return 0;
-    if (v < range[0]) return range[0] - v;
-    if (v > range[1]) return v - range[1];
-    return 0;
-  }
-  var CHIP = { low: ["Düşük", "lt-low"], high: ["Yüksek", "lt-high"], ok: ["Normal", "lt-ok"] };
+  function decimalsOf(step) { var s = String(Math.round(step * 1e6) / 1e6); var i = s.indexOf("."); return i < 0 ? 0 : s.length - i - 1; }
 
-  /* Son iki ölçüm arasındaki değişimin sade yorumu */
-  function trendOf(s) {
-    var n = s.pts.length;
-    if (n < 2) return null;
-    var a = s.pts[n - 2].v, b = s.pts[n - 1].v, r = s.range;
-    var da = dist(a, r), db = dist(b, r);
-    var diff = b - a, sign = diff > 0 ? "+" : (diff < 0 ? "−" : "");
-    var txt = sign + fmt(Math.abs(diff));
-    if (r && da > 0 && db === 0) return { cls: "lt-good", icon: "↗", label: "Normale ulaştı", delta: txt };
-    if (r && db > da) return { cls: "lt-bad", icon: diff > 0 ? "↑" : "↓", label: "Normalden uzaklaştı", delta: txt };
-    if (r && db < da) return { cls: "lt-good", icon: diff > 0 ? "↑" : "↓", label: "Normale yaklaştı", delta: txt };
-    if (diff === 0) return { cls: "lt-flat", icon: "→", label: "Değişmedi", delta: "0" };
-    return { cls: "lt-flat", icon: diff > 0 ? "↑" : "↓", label: "Aralıkta", delta: txt };
-  }
-
-  function domain(s) {
+  /* Dinamik ölçek: ölçümler + referans bandı birlikte görünür; kenar boşluğu %10 */
+  function scale(s) {
     var vals = s.pts.map(function (p) { return p.v; });
     var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
-    if (s.range) {
-      var r0 = s.range[0], r1 = s.range[1];
-      if (hi < r0) { hi = r0 + (r0 - lo) * 0.5; }        /* hepsi altta: bandın yalnızca alt kısmını göster */
-      else if (lo > r1) { lo = r1 - (hi - r1) * 0.5; }   /* hepsi üstte: bandın yalnızca üst kısmını göster */
-      else { lo = Math.min(lo, r0); hi = Math.max(hi, r1); }
-    }
-    if (hi === lo) { hi += 1; lo -= 1; }
-    var pad = (hi - lo) * 0.12;
-    return [lo - pad, hi + pad];
+    if (s.range) { lo = Math.min(lo, s.range[0]); hi = Math.max(hi, s.range[1]); }
+    if (hi === lo) { hi += Math.abs(hi) * 0.1 || 1; lo -= Math.abs(lo) * 0.1 || 1; }
+    var pad = (hi - lo) * 0.1; lo -= pad; hi += pad;
+    if (lo < 0 && Math.min.apply(null, vals) >= 0 && (!s.range || s.range[0] >= 0)) lo = 0; /* negatif eksen yok */
+    var step = niceStep(hi - lo, 4), dec = decimalsOf(step);
+    var min = Math.floor(lo / step) * step, max = Math.ceil(hi / step) * step;
+    var ticks = []; for (var t = min; t <= max + step / 2; t += step) ticks.push(Math.round(t * 1e6) / 1e6);
+    /* değer etiketleri için gereken hassasiyet: ölçümlerin kendi ondalığı */
+    var vd = 0; vals.forEach(function (v) { var d = decimalsOf(v); if (d > vd) vd = d; });
+    return { min: min, max: max, ticks: ticks, dec: dec, vdec: Math.min(3, vd) };
   }
 
-  /* Mini grafik (satır içi) */
-  function spark(s) {
-    var W = 92, H = 30, P = 3, d = domain(s);
-    var X = function (i) { return s.pts.length === 1 ? W / 2 : P + (W - 2 * P) * i / (s.pts.length - 1); };
-    var Y = function (v) { return H - P - (H - 2 * P) * (v - d[0]) / (d[1] - d[0]); };
-    var g = '<svg class="lt-spark" viewBox="0 0 ' + W + " " + H + '" aria-hidden="true">';
-    if (s.range) { var by1 = Math.max(0, Y(s.range[1])), by2 = Math.min(H, Y(s.range[0])); g += '<rect x="0" y="' + by1.toFixed(1) + '" width="' + W + '" height="' + Math.max(1, by2 - by1).toFixed(1) + '" fill="#dcfce7"/>'; }
-    if (s.pts.length > 1) g += '<polyline fill="none" stroke="#64748b" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" points="' +
-      s.pts.map(function (p, i) { return X(i).toFixed(1) + "," + Y(p.v).toFixed(1); }).join(" ") + '"/>';
-    s.pts.forEach(function (p, i) {
-      var last = i === s.pts.length - 1;
-      var st = statusOf(p.v, s.range);
-      g += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(p.v).toFixed(1) + '" r="' + (last ? 3.2 : 2) + '" fill="' + (last ? (st === "ok" ? "#16a34a" : "#ea580c") : "#94a3b8") + '"/>';
-    });
-    return g + "</svg>";
-  }
+  function statusOf(v, range) { if (!range) return "ok"; return v < range[0] ? "low" : (v > range[1] ? "high" : "ok"); }
+  var STATUS_TXT = { low: "Düşük", high: "Yüksek", ok: "Normal" };
 
-  /* Ayrıntılı grafik */
-  function big(s) {
-    var W = 320, H = 170, L = 38, R = 14, T = 18, B = 28, d = domain(s);
-    var n = s.pts.length;
+  function chart(s) {
+    var W = 340, H = 232, L = 44, R = 14, T = 16, B = 44;
+    var sc = scale(s), n = s.pts.length;
     var X = function (i) { return n === 1 ? (L + W - R) / 2 : L + (W - L - R) * i / (n - 1); };
-    var Y = function (v) { return T + (H - T - B) * (1 - (v - d[0]) / (d[1] - d[0])); };
-    var g = '<svg class="lt-big" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(s.meta.name) + ' değişimi">';
+    var Y = function (v) { return T + (H - T - B) * (1 - (v - sc.min) / (sc.max - sc.min)); };
+    var g = '<svg class="lt-chart" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(s.meta.name) + ' (' + esc(s.meta.unit) + ') ölçüm trendi">';
+    /* referans bandı */
     if (s.range) {
-      /* Band, çizim alanına sınırlanır (geniş aralıklarda taşmaz) */
-      var top = T, bottom = H - B;
-      var y1 = Math.max(top, Y(s.range[1])), y2 = Math.min(bottom, Y(s.range[0]));
-      if (y2 > y1) {
-        g += '<rect x="' + L + '" y="' + y1.toFixed(1) + '" width="' + (W - L - R) + '" height="' + Math.max(1, y2 - y1).toFixed(1) + '" fill="#dcfce7"/>';
-        g += '<text x="' + (W - R - 2) + '" y="' + (y1 + 10).toFixed(1) + '" text-anchor="end" font-size="9" fill="#15803d" font-weight="700">Normal aralık</text>';
-      }
+      var y1 = Y(s.range[1]), y2 = Y(s.range[0]);
+      g += '<rect x="' + L + '" y="' + y1.toFixed(1) + '" width="' + (W - L - R) + '" height="' + Math.max(1, y2 - y1).toFixed(1) + '" fill="#dcfce7" opacity=".7"/>';
+    }
+    /* Y ızgarası ve etiketleri */
+    sc.ticks.forEach(function (t) {
+      var y = Y(t);
+      g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="#e2e8f0" stroke-width="1"/>' +
+        '<text x="' + (L - 5) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="end" font-size="9.5" fill="#64748b">' + fmtD(t, sc.dec) + '</text>';
+    });
+    g += '<text x="' + (L - 5) + '" y="' + (T - 5) + '" text-anchor="end" font-size="9" font-weight="700" fill="#475569">' + esc(s.meta.unit) + '</text>';
+    /* referans sınır çizgileri */
+    if (s.range) {
       [s.range[0], s.range[1]].forEach(function (v) {
-        var yy = Y(v);
-        if (yy < top || yy > bottom) return; /* alan dışındaki sınır çizilmez */
-        g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) + '" stroke="#86efac" stroke-dasharray="3 3" stroke-width="1"/>';
-        g += '<text x="' + (L - 4) + '" y="' + (yy + 3).toFixed(1) + '" text-anchor="end" font-size="9" fill="#64748b">' + fmt(v) + '</text>';
+        g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '" stroke="#4ade80" stroke-dasharray="4 3" stroke-width="1.1"/>';
       });
     }
+    /* X ekseni */
+    g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + (H - B) + '" y2="' + (H - B) + '" stroke="#94a3b8" stroke-width="1"/>';
+    var every = n > 8 ? Math.ceil(n / 6) : 1;
+    s.pts.forEach(function (p, i) {
+      if (i % every !== 0 && i !== n - 1) return;
+      var anchor = n > 1 ? (i === 0 ? "start" : (i === n - 1 ? "end" : "middle")) : "middle";
+      g += '<text x="' + X(i).toFixed(1) + '" y="' + (H - B + 13) + '" text-anchor="' + anchor + '" font-size="9.5" fill="#475569">' + esc(dmyShort(p.date)) + '</text>';
+    });
+    g += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="#64748b">Tahlil tarihi (eskiden yeniye)</text>';
+    /* çizgi + noktalar */
     if (n > 1) g += '<polyline fill="none" stroke="' + s.meta.color + '" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" points="' +
       s.pts.map(function (p, i) { return X(i).toFixed(1) + "," + Y(p.v).toFixed(1); }).join(" ") + '"/>';
-    var step = n > 6 ? 2 : 1;
     s.pts.forEach(function (p, i) {
-      var st = statusOf(p.v, s.range), x = X(i), y = Y(p.v);
-      var up = y > T + 18; /* değer etiketi nokta üstüne, yer yoksa altına */
-      g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4.5" fill="#fff" stroke="' + (st === "ok" ? "#16a34a" : "#ea580c") + '" stroke-width="2.4"/>';
-      if (i % step === 0 || i === n - 1) {
-        g += '<text x="' + x.toFixed(1) + '" y="' + (up ? y - 9 : y + 17).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="800" fill="#0f172a">' + fmt(p.v) + '</text>';
-        g += '<text x="' + x.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + (i === 0 && n > 1 ? "start" : (i === n - 1 && n > 1 ? "end" : "middle")) + '" font-size="9.5" fill="#64748b">' + shortDate(p.date) + '</text>';
-      }
+      var st = statusOf(p.v, s.range);
+      g += '<circle class="lt-pt" tabindex="0" data-i="' + i + '" cx="' + X(i).toFixed(1) + '" cy="' + Y(p.v).toFixed(1) + '" r="5" fill="#fff" stroke="' + (st === "ok" ? s.meta.color : "#ea580c") + '" stroke-width="2.6">' +
+        '<title>' + esc(dmy(p.date)) + ' · ' + esc(fmtD(p.v, sc.vdec)) + ' ' + esc(s.meta.unit) + '</title></circle>';
     });
-    return g + "</svg>";
+    return { svg: g + "</svg>", sc: sc };
   }
+
+  function monthsBetween(a, b) {
+    var d = (new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000;
+    return d / 30.44;
+  }
+
+  var current = null;
 
   function render() {
     var mount = $("labsRechartsMultiLineMount");
     if (!mount) return false;
+    var card = $("biomarkerChartCard"); if (card) card.classList.remove("hidden");
+    syncHeader();
     var data = series();
-    if (data.dates < 2) {
-      mount.innerHTML = '<div class="lt-empty"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><div><strong>Gelişim grafiği için en az 2 farklı tarihte tahlil gerekir.</strong>' +
-        '<span>' + (data.dates === 1 ? "Şu an 1 tahlil kayıtlı. Yeni bir tahlil eklediğinizde değişiminiz burada görünür." : "Tahlil sonuçlarınızı girip kaydedin.") + '</span></div></div>';
-      var st0 = $("biomarkerChartCard"); if (st0) st0.classList.remove("hidden");
+    if (!data.list.length) {
+      current = null;
+      mount.innerHTML = '<div class="lt-empty"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><div><strong>Henüz grafik için ölçüm yok</strong><span>Tahlil sonuçlarınızı girip kaydedin; değişiminiz burada görünür.</span></div></div>';
       return true;
     }
+    if (!data.list.some(function (s) { return s.meta.key === selectedKey; })) selectedKey = data.list[0].meta.key;
+    var s = data.list.filter(function (x) { return x.meta.key === selectedKey; })[0];
+    current = s;
+    var c = chart(s);
 
-    var open = {};
-    Array.prototype.forEach.call(mount.querySelectorAll("details[data-lt][open]"), function (d) { open[d.getAttribute("data-lt")] = true; });
+    var opts = data.list.map(function (x) {
+      return '<option value="' + x.meta.key + '"' + (x.meta.key === selectedKey ? " selected" : "") + '>' + esc(x.meta.name) + ' (' + esc(x.meta.unit) + ')</option>';
+    }).join("");
+    var n = s.pts.length, first = s.pts[0].date, last = s.pts[n - 1].date;
+    var summary;
+    if (n === 1) {
+      summary = "1 ölçüm · " + dmy(first) + ". Trend görmek için yeni bir tarihte tahlil ekleyin. Noktalar kaydedilen ölçümleri temsil eder.";
+    } else {
+      var mo = monthsBetween(first, last);
+      var span = mo >= 0.5 ? "yaklaşık " + Math.max(1, Math.round(mo)) + " aylık zaman aralığı" : "1 aydan kısa zaman aralığı";
+      summary = n + " ölçüm · " + dmy(first) + " – " + dmy(last) + " · " + span + ". Noktalar kaydedilen ölçümleri temsil eder; aradaki çizgi ölçüm yapılmayan günlerdeki gerçek sonucu göstermez.";
+    }
 
-    var rows = data.list.map(function (s) {
-      var last = s.pts[s.pts.length - 1], st = statusOf(last.v, s.range);
-      return { s: s, last: last, st: st, tr: trendOf(s) };
-    }).sort(function (a, b) { return (a.st === "ok" ? 1 : 0) - (b.st === "ok" ? 1 : 0); });
-
-    var bad = rows.filter(function (r) { return r.st !== "ok"; }).length;
-    var html = '<div class="lt-sum"><span>' + data.dates + ' tahlil · ' + rows.length + ' değer</span>' +
-      '<span class="' + (bad ? "lt-sum-warn" : "lt-sum-ok") + '">' + (bad ? bad + " değer takipte" : "Tümü normal aralıkta") + '</span></div>';
-
-    rows.forEach(function (r) {
-      var s = r.s, chip = CHIP[r.st];
-      html += '<details class="lt-row" data-lt="' + s.meta.key + '"' + (open[s.meta.key] ? " open" : "") + '><summary>' +
-        '<span class="lt-dot" style="background:' + s.meta.color + '"></span>' +
-        '<span class="lt-name">' + esc(s.meta.name) + '</span>' + spark(s) +
-        '<span class="lt-val"><b>' + esc(fmt(r.last.v)) + '</b><small>' + esc(s.meta.unit) + '</small></span>' +
-        '<span class="lt-chip ' + chip[1] + '">' + chip[0] + '</span><i class="fa-solid fa-chevron-down lt-chev" aria-hidden="true"></i></summary>' +
-        '<div class="lt-body">' + big(s) +
-        '<div class="lt-foot">' +
-        (r.tr ? '<span class="lt-trend ' + r.tr.cls + '">' + r.tr.icon + ' ' + esc(r.tr.label) + ' (' + esc(r.tr.delta) + ' ' + esc(s.meta.unit) + ')</span>' : "") +
-        (s.range ? '<span class="lt-ref">Normal: ' + esc(fmt(s.range[0])) + '–' + esc(fmt(s.range[1])) + ' ' + esc(s.meta.unit) + '</span>' : "") +
-        '</div></div></details>';
-    });
-    mount.innerHTML = html;
-    var card = $("biomarkerChartCard"); if (card) card.classList.remove("hidden");
+    mount.innerHTML =
+      '<p class="lt-intro">Ölçümleri tarih sırasıyla inceleyin. Ölçeklerin birbirini bastırmaması için tek biyobelirteç seçin.</p>' +
+      '<label class="lt-label" for="ltSelect">Grafikte gösterilecek tahlil</label>' +
+      '<select id="ltSelect" class="lt-select">' + opts + '</select>' +
+      '<div class="lt-legend"><span><i class="lt-sw" style="background:' + s.meta.color + '"></i>' + esc(s.meta.name) + ' (' + esc(s.meta.unit) + ')</span>' +
+      (s.range ? '<span><i class="lt-sw lt-sw-band"></i>Referans aralığı ' + esc(fmtD(s.range[0], Math.max(decimalsOf(s.range[0]), decimalsOf(s.range[1])))) + '–' + esc(fmtD(s.range[1], Math.max(decimalsOf(s.range[0]), decimalsOf(s.range[1])))) + '</span>' : "") + '</div>' +
+      '<div class="lt-chartwrap">' + c.svg + '<div class="lt-tip" id="ltTip" role="status" aria-live="polite"></div></div>' +
+      '<p class="lt-sumtxt">' + esc(summary) + '</p>' +
+      '<p class="lt-legal">Grafik görsel karşılaştırma içindir. Referans aralığı ve klinik yorum; laboratuvar, yaş, cinsiyet, ilaçlar ve sağlık öyküsüyle birlikte bir hekim tarafından değerlendirilmelidir.</p>';
     return true;
   }
 
-  window.VitaLabTrend = { render: render, series: series };
+  /* Üzerine gelince / dokununca ayrıntı */
+  function showTip(i) {
+    var tip = $("ltTip"), s = current; if (!tip || !s) return;
+    var p = s.pts[i], sc = scale(s), st = statusOf(p.v, s.range);
+    tip.innerHTML = '<b>' + esc(dmy(p.date)) + '</b> · ' + esc(fmtD(p.v, sc.vdec)) + ' ' + esc(s.meta.unit) + ' <span class="lt-t-' + st + '">' + STATUS_TXT[st] + '</span>';
+    tip.classList.add("on");
+  }
+  document.addEventListener("mouseover", function (e) { var c = e.target.closest && e.target.closest(".lt-pt"); if (c) showTip(Number(c.getAttribute("data-i"))); });
+  document.addEventListener("click", function (e) { var c = e.target.closest && e.target.closest(".lt-pt"); if (c) showTip(Number(c.getAttribute("data-i"))); });
+  document.addEventListener("focusin", function (e) { var c = e.target.closest && e.target.closest(".lt-pt"); if (c) showTip(Number(c.getAttribute("data-i"))); });
+  document.addEventListener("change", function (e) { if (e.target && e.target.id === "ltSelect") { selectedKey = e.target.value; render(); } });
+
+  /* Açılır/kapanır: pürüzsüz */
+  function syncHeader() {
+    var c = $("acc-labtrend"), t = $("labTrendAccordionToggle"), l = $("label-acc-labtrend"), i = $("icon-acc-labtrend");
+    if (!c) return;
+    c.classList.toggle("lt-closed", closed);
+    c.classList.remove("hidden");
+    if (!closed && c.style.maxHeight !== "none") c.style.maxHeight = "none";
+    if (closed) c.style.maxHeight = "0px";
+    if (t) t.setAttribute("aria-expanded", closed ? "false" : "true");
+    if (l) l.textContent = closed ? "Göster" : "Gizle";
+    if (i) { i.classList.toggle("fa-chevron-down", closed); i.classList.toggle("fa-chevron-up", !closed); }
+  }
+  function toggle() {
+    var c = $("acc-labtrend"); if (!c) return;
+    closed = !closed;
+    if (!closed) {
+      render();
+      c.classList.remove("lt-closed");
+      c.style.maxHeight = "0px";
+      c.getBoundingClientRect();
+      c.style.maxHeight = c.scrollHeight + "px";
+      setTimeout(function () { if (!closed) c.style.maxHeight = "none"; }, 320);
+    } else {
+      c.style.maxHeight = c.scrollHeight + "px";
+      c.getBoundingClientRect();
+      c.classList.add("lt-closed");
+      c.style.maxHeight = "0px";
+    }
+    var t = $("labTrendAccordionToggle"), l = $("label-acc-labtrend"), i = $("icon-acc-labtrend");
+    if (t) t.setAttribute("aria-expanded", closed ? "false" : "true");
+    if (l) l.textContent = closed ? "Göster" : "Gizle";
+    if (i) { i.classList.toggle("fa-chevron-down", closed); i.classList.toggle("fa-chevron-up", !closed); }
+  }
+
+  window.VitaLabTrend = { render: render, series: series, toggle: toggle, scale: scale, isClosed: function () { return closed; } };
 })();

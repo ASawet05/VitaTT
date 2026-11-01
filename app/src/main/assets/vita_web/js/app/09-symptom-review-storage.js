@@ -46,7 +46,7 @@ function checkPendingSymptomReviews() {
                   Klinik İlerleme & Biyolojik Yanıt Kontrolü
                 </span>
                 <h4 class="text-sm sm:text-base font-black text-white mt-1">
-                  ${target.weeks}. Hafta ${target.sup.name} Kontrolü: İlgili şikayetleriniz ne durumda?
+                  ${target.weeks}. Hafta ${escapeHtmlText(target.sup.name)} Kontrolü: İlgili şikayetleriniz ne durumda?
                 </h4>
                 <p class="text-xs text-indigo-100/90 mt-0.5 leading-relaxed">
                   Bu takviyenin vücutta kararlı konsantrasyona ve doku onarımına ulaşması için gereken biyolojik süre (${target.latencyDays} gün) tamamlanmıştır. Başlangıçta bildirdiğiniz semptomların durumunu hekiminizle paylaşmak üzere işaretleyiniz.
@@ -54,7 +54,7 @@ function checkPendingSymptomReviews() {
               </div>
             </div>
 
-            <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); openSymptomReviewModal('${target.sup.id}')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-600 hover:to-emerald-500 text-navy-950 font-black text-xs shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap self-start md:self-center active:scale-95">
+            <button type="button" onclick="if(window.SoundEffects) SoundEffects.playClick(); openSymptomReviewModal(${safeJsStringAttribute(target.sup.id)})" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-600 hover:to-emerald-500 text-navy-950 font-black text-xs shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap self-start md:self-center active:scale-95">
               <i class="fa-solid fa-clipboard-check"></i>
               <span>Hızlı Değerlendirme Yap</span>
             </button>
@@ -743,6 +743,8 @@ function checkPendingSymptomReviews() {
         const drawerHW = document.getElementById("drawerUserWeightHeight");
 
         if (hTime) hTime.textContent = slot;
+        const hIcon = document.getElementById("homeGreetingIcon");
+        if (hIcon) hIcon.className = "fa-solid " + (hour >= 6 && hour < 12 ? "fa-sun" : (hour >= 12 && hour < 18 ? "fa-cloud-sun" : "fa-moon"));
         if (hName) hName.textContent = `${slot}, ${p.name || 'Kullanıcı'}!`;
         if (hBmi) hBmi.textContent = `VKİ: ${p.bmi} (${p.bmiCategory})`;
         if (hDesc) {
@@ -910,6 +912,15 @@ function checkPendingSymptomReviews() {
 
       if (!name || isNaN(age) || isNaN(height) || isNaN(weight)) {
         showToast("Eksik Bilgi", "Lütfen tüm zorunlu alanları doldurunuz.", "warning");
+        return;
+      }
+      /* Gerçekçi aralık denetimi: hatalı giriş VKİ, su hedefi ve eGFR hesabını bozar */
+      const rangeError = (age < 1 || age > 120) ? "Yaş 1–120 arasında olmalıdır."
+        : (height < 45 || height > 250) ? "Boy 45–250 cm arasında olmalıdır."
+        : (weight < 2 || weight > 350) ? "Kilo 2–350 kg arasında olmalıdır."
+        : "";
+      if (rangeError) {
+        showToast("Değeri kontrol edin", rangeError, "warning");
         return;
       }
 

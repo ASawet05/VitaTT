@@ -135,6 +135,7 @@ function checkMidnightReset(userId) {
     function importDataBackup(event) {
       const file = event.target.files[0];
       if (!file) return;
+      if (file.size > 10 * 1024 * 1024) { showToast("Dosya çok büyük", "Yedek dosyası 10 MB'tan büyük olamaz.", "error"); event.target.value = ""; return; }
 
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -148,24 +149,29 @@ function checkMidnightReset(userId) {
           if (confirm("Yedek yüklendiğinde mevcut verilerinizin üzerine yazılacaktır. Onaylıyor musunuz?")) {
             resetApplicationDOMAndState();
             if (parsed.user) state.user = { ...state.user, ...parsed.user };
-            if (parsed.supplements) state.supplements = parsed.supplements;
+            if (Array.isArray(parsed.supplements)) state.supplements = parsed.supplements.filter(s => s && typeof s === "object" && typeof s.name === "string");
             if (parsed.hydration) state.hydration = parsed.hydration;
             if (parsed.labValues) state.labValues = { d3: null, b12: null, ferritin: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, mcv: null, crp: null, ...parsed.labValues };
             if (parsed.labReferences && typeof parsed.labReferences === "object") state.labReferences = { ...parsed.labReferences };
             if (parsed.labHistory && Array.isArray(parsed.labHistory)) {
-              state.labHistory = parsed.labHistory.slice();
+              state.labHistory = parsed.labHistory.filter(r => r && typeof r === "object" && /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")));
               state.labHistory.sort((a, b) => {
                 const tb = (typeof b.timestamp === "number") ? b.timestamp : (b.date ? new Date(b.date + "T00:00:00").getTime() : 0);
                 const ta = (typeof a.timestamp === "number") ? a.timestamp : (a.date ? new Date(a.date + "T00:00:00").getTime() : 0);
                 return (tb || 0) - (ta || 0);
               });
             }
-            if (parsed.selectedSymptoms) state.selectedSymptoms = new Set(parsed.selectedSymptoms);
-            if (parsed.resolvedSymptoms) state.resolvedSymptoms = new Set(parsed.resolvedSymptoms);
+            if (Array.isArray(parsed.selectedSymptoms)) state.selectedSymptoms = new Set(parsed.selectedSymptoms.filter(k => typeof ANAMNESIS_DICTIONARY !== "undefined" && ANAMNESIS_DICTIONARY[k]));
+            state.selectedSymptomsArray = Array.from(state.selectedSymptoms || []);
+            if (Array.isArray(parsed.resolvedSymptoms)) state.resolvedSymptoms = new Set(parsed.resolvedSymptoms);
             state.supplementReviews = parsed.supplementReviews || {};
-            if (parsed.lastCDSS) state.lastCDSS = parsed.lastCDSS;
+            /* Eski analiz sonucu içe aktarılmaz; güncel kurallarla yeniden hesaplanır */
+            state.lastCDSS = null;
 
+            if (typeof recalculateUserBmi === "function") recalculateUserBmi();
             saveState();
+            if (typeof invalidateClinicalAnalysisCache === "function") invalidateClinicalAnalysisCache({ clearDOM: true });
+            if (typeof canRunClinicalAnalysis === "function" && canRunClinicalAnalysis() && typeof executeCDSSRules === "function") executeCDSSRules();
             renderAllAppViews();
             showToast("Geri Yüklendi", "Verileriniz başarıyla yüklendi ve sıralandı.", "success");
           }
@@ -761,7 +767,7 @@ function checkMidnightReset(userId) {
       if (temporarilyParsedPdfDate && mainDateInput) {
         mainDateInput.value = temporarilyParsedPdfDate;
       }
-      const effectiveDate = temporarilyParsedPdfDate || (mainDateInput && mainDateInput.value) || new Date().toISOString().split("T")[0];
+      const effectiveDate = temporarilyParsedPdfDate || (mainDateInput && mainDateInput.value) || vitaLocalToday();
 
       // Kreatinin veya doğrudan eGFR okunduysa CKD-EPI 2021 eGFR bilgisini hazırla
       let egfrBannerHtml = "";
