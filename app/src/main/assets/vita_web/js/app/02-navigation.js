@@ -57,6 +57,9 @@ function openAppDrawer() {
     });
 
     function renderSettingsView() {
+      if (typeof recalculateUserBmi === "function") {
+        recalculateUserBmi();
+      }
       const p = (typeof state !== "undefined" && state.user) ? state.user : defaultUserProfile;
       const nameEl = document.getElementById("settingsProfileName");
       const ageGenderEl = document.getElementById("settingsProfileAgeGender");
@@ -72,8 +75,11 @@ function openAppDrawer() {
       if (bodyMetricsEl) {
         const h = p.height || 170;
         const w = p.weight || 68;
-        const bmiInfo = typeof calculateBMI === "function" ? calculateBMI(w, h) : { bmi: "-" };
-        bodyMetricsEl.textContent = `${h} cm / ${w} kg (VKİ: ${bmiInfo.bmi})`;
+        const bmiInfo = typeof calculateBmiValue === "function"
+          ? calculateBmiValue(h, w)
+          : (typeof calculateBMI === "function" ? calculateBMI(w, h) : { bmi: p.bmi || "-", category: p.bmiCategory || "" });
+        const catSuffix = bmiInfo.category ? ` — ${bmiInfo.category}` : "";
+        bodyMetricsEl.textContent = `${h} cm / ${w} kg (VKİ: ${bmiInfo.bmi}${catSuffix})`;
       }
       if (medsSummaryEl) {
         const chronicArr = Array.isArray(p.chronic) ? p.chronic : [];
@@ -190,6 +196,9 @@ function openAppDrawer() {
           syncAnamnesisCardsUI();
           ensureCDSSResultsView();
         } else if (viewId === "view-clinical-results") {
+          if (typeof invalidateClinicalAnalysisCache === "function") {
+            invalidateClinicalAnalysisCache({ clearDOM: true });
+          }
           if (typeof persistCurrentLabInputsToState === "function") {
             persistCurrentLabInputsToState({ silentUI: true });
           }
@@ -201,7 +210,7 @@ function openAppDrawer() {
           } else {
             const hasDataOrSymptoms = typeof canRunClinicalAnalysis === "function"
               ? canRunClinicalAnalysis()
-              : ((state.selectedSymptoms instanceof Set && state.selectedSymptoms.size > 0) || Boolean(state.lastCDSS));
+              : (state.selectedSymptoms instanceof Set && state.selectedSymptoms.size > 0);
             if (hasDataOrSymptoms && typeof executeCDSSRules === "function") {
               executeCDSSRules();
             }

@@ -1341,25 +1341,42 @@ function renderDailyTab() {
     }
 
     function commitLabRecord(record, mode) {
+      const cleanRecord = typeof safeStructuredClone === "function" ? safeStructuredClone(record) : { ...record };
       if (mode === "update") {
-        const existingIndex = state.labHistory.findIndex(item => item.date === record.date);
+        const existingIndex = state.labHistory.findIndex(item => item.date === cleanRecord.date);
         if (existingIndex >= 0) {
-          record.id = state.labHistory[existingIndex].id;
-          state.labHistory[existingIndex] = record;
-        } else state.labHistory.push(record);
+          cleanRecord.id = state.labHistory[existingIndex].id;
+          state.labHistory[existingIndex] = cleanRecord;
+        } else state.labHistory.push(cleanRecord);
       } else {
         if (mode === "add") {
-          // Aynı takvim gününde ayrı bir örnek olarak sakla; saat etiketi/timestamp ayrıştırır.
-          record.id = `lab_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-          record.timeLabel = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-          record.timestamp = new Date(`${record.date}T${new Date().toTimeString().slice(0, 8)}`).getTime() || Date.now();
+          cleanRecord.id = `lab_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+          cleanRecord.timeLabel = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+          cleanRecord.timestamp = new Date(`${cleanRecord.date}T${new Date().toTimeString().slice(0, 8)}`).getTime() || Date.now();
         }
-        state.labHistory.push(record);
+        state.labHistory.push(cleanRecord);
       }
       state.labHistory.sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
-      state.labValues = { d3: record.d3, b12: record.b12, ferritin: record.ferritin, mg: record.mg, ca: record.ca, zinc: record.zinc, creatinine: record.creatinine, folate: record.folate, alt: record.alt, hb: record.hb ?? null, mcv: record.mcv ?? null, crp: record.crp ?? null };
-      state.labReferences = { ...(record.references || {}) };
-      VITA_LAB_REFERENCE_FIELDS.forEach(([id, key]) => { const input = document.getElementById(id); if (input) input.value = String(record.references?.[key] || ""); });
+      state.labValues = typeof buildLabValuesFromRecord === "function"
+        ? buildLabValuesFromRecord(state.labHistory[0] || cleanRecord)
+        : { d3: cleanRecord.d3, b12: cleanRecord.b12, ferritin: cleanRecord.ferritin, iron: cleanRecord.iron ?? null, tsat: cleanRecord.tsat ?? null, mg: cleanRecord.mg, ca: cleanRecord.ca, zinc: cleanRecord.zinc, creatinine: cleanRecord.creatinine, folate: cleanRecord.folate, alt: cleanRecord.alt, hb: cleanRecord.hb ?? null, hgb: cleanRecord.hb ?? null, mcv: cleanRecord.mcv ?? null, crp: cleanRecord.crp ?? null };
+      state.labReferences = typeof safeStructuredClone === "function"
+        ? safeStructuredClone((state.labHistory[0] || cleanRecord).references || {})
+        : { ...((state.labHistory[0] || cleanRecord).references || {}) };
+
+      if (typeof invalidateClinicalAnalysisCache === "function") {
+        invalidateClinicalAnalysisCache({ clearDOM: true });
+      }
+      clearLabDraft();
+      VITATAKIP_LAB_DRAFT_FIELDS.forEach(([id]) => {
+        const input = document.getElementById(id);
+        if (input) input.value = "";
+      });
+      VITA_LAB_REFERENCE_FIELDS.forEach(([id]) => {
+        const input = document.getElementById(id);
+        if (input) input.value = "";
+      });
+      if (Array.isArray(VITA_LAB_INPUTS)) VITA_LAB_INPUTS.forEach(([inputId, key]) => updateVitaLabLiveFeedback(inputId, key));
 
       saveState();
       syncCDSSDemographics();
@@ -1372,20 +1389,11 @@ function renderDailyTab() {
       checkDeprescribingOpportunities();
       renderDailyTab();
       renderReportTab();
-      clearLabDraft();
-      VITATAKIP_LAB_DRAFT_FIELDS.forEach(([id]) => {
-        const input = document.getElementById(id);
-        if (input) input.value = "";
-      });
-      VITA_LAB_REFERENCE_FIELDS.forEach(([id]) => {
-        const input = document.getElementById(id);
-        if (input) input.value = "";
-      });
-      if (Array.isArray(VITA_LAB_INPUTS)) VITA_LAB_INPUTS.forEach(([inputId, key]) => updateVitaLabLiveFeedback(inputId, key));
+      if (typeof renderSettingsView === "function") renderSettingsView();
       const rangeModal = document.getElementById("vitaLabRangesModal");
       if (rangeModal) rangeModal.classList.remove("is-open");
       const label = mode === "update" ? "Tahlil Güncellendi" : mode === "add" ? "Aynı Tarihe Yeni Kayıt Eklendi" : "Tahlil Kaydedildi";
-      showToast(label, `${record.date}${record.timeLabel ? ` ${record.timeLabel}` : ""} tarihli tahlil arşive kaydedildi.`, "success");
+      showToast(label, `${cleanRecord.date}${cleanRecord.timeLabel ? ` ${cleanRecord.timeLabel}` : ""} tarihli tahlil arşive kaydedildi.`, "success");
     }
 
     function persistCurrentLabInputsToState(options = {}) {
@@ -1413,25 +1421,13 @@ function renderDailyTab() {
         if (entered) enteredRefs[key] = entered;
       });
 
-      if (!state.labValues || typeof state.labValues !== "object") {
-        state.labValues = {};
-      }
-      if (!state.labReferences || typeof state.labReferences !== "object") {
-        state.labReferences = {};
+      if (!Array.isArray(state.labHistory)) {
+        state.labHistory = [];
       }
 
       if (hasAnyEnteredValue) {
-        Object.keys(enteredValues).forEach(key => {
-          if (enteredValues[key] !== null && enteredValues[key] !== undefined) {
-            state.labValues[key] = enteredValues[key];
-          }
-        });
-        Object.keys(enteredRefs).forEach(key => {
-          state.labReferences[key] = enteredRefs[key];
-        });
-
-        if (!Array.isArray(state.labHistory)) {
-          state.labHistory = [];
+        if (typeof invalidateClinicalAnalysisCache === "function") {
+          invalidateClinicalAnalysisCache({ clearDOM: false });
         }
         const genderAtTest = state.user?.gender || "K";
         const existingIndex = state.labHistory.findIndex(item => item && item.date === dateVal);
@@ -1439,18 +1435,18 @@ function renderDailyTab() {
         const mergedRecord = {
           id: baseRecord?.id || `lab_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
           date: dateVal,
-          d3: enteredValues.d3 !== null ? enteredValues.d3 : (baseRecord?.d3 ?? state.labValues.d3 ?? null),
-          b12: enteredValues.b12 !== null ? enteredValues.b12 : (baseRecord?.b12 ?? state.labValues.b12 ?? null),
-          ferritin: enteredValues.ferritin !== null ? enteredValues.ferritin : (baseRecord?.ferritin ?? state.labValues.ferritin ?? null),
-          mg: enteredValues.mg !== null ? enteredValues.mg : (baseRecord?.mg ?? state.labValues.mg ?? null),
-          ca: enteredValues.ca !== null ? enteredValues.ca : (baseRecord?.ca ?? state.labValues.ca ?? null),
-          zinc: enteredValues.zinc !== null ? enteredValues.zinc : (baseRecord?.zinc ?? state.labValues.zinc ?? null),
-          creatinine: enteredValues.creatinine !== null ? enteredValues.creatinine : (baseRecord?.creatinine ?? state.labValues.creatinine ?? null),
-          folate: enteredValues.folate !== null ? enteredValues.folate : (baseRecord?.folate ?? state.labValues.folate ?? null),
-          alt: enteredValues.alt !== null ? enteredValues.alt : (baseRecord?.alt ?? state.labValues.alt ?? null),
-          hb: enteredValues.hb !== null ? enteredValues.hb : (baseRecord?.hb ?? state.labValues.hb ?? null),
-          mcv: enteredValues.mcv !== null ? enteredValues.mcv : (baseRecord?.mcv ?? state.labValues.mcv ?? null),
-          crp: enteredValues.crp !== null ? enteredValues.crp : (baseRecord?.crp ?? state.labValues.crp ?? null),
+          d3: enteredValues.d3 !== null ? enteredValues.d3 : (baseRecord?.d3 ?? null),
+          b12: enteredValues.b12 !== null ? enteredValues.b12 : (baseRecord?.b12 ?? null),
+          ferritin: enteredValues.ferritin !== null ? enteredValues.ferritin : (baseRecord?.ferritin ?? null),
+          mg: enteredValues.mg !== null ? enteredValues.mg : (baseRecord?.mg ?? null),
+          ca: enteredValues.ca !== null ? enteredValues.ca : (baseRecord?.ca ?? null),
+          zinc: enteredValues.zinc !== null ? enteredValues.zinc : (baseRecord?.zinc ?? null),
+          creatinine: enteredValues.creatinine !== null ? enteredValues.creatinine : (baseRecord?.creatinine ?? null),
+          folate: enteredValues.folate !== null ? enteredValues.folate : (baseRecord?.folate ?? null),
+          alt: enteredValues.alt !== null ? enteredValues.alt : (baseRecord?.alt ?? null),
+          hb: enteredValues.hb !== null ? enteredValues.hb : (baseRecord?.hb ?? null),
+          mcv: enteredValues.mcv !== null ? enteredValues.mcv : (baseRecord?.mcv ?? null),
+          crp: enteredValues.crp !== null ? enteredValues.crp : (baseRecord?.crp ?? null),
           references: { ...(baseRecord?.references || {}), ...enteredRefs },
           applicationReferences: typeof getVitaAppLabReferenceMap === "function" ? getVitaAppLabReferenceMap(genderAtTest) : {},
           genderAtTest,
@@ -1464,9 +1460,30 @@ function renderDailyTab() {
           state.labHistory.push(mergedRecord);
         }
         state.labHistory.sort((a, b) => Number(b.timestamp || new Date(b.date || 0).getTime() || 0) - Number(a.timestamp || new Date(a.date || 0).getTime() || 0));
+        state.labValues = typeof buildLabValuesFromRecord === "function"
+          ? buildLabValuesFromRecord(state.labHistory[0] || mergedRecord)
+          : { ...enteredValues };
+        state.labReferences = typeof safeStructuredClone === "function"
+          ? safeStructuredClone((state.labHistory[0] || mergedRecord).references || {})
+          : { ...((state.labHistory[0] || mergedRecord).references || {}) };
+        saveLabDraft();
+      } else {
+        clearLabDraft();
+        if (state.labHistory.length > 0) {
+          state.labValues = typeof buildLabValuesFromRecord === "function"
+            ? buildLabValuesFromRecord(state.labHistory[0])
+            : { ...state.labHistory[0] };
+          state.labReferences = typeof safeStructuredClone === "function"
+            ? safeStructuredClone(state.labHistory[0].references || {})
+            : { ...(state.labHistory[0].references || {}) };
+        } else {
+          state.labValues = typeof createEmptyLabValuesState === "function"
+            ? createEmptyLabValuesState()
+            : { d3: null, b12: null, ferritin: null, iron: null, tsat: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, hgb: null, rbc: null, hct: null, mcv: null, crp: null, hba1c: null, tsh: null, ft4: null };
+          state.labReferences = typeof createEmptyLabReferencesState === "function" ? createEmptyLabReferencesState() : {};
+        }
       }
 
-      saveLabDraft();
       if (typeof saveState === "function") {
         saveState();
       }
@@ -1479,7 +1496,7 @@ function renderDailyTab() {
       } else if (window.VitaRechartsDashboard && typeof window.VitaRechartsDashboard.renderAll === "function") {
         window.VitaRechartsDashboard.renderAll();
       }
-      return { hasAnyEnteredValue, values: { ...state.labValues }, labHistoryCount: Array.isArray(state.labHistory) ? state.labHistory.length : 0 };
+      return { hasAnyEnteredValue, values: typeof safeStructuredClone === "function" ? safeStructuredClone(state.labValues) : { ...state.labValues }, labHistoryCount: Array.isArray(state.labHistory) ? state.labHistory.length : 0 };
     }
 
     function proceedFromLabsToNeyim() {
@@ -1767,27 +1784,69 @@ function renderDailyTab() {
     }
 
     function deleteLabRecord(id) {
-      state.labHistory = state.labHistory.filter(r => r.id !== id);
+      state.labHistory = (state.labHistory || []).filter(r => String(r.id) !== String(id));
+      temporarilyParsedLabResults = {};
+      temporarilyParsedPdfDate = null;
+      temporarilyParsedPdfEgfr = null;
+      clearLabDraft();
+
+      VITATAKIP_LAB_DRAFT_FIELDS.forEach(([inputId]) => {
+        const input = document.getElementById(inputId);
+        if (input) input.value = "";
+      });
+      VITA_LAB_REFERENCE_FIELDS.forEach(([inputId]) => {
+        const input = document.getElementById(inputId);
+        if (input) input.value = "";
+      });
+
       if (state.labHistory.length > 0) {
         const latest = state.labHistory[0];
-        state.labValues = { d3: latest.d3, b12: latest.b12, ferritin: latest.ferritin, mg: latest.mg, ca: latest.ca, zinc: latest.zinc, creatinine: latest.creatinine, folate: latest.folate, alt: latest.alt ?? null, hb: latest.hb ?? null, mcv: latest.mcv ?? null, crp: latest.crp ?? null };
-        state.labReferences = { ...(latest.references || {}) };
+        state.labValues = typeof buildLabValuesFromRecord === "function"
+          ? buildLabValuesFromRecord(latest)
+          : { d3: latest.d3, b12: latest.b12, ferritin: latest.ferritin, iron: latest.iron ?? null, tsat: latest.tsat ?? null, mg: latest.mg, ca: latest.ca, zinc: latest.zinc, creatinine: latest.creatinine, folate: latest.folate, alt: latest.alt ?? null, hb: latest.hb ?? null, hgb: latest.hb ?? null, mcv: latest.mcv ?? null, crp: latest.crp ?? null };
+        state.labReferences = typeof safeStructuredClone === "function"
+          ? safeStructuredClone(latest.references || {})
+          : { ...(latest.references || {}) };
+        VITA_LAB_REFERENCE_FIELDS.forEach(([inputId, key]) => {
+          const input = document.getElementById(inputId);
+          if (input) input.value = String(state.labReferences?.[key] || "");
+        });
       } else {
-        state.labValues = { d3: null, b12: null, ferritin: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, mcv: null, crp: null };
-        state.labReferences = {};
+        state.labValues = typeof createEmptyLabValuesState === "function"
+          ? createEmptyLabValuesState()
+          : { d3: null, b12: null, ferritin: null, iron: null, tsat: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, hgb: null, rbc: null, hct: null, mcv: null, crp: null, hba1c: null, tsh: null, ft4: null };
+        state.labReferences = typeof createEmptyLabReferencesState === "function" ? createEmptyLabReferencesState() : {};
+        try {
+          if (activeUserId) {
+            safeLocalStorageRemoveItem(`vitatakip_labs_${activeUserId}`);
+            safeLocalStorageRemoveItem(`vitatakip_labreferences_${activeUserId}`);
+            safeLocalStorageRemoveItem(`vitatakip_labhistory_${activeUserId}`);
+            safeLocalStorageRemoveItem(`vitatakip_labdraft_${activeUserId}`);
+          }
+          safeLocalStorageRemoveItem("currentLabResults");
+          safeLocalStorageRemoveItem("labArchiveHistory");
+        } catch (_) {}
       }
-      VITA_LAB_REFERENCE_FIELDS.forEach(([inputId, key]) => {
-        const input = document.getElementById(inputId);
-        if (input) input.value = String(state.labReferences?.[key] || "");
-      });
+
+      if (Array.isArray(VITA_LAB_INPUTS)) {
+        VITA_LAB_INPUTS.forEach(([inputId, key]) => updateVitaLabLiveFeedback(inputId, key));
+      }
+
+      if (typeof invalidateClinicalAnalysisCache === "function") {
+        invalidateClinicalAnalysisCache({ clearDOM: true });
+      }
       saveState();
+      if (typeof canRunClinicalAnalysis === "function" && canRunClinicalAnalysis() && typeof executeCDSSRules === "function") {
+        executeCDSSRules();
+      }
       syncCDSSDemographics();
       renderLabHistoryUI();
       renderBiomarkerTrendChart();
       evaluateTrendAndDecisionSupport(false);
       renderDailyTab();
       renderReportTab();
-      showToast("Tahlil Silindi", "Kayıt arşivden çıkarıldı.", "info");
+      if (typeof renderSettingsView === "function") renderSettingsView();
+      showToast("Tahlil Silindi", "Silinen tahlil verileri arşivin yanı sıra aktif bellek ve klinik analizlerden tamamen temizlendi.", "info");
     }
 
     function renderBiomarkerTrendChart() {

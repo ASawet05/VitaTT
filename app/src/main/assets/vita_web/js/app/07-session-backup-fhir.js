@@ -49,12 +49,16 @@ function checkMidnightReset(userId) {
       }
       const storedHydration = readStoredJSON(`vitatakip_hydration_${userId}`, { current: 0, target: 2450 });
       state.hydration = storedHydration && typeof storedHydration === "object" ? { current: 0, target: 2450, ...storedHydration } : { current: 0, target: 2450 };
-      const parsedLabs = readStoredJSON(`vitatakip_labs_${userId}`, {});
-      state.labValues = { d3: null, b12: null, ferritin: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, mcv: null, crp: null, ...(parsedLabs && typeof parsedLabs === "object" ? parsedLabs : {}) };
-      const parsedLabReferences = readStoredJSON(`vitatakip_labreferences_${userId}`, {});
-      state.labReferences = parsedLabReferences && typeof parsedLabReferences === "object" ? parsedLabReferences : {};
       const storedLabHistory = readStoredJSON(`vitatakip_labhistory_${userId}`, []);
       state.labHistory = Array.isArray(storedLabHistory) ? storedLabHistory : [];
+      const parsedLabs = readStoredJSON(`vitatakip_labs_${userId}`, {});
+      if (state.labHistory.length > 0) {
+        state.labValues = buildLabValuesFromRecord(state.labHistory[0]);
+      } else {
+        state.labValues = buildLabValuesFromRecord(parsedLabs && typeof parsedLabs === "object" ? parsedLabs : {});
+      }
+      const parsedLabReferences = readStoredJSON(`vitatakip_labreferences_${userId}`, {});
+      state.labReferences = parsedLabReferences && typeof parsedLabReferences === "object" ? parsedLabReferences : {};
       if (!Object.keys(state.labReferences || {}).length && state.labHistory[0]?.references) state.labReferences = { ...state.labHistory[0].references };
       const storedSymptoms = readStoredJSON(`vitatakip_symptoms_${userId}`, []);
       state.selectedSymptoms = new Set(Array.isArray(storedSymptoms) ? storedSymptoms : []);
@@ -63,7 +67,7 @@ function checkMidnightReset(userId) {
       state.resolvedSymptoms = new Set(Array.isArray(storedResolvedSymptoms) ? storedResolvedSymptoms : []);
       const storedReviews = readStoredJSON(`vitatakip_reviews_${userId}`, {});
       state.supplementReviews = storedReviews && typeof storedReviews === "object" ? storedReviews : {};
-      state.lastCDSS = readStoredJSON(`vitatakip_cdss_${userId}`, null);
+      invalidateClinicalAnalysisCache({ clearDOM: true });
 
       checkMidnightReset(userId);
 
@@ -78,17 +82,15 @@ function checkMidnightReset(userId) {
       const hasClinicalTrigger = typeof canRunClinicalAnalysis === "function"
         ? canRunClinicalAnalysis()
         : (state.selectedSymptoms.size > 0 || (Array.isArray(state.labHistory) && state.labHistory.length > 0));
-      if (state.lastCDSS === null && hasClinicalTrigger && typeof executeCDSSRules === "function") {
+      if (hasClinicalTrigger && typeof executeCDSSRules === "function") {
         executeCDSSRules();
-      } else if (state.lastCDSS !== null) {
-        renderCDSSResultsUI(true);
-        renderTriageLabRecommendations();
       }
       // IndexedDB'de localStorage kotası nedeniyle yazılamayan/yenilenmiş arşiv varsa oturumdan sonra yükle.
       restoreVitaExtendedData(userId).then(restored => {
         if (activeUserId !== userId) return;
         labHistoryRestorePending = false;
         if (restored) {
+          invalidateClinicalAnalysisCache({ clearDOM: true });
           if (typeof canRunClinicalAnalysis === "function" && canRunClinicalAnalysis() && typeof executeCDSSRules === "function") {
             executeCDSSRules();
           }

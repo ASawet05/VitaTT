@@ -2,8 +2,24 @@ function applyParsedPdfValues() {
       const keys = Object.keys(temporarilyParsedLabResults);
       if (keys.length === 0) return;
 
-      if (!state.labValues) {
-        state.labValues = { d3: null, b12: null, ferritin: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, mcv: null, crp: null };
+      if (typeof invalidateClinicalAnalysisCache === "function") {
+        invalidateClinicalAnalysisCache({ clearDOM: true });
+      }
+      state.labValues = typeof createEmptyLabValuesState === "function"
+        ? createEmptyLabValuesState()
+        : { d3: null, b12: null, ferritin: null, iron: null, tsat: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, hgb: null, rbc: null, hct: null, mcv: null, crp: null, hba1c: null, tsh: null, ft4: null };
+      state.labReferences = typeof createEmptyLabReferencesState === "function" ? createEmptyLabReferencesState() : {};
+      if (typeof VITATAKIP_LAB_DRAFT_FIELDS !== "undefined" && Array.isArray(VITATAKIP_LAB_DRAFT_FIELDS)) {
+        VITATAKIP_LAB_DRAFT_FIELDS.forEach(([id]) => {
+          const el = document.getElementById(id);
+          if (el) el.value = "";
+        });
+      }
+      if (typeof VITA_LAB_REFERENCE_FIELDS !== "undefined" && Array.isArray(VITA_LAB_REFERENCE_FIELDS)) {
+        VITA_LAB_REFERENCE_FIELDS.forEach(([id]) => {
+          const el = document.getElementById(id);
+          if (el) el.value = "";
+        });
       }
 
       const pdfDateEl = document.getElementById("pdfParsedDateInput");
@@ -706,7 +722,9 @@ function applyParsedPdfValues() {
           return true;
         });
       }
+      if (typeof invalidateClinicalAnalysisCache === "function") invalidateClinicalAnalysisCache({ clearDOM: true });
       saveState();
+      if (typeof syncAllProfileSummariesUI === "function") syncAllProfileSummariesUI();
       renderDailyTab();
       detectSupplementConflicts();
       showToast("İlaç Kalkandan Çıkarıldı", `${removedRecord ? removedRecord.urunAdi : barcodeOrName} ilaç etkileşim kalkanından kaldırıldı.`, "info");
@@ -751,7 +769,9 @@ function applyParsedPdfValues() {
       } else {
         state.user.chronic.push(medCode);
       }
+      if (typeof invalidateClinicalAnalysisCache === "function") invalidateClinicalAnalysisCache({ clearDOM: true });
       saveState();
+      if (typeof syncAllProfileSummariesUI === "function") syncAllProfileSummariesUI();
       renderDailyTab();
       detectSupplementConflicts();
       if (idx < 0 && VITA_CLINICAL_DRUG_NUTRIENT_DB.drugNutrientDepletionMap?.[medCode]) {
@@ -829,7 +849,9 @@ function applyParsedPdfValues() {
           r => String(r.urunAdi || "").toLocaleLowerCase("tr-TR") !== String(medName || "").toLocaleLowerCase("tr-TR")
         );
       }
+      if (typeof invalidateClinicalAnalysisCache === "function") invalidateClinicalAnalysisCache({ clearDOM: true });
       saveState();
+      if (typeof syncAllProfileSummariesUI === "function") syncAllProfileSummariesUI();
       renderDailyTab();
       detectSupplementConflicts();
       showToast("İlaç Silindi", `"${medName}" ilaç listesinden kaldırıldı.`, "info");

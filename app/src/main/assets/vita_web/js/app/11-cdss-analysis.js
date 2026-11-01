@@ -477,14 +477,10 @@ function syncSelectedSymptomsFromDOM() {
     state.selectedSymptoms = new Set(Array.isArray(state.selectedSymptoms) ? state.selectedSymptoms : []);
   }
   const neyimRoot = document.getElementById("view-neyim") || document;
-  const cards = neyimRoot.querySelectorAll(".anamnesis-card, .symptom-card.selected, .symptom-checkbox:checked");
-  if (cards.length > 0) {
-    cards.forEach(card => {
-      if (card.matches && card.matches(".symptom-checkbox:checked")) {
-        const val = card.value || card.dataset?.symptom;
-        if (val) state.selectedSymptoms.add(val);
-        return;
-      }
+  const anamnesisCards = neyimRoot.querySelectorAll(".anamnesis-card");
+  if (anamnesisCards.length > 0) {
+    const domSet = new Set();
+    anamnesisCards.forEach(card => {
       const match = (card.getAttribute("onclick") || "").match(/toggleAnamnesisCard\(this,\s*'([^']+)'\)/);
       const key = (match && match[1]) ? match[1] : (card.dataset?.symptom || null);
       if (!key) return;
@@ -497,25 +493,22 @@ function syncSelectedSymptomsFromDOM() {
         card.getAttribute("aria-pressed") === "true" ||
         hasCheckIcon;
       if (isCardSelected) {
-        state.selectedSymptoms.add(key);
+        domSet.add(key);
       }
     });
-  }
-  if (state.selectedSymptoms.size === 0 && Array.isArray(state.selectedSymptomsArray) && state.selectedSymptomsArray.length > 0) {
-    state.selectedSymptomsArray.forEach(k => { if (k) state.selectedSymptoms.add(k); });
-  }
-  if (state.selectedSymptoms.size === 0) {
+    state.selectedSymptoms = domSet;
+    state.selectedSymptomsArray = Array.from(domSet);
     try {
-      const uid = typeof activeUserId !== "undefined" && activeUserId ? activeUserId : "default";
-      const rawSaved = (typeof safeLocalStorageGetItem === "function"
-        ? safeLocalStorageGetItem("vitatakip_selected_symptoms_array") || safeLocalStorageGetItem(`vitatakip_symptoms_${uid}`)
-        : localStorage.getItem("vitatakip_selected_symptoms_array") || localStorage.getItem(`vitatakip_symptoms_${uid}`)) || "[]";
-      const savedArr = JSON.parse(rawSaved);
-      if (Array.isArray(savedArr) && savedArr.length > 0) {
-        savedArr.forEach(k => { if (k) state.selectedSymptoms.add(k); });
+      if (typeof safeLocalStorageSetItem === "function") {
+        safeLocalStorageSetItem("vitatakip_selected_symptoms_array", JSON.stringify(state.selectedSymptomsArray));
+        if (typeof activeUserId !== "undefined" && activeUserId) {
+          safeLocalStorageSetItem(`vitatakip_symptoms_${activeUserId}`, JSON.stringify(state.selectedSymptomsArray));
+        }
       }
     } catch (_) {}
+    return [...state.selectedSymptomsArray];
   }
+
   const list = Array.from(state.selectedSymptoms);
   state.selectedSymptomsArray = [...list];
   return list;
@@ -667,6 +660,12 @@ function generateClinicalAnalysis({ profile, hasCurrentLab, hasArchivedLab, sele
 }
 
 function evaluateClinicalAnalysisState() {
+  if (typeof invalidateClinicalAnalysisCache === "function") {
+    invalidateClinicalAnalysisCache({ clearDOM: true });
+  } else if (typeof clearClinicalAnalysisDOMContainers === "function") {
+    clearClinicalAnalysisDOMContainers();
+  }
+
   const profile = getUserProfile();
   const hasCurrentLab = checkCurrentLabExists();
   const hasArchivedLab = checkArchivedLabExists();
@@ -679,6 +678,9 @@ function evaluateClinicalAnalysisState() {
   const triageBannerEl = document.getElementById("clinicalResultsTriageEgfrBanner");
 
   if (isCompletelyEmpty) {
+    if (typeof saveState === "function") {
+      saveState();
+    }
     if (resultsContainerEl) {
       resultsContainerEl.classList.add("hidden");
       resultsContainerEl.classList.remove("show");
@@ -693,6 +695,7 @@ function evaluateClinicalAnalysisState() {
       triageBannerEl.classList.add("hidden");
       triageBannerEl.classList.remove("show");
       triageBannerEl.style.display = "none";
+      triageBannerEl.innerHTML = "";
     }
     if (emptyStateEl) {
       emptyStateEl.classList.remove("hidden");
@@ -876,14 +879,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     function executeCDSSRules() {
-      const p = state.user || defaultUserProfile;
+      state.lastCDSS = null;
+      if (typeof clearClinicalAnalysisDOMContainers === "function") {
+        clearClinicalAnalysisDOMContainers();
+      }
+      if (typeof recalculateUserBmi === "function") {
+        recalculateUserBmi();
+      }
+      const p = typeof safeStructuredClone === "function"
+        ? safeStructuredClone(state.user || defaultUserProfile)
+        : { ...(state.user || defaultUserProfile) };
       const weight = Number.isFinite(Number(p.weight)) && Number(p.weight) > 0 ? Number(p.weight) : 68;
       const age = Number.isFinite(Number(p.age)) && Number(p.age) > 0 ? Number(p.age) : 28;
       const gender = p.gender === 'E' ? 'E' : 'K';
       const lifeStage = getLifeStageProfile(age);
 
       if (!state.labValues || typeof state.labValues !== "object") {
-        state.labValues = { d3: null, b12: null, ferritin: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, mcv: null, crp: null };
+        state.labValues = typeof createEmptyLabValuesState === "function"
+          ? createEmptyLabValuesState()
+          : { d3: null, b12: null, ferritin: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, mcv: null, crp: null };
       }
       if (!(state.selectedSymptoms instanceof Set)) {
         state.selectedSymptoms = new Set(Array.isArray(state.selectedSymptoms) ? state.selectedSymptoms : (Array.isArray(state.selectedSymptomsArray) ? state.selectedSymptomsArray : []));
@@ -1567,6 +1581,12 @@ document.addEventListener("DOMContentLoaded", () => {
       ensureCDSSResultsView();
       const container = document.getElementById("cdssResultContainer");
       if (!container || !state.lastCDSS) return;
+
+      // DOM Sıfırlama Garantisi: Render başında tüm alt sonuç kapsayıcılarının içini temizle
+      ["findingsList", "protocolTableBody", "triageLabRecommendationsContainer", "contraindicationAlertContainer", "cdssKidneySafetyWarningContainer", "foodAlternativesSection", "cdssRecallContainer"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = "";
+      });
 
       container.classList.remove("hidden");
       container.classList.add("show");

@@ -35,6 +35,123 @@ let currentAuthMode = "login";
       activity: "sedentary"
     };
 
+    const ALL_VITA_LAB_KEYS = [
+      "d3", "b12", "ferritin", "iron", "tsat", "crp", "mg", "hba1c",
+      "alt", "creatinine", "ca", "rbc", "hgb", "hb", "hct", "mcv",
+      "folate", "zinc", "tsh", "ft4"
+    ];
+
+    function safeStructuredClone(value) {
+      if (value === null || value === undefined || typeof value !== "object") {
+        return value;
+      }
+      if (value instanceof Set) {
+        return new Set(Array.from(value, item => safeStructuredClone(item)));
+      }
+      if (typeof window.structuredClone === "function") {
+        try {
+          return window.structuredClone(value);
+        } catch (_) {}
+      }
+      if (Array.isArray(value)) {
+        return value.map(item => safeStructuredClone(item));
+      }
+      const cloned = {};
+      Object.keys(value).forEach(k => {
+        const prop = value[k];
+        if (typeof prop !== "function") {
+          cloned[k] = safeStructuredClone(prop);
+        }
+      });
+      return cloned;
+    }
+
+    function createEmptyLabValuesState() {
+      const empty = {};
+      ALL_VITA_LAB_KEYS.forEach(k => {
+        empty[k] = null;
+      });
+      return empty;
+    }
+
+    function createEmptyLabReferencesState() {
+      return {};
+    }
+
+    function buildLabValuesFromRecord(record) {
+      const fresh = createEmptyLabValuesState();
+      if (!record || typeof record !== "object") return fresh;
+      ALL_VITA_LAB_KEYS.forEach(k => {
+        const raw = record[k];
+        if (raw !== null && raw !== undefined && raw !== "") {
+          const num = Number(String(raw).replace(",", "."));
+          fresh[k] = Number.isFinite(num) ? num : null;
+        }
+      });
+      if (fresh.hb !== null && fresh.hgb === null) fresh.hgb = fresh.hb;
+      if (fresh.hgb !== null && fresh.hb === null) fresh.hb = fresh.hgb;
+      return safeStructuredClone(fresh);
+    }
+
+    function clearClinicalAnalysisDOMContainers() {
+      const containerIds = [
+        "clinicalResultsTriageEgfrBanner",
+        "findingsList",
+        "protocolTableBody",
+        "triageLabRecommendationsContainer",
+        "contraindicationAlertContainer",
+        "cdssKidneySafetyWarningContainer",
+        "foodAlternativesSection",
+        "cdssRecallContainer",
+        "aiSummaryTextContainer"
+      ];
+      containerIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = "";
+          if (
+            id === "clinicalResultsTriageEgfrBanner" ||
+            id === "triageLabRecommendationsContainer" ||
+            id === "contraindicationAlertContainer" ||
+            id === "cdssKidneySafetyWarningContainer" ||
+            id === "foodAlternativesSection" ||
+            id === "cdssRecallContainer"
+          ) {
+            el.classList.add("hidden");
+          }
+        }
+      });
+      const aiCard = document.getElementById("aiClinicalSummaryCard");
+      if (aiCard) {
+        aiCard.classList.add("hidden");
+        aiCard.style.display = "none";
+      }
+    }
+
+    function invalidateClinicalAnalysisCache(options = {}) {
+      state.lastCDSS = null;
+      state.anamnesisTriageState = null;
+      state.lastKidneySafetyAnalysis = null;
+      try {
+        if (activeUserId) {
+          safeLocalStorageRemoveItem(`vitatakip_cdss_${activeUserId}`);
+        }
+        safeLocalStorageRemoveItem("lastAnalysisResult");
+        safeLocalStorageRemoveItem("clinicalAnalysisCache");
+      } catch (_) {}
+      if (options.clearDOM !== false) {
+        clearClinicalAnalysisDOMContainers();
+      }
+    }
+
+    window.safeStructuredClone = safeStructuredClone;
+    window.ALL_VITA_LAB_KEYS = ALL_VITA_LAB_KEYS;
+    window.createEmptyLabValuesState = createEmptyLabValuesState;
+    window.createEmptyLabReferencesState = createEmptyLabReferencesState;
+    window.buildLabValuesFromRecord = buildLabValuesFromRecord;
+    window.clearClinicalAnalysisDOMContainers = clearClinicalAnalysisDOMContainers;
+    window.invalidateClinicalAnalysisCache = invalidateClinicalAnalysisCache;
+
 
     // Genel uygulama karşılaştırma aralıklarıdır; hastanenin raporundaki aralık varsa o aralık korunur.
     // Referanslar kişiye/laboratuvara göre değişebileceğinden bu aralıklar tanı veya doz kararı değildir.
@@ -265,16 +382,17 @@ let currentAuthMode = "login";
       state.user = null;
       state.supplements = [];
       state.hydration = { current: 0, target: 2450 };
-      state.labValues = { d3: null, b12: null, ferritin: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, mcv: null, crp: null };
-      state.labReferences = {};
+      state.labValues = createEmptyLabValuesState();
+      state.labReferences = createEmptyLabReferencesState();
       state.labHistory = [];
       pendingLabRecordConflict = null;
       const conflictModal = document.getElementById("labDateConflictModal");
       if (conflictModal) { conflictModal.classList.add("hidden"); conflictModal.style.display = "none"; }
       state.selectedSymptoms = new Set();
+      state.selectedSymptomsArray = [];
       state.resolvedSymptoms = new Set();
       state.supplementReviews = {};
-      state.lastCDSS = null;
+      invalidateClinicalAnalysisCache({ clearDOM: true });
 
       const labInputs = ["inputLabD3", "inputLabB12", "inputLabFerritin", "inputLabMg", "inputLabCalcium", "inputLabZinc", "inputLabCreatinine", "inputLabFolate", "inputLabAlt", "inputLabHb", "inputLabMcv", "inputLabCrp", "inputLabRef-d3", "inputLabRef-b12", "inputLabRef-ferritin", "inputLabRef-mg", "inputLabRef-ca", "inputLabRef-zinc", "inputLabRef-creatinine", "inputLabRef-folate", "inputLabRef-alt", "inputLabRef-hb", "inputLabRef-mcv", "inputLabRef-crp"];
       labInputs.forEach(id => {

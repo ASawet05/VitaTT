@@ -225,10 +225,18 @@ function checkPendingSymptomReviews() {
       try {
         if (typeof safeLocalStorageSetItem === "function") {
           safeLocalStorageSetItem("vitatakip_selected_symptoms_array", JSON.stringify(state.selectedSymptomsArray));
+          if (activeUserId) {
+            safeLocalStorageSetItem(`vitatakip_symptoms_${activeUserId}`, JSON.stringify(state.selectedSymptomsArray));
+          }
         }
       } catch (_) {}
+      if (typeof invalidateClinicalAnalysisCache === "function") {
+        invalidateClinicalAnalysisCache({ clearDOM: true });
+      }
       updateAnamnesisTabCounts();
       saveState();
+      if (typeof renderReportTab === "function") renderReportTab();
+      if (typeof renderSettingsView === "function") renderSettingsView();
     }
 
     function syncAnamnesisCardsUI() {
@@ -577,18 +585,30 @@ function checkPendingSymptomReviews() {
       const userId = String(activeUserId);
       try {
         const writes = [];
-        if (state.user) writes.push([`vitatakip_user_${userId}`, JSON.stringify(state.user)]);
+        if (state.user) {
+          recalculateUserBmi();
+          writes.push([`vitatakip_user_${userId}`, JSON.stringify(state.user)]);
+        }
+        const symptomsArr = Array.from(state.selectedSymptoms || []);
+        state.selectedSymptomsArray = symptomsArr;
         writes.push(
           [`vitatakip_supplements_${userId}`, JSON.stringify(state.supplements)],
           [`vitatakip_hydration_${userId}`, JSON.stringify(state.hydration)],
           [`vitatakip_labs_${userId}`, JSON.stringify(state.labValues)],
           [`vitatakip_labreferences_${userId}`, JSON.stringify(state.labReferences || {})],
           [`vitatakip_labhistory_${userId}`, JSON.stringify(state.labHistory)],
-          [`vitatakip_symptoms_${userId}`, JSON.stringify(Array.from(state.selectedSymptoms))],
+          [`vitatakip_symptoms_${userId}`, JSON.stringify(symptomsArr)],
+          ["vitatakip_selected_symptoms_array", JSON.stringify(symptomsArr)],
           [`vitatakip_resolved_symptoms_${userId}`, JSON.stringify(Array.from(state.resolvedSymptoms))],
           [`vitatakip_reviews_${userId}`, JSON.stringify(state.supplementReviews || {})]
         );
-        if (state.lastCDSS) writes.push([`vitatakip_cdss_${userId}`, JSON.stringify(state.lastCDSS)]);
+        if (state.lastCDSS) {
+          writes.push([`vitatakip_cdss_${userId}`, JSON.stringify(state.lastCDSS)]);
+        } else {
+          safeLocalStorageRemoveItem(`vitatakip_cdss_${userId}`);
+          safeLocalStorageRemoveItem("lastAnalysisResult");
+          safeLocalStorageRemoveItem("clinicalAnalysisCache");
+        }
         let allSaved = true;
         writes.forEach(([key, value]) => { if (!safeLocalStorageSetItem(key, value)) allSaved = false; });
 
@@ -625,9 +645,11 @@ function checkPendingSymptomReviews() {
     }
 
     function calculateBmiValue(heightCm, weightKg) {
-      if (!heightCm || !weightKg) return { bmi: 0, category: "Belirsiz", badgeColor: "bg-slate-100 text-slate-700", isAdipose: false };
-      const heightM = heightCm / 100;
-      const bmi = parseFloat((weightKg / (heightM * heightM)).toFixed(1));
+      const h = parseFloat(heightCm);
+      const w = parseFloat(weightKg);
+      if (!h || !w || h <= 0 || w <= 0) return { bmi: 0, category: "Belirsiz", badgeColor: "bg-slate-100 text-slate-700", isAdipose: false };
+      const heightM = h / 100;
+      const bmi = parseFloat((w / (heightM * heightM)).toFixed(1));
       let category = "İdeal Kilo", badgeColor = "bg-emerald-50 text-emerald-800 border-emerald-300", isAdipose = false;
 
       if (bmi < 18.5) { category = "Zayıf"; badgeColor = "bg-amber-50 text-amber-800 border-amber-300"; }
@@ -638,6 +660,10 @@ function checkPendingSymptomReviews() {
       return { bmi, category, badgeColor, isAdipose };
     }
 
+    function calculateBMI(weightKg, heightCm) {
+      return calculateBmiValue(heightCm, weightKg);
+    }
+
     function recalculateUserBmi() {
       if (!state.user) return;
       const res = calculateBmiValue(state.user.height, state.user.weight);
@@ -646,6 +672,10 @@ function checkPendingSymptomReviews() {
       state.user.bmiBadgeColor = res.badgeColor;
       state.user.isAdipose = res.isAdipose;
     }
+
+    window.calculateBmiValue = calculateBmiValue;
+    window.calculateBMI = calculateBMI;
+    window.recalculateUserBmi = recalculateUserBmi;
 
     function updateDynamicTargetHydration() {
       if (state.user && state.user.weight) {
@@ -678,6 +708,15 @@ function checkPendingSymptomReviews() {
             hydrationTagEl.className = "text-[10px] font-bold px-2.5 py-1 rounded-full bg-sky-100 text-sky-800";
           }
         }
+        const homeHydrationText = document.getElementById("homeHydrationText");
+        if (homeHydrationText) {
+          homeHydrationText.textContent = `${state.hydration.current} / ${state.hydration.target} ml tamamlandı`;
+        }
+        const homeHydrationBar = document.getElementById("homeHydrationBar");
+        if (homeHydrationBar && state.hydration.target > 0) {
+          const ratio = Math.min(100, Math.round((state.hydration.current / state.hydration.target) * 100));
+          homeHydrationBar.style.width = `${ratio}%`;
+        }
       }
     }
 
@@ -690,6 +729,7 @@ function checkPendingSymptomReviews() {
       else slot = "İyi Akşamlar";
 
       if (state.user) {
+        recalculateUserBmi();
         const p = state.user;
         const stageInfo = getLifeStageProfile(p.age);
 
@@ -716,9 +756,43 @@ function checkPendingSymptomReviews() {
         if (drawerName) drawerName.textContent = p.name || "Kullanıcı";
         if (drawerBmi) drawerBmi.textContent = `VKİ: ${p.bmi}`;
         if (drawerHW) drawerHW.textContent = `${p.weight} kg / ${p.height} cm`;
-
       }
     }
+
+    function syncAllProfileSummariesUI() {
+      if (!state.user) return;
+      recalculateUserBmi();
+      recalculateSupplementsForNewWeight();
+      updateDynamicTargetHydration();
+      updateTimeBasedGreetings();
+
+      const p = state.user;
+      const nameEl = document.getElementById("profileCardName");
+      if (nameEl) nameEl.textContent = p.name || "Kullanıcı";
+      const ageGenderEl = document.getElementById("profileCardAgeGender");
+      if (ageGenderEl) ageGenderEl.textContent = `${p.age} Yaş / ${p.gender === 'E' ? 'Erkek' : 'Kadın'}`;
+      const hwEl = document.getElementById("profileCardHeightWeight");
+      if (hwEl) hwEl.textContent = `${p.height} cm / ${p.weight} kg`;
+      const bmiEl = document.getElementById("profileCardBmi");
+      if (bmiEl) {
+        bmiEl.className = `font-black px-2 py-0.5 rounded text-[11px] ${p.bmiBadgeColor}`;
+        bmiEl.textContent = `${p.bmi} - ${p.bmiCategory}`;
+      }
+      const actEl = document.getElementById("profileCardActivity");
+      if (actEl) actEl.textContent = p.activity === "fitness" ? "Fitness" : (p.activity === "moderate" ? "Orta Düzey" : "Masa Başı");
+      const chronicDisplayList = [
+        ...(Array.isArray(p.chronic) ? p.chronic : []),
+        ...(Array.isArray(p.medications) ? p.medications : [])
+      ];
+      const chrEl = document.getElementById("profileCardChronic");
+      if (chrEl) chrEl.textContent = chronicDisplayList.length ? chronicDisplayList.join(", ") : "Yok";
+
+      if (typeof syncCDSSDemographics === "function") syncCDSSDemographics();
+      if (typeof renderSettingsView === "function") renderSettingsView();
+      if (typeof renderReportTab === "function") renderReportTab();
+    }
+
+    window.syncAllProfileSummariesUI = syncAllProfileSummariesUI;
 
     function getLifeStageProfile(age) {
       if (age >= 1 && age <= 5) return { stage: "Erken Çocukluk Evresi (1-5 Yaş)", desc: "Kemik mineral matrisi ve nöronal sinaptogenez evresidir." };
@@ -847,6 +921,9 @@ function checkPendingSymptomReviews() {
 
       const chronic = [];
       let medications = [];
+      let prescriptionDrugRecords = Array.isArray(state.user?.prescriptionDrugRecords)
+        ? safeStructuredClone(state.user.prescriptionDrugRecords)
+        : [];
       const noneBox = document.getElementById("modalChronicNone");
       if (!noneBox || !noneBox.checked) {
         document.querySelectorAll('input[name="modal_chronic"]:checked').forEach(cb => chronic.push(cb.value));
@@ -864,23 +941,52 @@ function checkPendingSymptomReviews() {
             });
           }
         }
+        prescriptionDrugRecords = prescriptionDrugRecords.filter(rx =>
+          medications.some(m => String(m || "").toLocaleLowerCase("tr-TR") === String(rx.urunAdi || "").toLocaleLowerCase("tr-TR"))
+        );
+      } else {
+        prescriptionDrugRecords = [];
       }
 
       const bmiData = calculateBmiValue(height, weight);
-      state.user = { name, age, gender, height, weight, bmi: bmiData.bmi, bmiCategory: bmiData.category, bmiBadgeColor: bmiData.badgeColor, isAdipose: bmiData.isAdipose, chronic, medications, activity,
+      state.user = safeStructuredClone({
+        name,
+        age,
+        gender,
+        height,
+        weight,
+        bmi: bmiData.bmi,
+        bmiCategory: bmiData.category,
+        bmiBadgeColor: bmiData.badgeColor,
+        isAdipose: bmiData.isAdipose,
+        chronic,
+        medications,
+        prescriptionDrugRecords,
+        activity,
         dietPattern: document.getElementById("modalDietPattern")?.value || "unspecified",
         fishPerWeek: document.getElementById("modalFishPerWeek")?.value || "unspecified",
         redMeatPerWeek: document.getElementById("modalRedMeatPerWeek")?.value || "unspecified",
-        sunExposureDaily: document.getElementById("modalSunExposure")?.value || "unspecified" };
+        sunExposureDaily: document.getElementById("modalSunExposure")?.value || "unspecified"
+      });
 
       recalculateSupplementsForNewWeight();
       updateDynamicTargetHydration();
+      if (typeof invalidateClinicalAnalysisCache === "function") {
+        invalidateClinicalAnalysisCache({ clearDOM: true });
+      }
+      if (typeof canRunClinicalAnalysis === "function" && canRunClinicalAnalysis() && typeof executeCDSSRules === "function") {
+        executeCDSSRules();
+      }
       saveState();
       clearProfileDraft();
       closeProfileModal();
-      try { renderAllAppViews(); }
-      catch (renderError) { console.error("Profil kaydedildi ancak bazı ekranlar yenilenemedi:", renderError); }
-      showToast("Profil Güncellendi", `VKİ: ${state.user.bmi} (${state.user.bmiCategory})`, "success");
+      try {
+        syncAllProfileSummariesUI();
+        renderAllAppViews();
+      } catch (renderError) {
+        console.error("Profil kaydedildi ancak bazı ekranlar yenilenemedi:", renderError);
+      }
+      showToast("Profil Güncellendi", `VKİ: ${state.user.bmi} (${state.user.bmiCategory}) • Hedef Su: ${state.hydration.target} ml`, "success");
     }
 
     function recalculateSupplementsForNewWeight() {
@@ -905,6 +1011,9 @@ function checkPendingSymptomReviews() {
       if (removeLegacyDemoSupplements() && activeUserId) {
         safeLocalStorageSetItem(`vitatakip_supplements_${activeUserId}`, JSON.stringify(state.supplements));
       }
+      recalculateUserBmi();
+      recalculateSupplementsForNewWeight();
+      updateDynamicTargetHydration();
       updateTimeBasedGreetings();
       renderDailyTab();
       syncCDSSDemographics();
@@ -914,6 +1023,10 @@ function checkPendingSymptomReviews() {
       detectSupplementConflicts();
       checkPendingSymptomReviews();
       if (state.activeTab === "view-labs") renderBiomarkerTrendChart();
+      if (state.activeTab === "view-clinical-results" && typeof evaluateClinicalAnalysisState === "function") {
+        evaluateClinicalAnalysisState({ forceShowResults: true });
+      }
+      if (typeof renderSettingsView === "function") renderSettingsView();
       renderReportTab();
       if (typeof refreshCloudSyncUI === "function") refreshCloudSyncUI();
     }
