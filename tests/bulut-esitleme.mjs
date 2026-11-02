@@ -7,7 +7,7 @@ import { boot, sleep } from './lib.mjs';
 
 const CFG = {
   apiKey: 'demo-key', authDomain: 'demo-vitatakip.firebaseapp.com', projectId: 'demo-vitatakip', appId: 'demo-app',
-  firestoreDatabaseId: 'ai-studio-android-vitataki-30dafd02-0558-4d73-b7fe-5a4d4b429296',
+  firestoreDatabaseId: '(default)',
   emulator: { auth: 'http://127.0.0.1:9099', firestoreHost: '127.0.0.1', firestorePort: 8085 }
 };
 const preload = (cfg) => { window.VITA_FIREBASE_CONFIG = cfg; };

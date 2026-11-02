@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "213432301211",
+    "project_id": "vitatakip-6ef7e",
+    "storage_bucket": "vitatakip-6ef7e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:213432301211:android:54e4a722340ad34c3cf83e",
+        "android_client_info": {
+          "package_name": "com.aistudio.vitatakip.vrkpqm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "213432301211-njsjomuel7v766d8q32rcnhsii3spt4i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aistudio.vitatakip.vrkpqm",
+            "certificate_hash": "d8c1e41571d5061ce1fa3a816645452ce6e70483"
+          }
+        },
+        {
+          "client_id": "213432301211-oaj01e2sugi5k95b0j61appp77gvhli2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHXVVuLSinoDjOuglxEfiNU8OyqWl4ZzY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "213432301211-oaj01e2sugi5k95b0j61appp77gvhli2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
