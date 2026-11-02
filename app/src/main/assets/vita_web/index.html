@@ -24,7 +24,7 @@
 <!-- PDF.js loads only when a user selects a PDF for analysis. -->
 <link rel="stylesheet" href="css/tailwind.css">
 <link rel="stylesheet" href="css/style.css?v=32">
-<link rel="stylesheet" href="css/auth.css?v=36">
+<link rel="stylesheet" href="css/auth.css?v=37">
 <link rel="stylesheet" href="css/clinical.css?v=75">
 <link rel="stylesheet" href="css/report.css?v=70">
 <link rel="stylesheet" href="css/compact.css?v=73">
@@ -50,7 +50,7 @@
 
 <link rel="stylesheet" href="css/overrides.css">
 <link rel="stylesheet" href="css/food-alternatives.css">
-<link rel="stylesheet" href="css/tools.css">
+<link rel="stylesheet" href="css/tools.css?v=83">
 <style id="vitaCloudSyncHeaderStyles">
   @keyframes vitaCloudSpin {
     0% { transform: rotate(0deg); }
@@ -1935,13 +1935,13 @@ Anahtar girerseniz sohbet ve kutu fotoğrafı tanıma Gemini ile çalışır; gi
 <h3 class="text-xs sm:text-sm font-black text-navy-900">Araçlar</h3>
 </div>
 <div class="divide-y divide-slate-100 text-xs">
-<div class="py-2.5 flex items-center justify-between gap-3">
+<div class="py-2.5 flex items-center justify-between gap-3" data-vita-download-entry>
 <div>
-<div class="font-bold text-navy-900">Ana ekrana ekle</div>
-<div class="text-[11px] text-slate-500">Uygulamayı telefona veya bilgisayara kurun.</div>
+<div class="font-bold text-navy-900">Uygulamayı indir</div>
+<div class="text-[11px] text-slate-500">Android, iPhone/iPad veya bilgisayar için.</div>
 </div>
-<button class="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-200 font-bold text-xs transition cursor-pointer shrink-0" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(window.openVitaWebMobileInstallModal) window.openVitaWebMobileInstallModal(this)" type="button">
-Kurulum Rehberi
+<button class="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-200 font-bold text-xs transition cursor-pointer shrink-0" onclick="if(window.SoundEffects) SoundEffects.playClick(); if(window.openVitaDownloadModal) window.openVitaDownloadModal(null, this)" type="button">
+<i class="fa-solid fa-download" aria-hidden="true"></i> İndir
 </button>
 </div>
 <div class="py-2.5 flex items-center justify-between gap-3">
@@ -2072,12 +2072,13 @@ Verileri Sil
 <div class="vita-install-card">
 <button type="button" class="vita-install-close" data-install-dismiss aria-label="Bildirimi kapat" onclick="if(window.dismissVitaInstallBanner) window.dismissVitaInstallBanner()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 <div>
-<h3 id="vitaInstallHeading"><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>VitaTakip'i telefonunuza indirin</h3>
-<p>Ana ekrana ekleyerek uygulama gibi hızlıca açabilirsiniz.</p>
+<h3 id="vitaInstallHeading"><i class="fa-solid fa-download" aria-hidden="true"></i>VitaTakip'i indirin</h3>
+<p>Telefonunuza veya bilgisayarınıza uygulama olarak kurun.</p>
 </div>
 <div class="vita-install-buttons">
-<button type="button" class="vita-store-btn" data-install="android"><i class="fa-brands fa-android" aria-hidden="true"></i><span><small>Android</small><strong>Yükle</strong></span></button>
-<button type="button" class="vita-store-btn" data-install="ios"><i class="fa-brands fa-apple" aria-hidden="true"></i><span><small>iOS</small><strong>Ekle</strong></span></button>
+<button type="button" class="vita-store-btn" data-install="android"><i class="fa-brands fa-android" aria-hidden="true"></i><span><small>Android</small><strong>İndir</strong></span></button>
+<button type="button" class="vita-store-btn" data-install="ios"><i class="fa-brands fa-apple" aria-hidden="true"></i><span><small>iPhone / iPad</small><strong>Ekle</strong></span></button>
+<button type="button" class="vita-store-btn" data-install="desktop"><i class="fa-solid fa-desktop" aria-hidden="true"></i><span><small>Bilgisayar</small><strong>Yükle</strong></span></button>
 </div>
 </div>
 </section>
@@ -2399,6 +2400,15 @@ Verileri Sil
 <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
 <span id="authGoogleCloudSyncBtnLabel">Yedekten geri yükle</span>
 </button>
+</div>
+
+<div class="vta-download" data-vita-download-entry>
+<span class="vta-download-label">Uygulamayı indir</span>
+<div class="vta-download-row">
+<button type="button" onclick="if(window.openVitaDownloadModal) window.openVitaDownloadModal('android', this)"><i class="fa-brands fa-android" aria-hidden="true"></i><span>Android</span></button>
+<button type="button" onclick="if(window.openVitaDownloadModal) window.openVitaDownloadModal('ios', this)"><i class="fa-brands fa-apple" aria-hidden="true"></i><span>iPhone</span></button>
+<button type="button" onclick="if(window.openVitaDownloadModal) window.openVitaDownloadModal('desktop', this)"><i class="fa-solid fa-desktop" aria-hidden="true"></i><span>Bilgisayar</span></button>
+</div>
 </div>
 
 <p class="vta-note" id="authLocalDataNotice">
@@ -3326,7 +3336,7 @@ Kapat
 
   <script src="js/visual-reference.js"></script>
 <script src="js/egfr-calculator.js?v=66"></script>
-<script src="js/install-app.js"></script>
+<script src="js/install-app.js?v=83"></script>
 
 
   </body>

@@ -56,3 +56,25 @@
 .vita-store-btn strong{display:block;font-size:.7rem;font-weight:800;line-height:1.15}
 .vita-install-steps{list-style:decimal;margin:.8rem 0 0;padding-left:1.3rem;font-size:.8rem;line-height:1.6;color:#334155}
 .vita-install-steps li{margin-top:.35rem}
+/* Uygulamayı indir penceresi */
+.vita-dl-dialog{width:min(100%,520px)}
+.vita-dl-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-top:.9rem}
+.vita-dl-tab{position:relative;display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.6rem .3rem;border:1.5px solid #e2e8f0;border-radius:.8rem;background:#fff;color:#334155;font-size:.74rem;font-weight:800;cursor:pointer}
+.vita-dl-tab i{font-size:1.25rem;color:#64748b}
+.vita-dl-tab.is-active{border-color:#0d9488;background:#f0fdfa;color:#0f172a}
+.vita-dl-tab.is-active i{color:#0f766e}
+.vita-dl-tab:focus-visible,.vita-dl-primary:focus-visible,.vita-dl-secondary:focus-visible{outline:3px solid #2dd4bf;outline-offset:2px}
+.vita-dl-here{position:absolute;top:-.55rem;left:50%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-size:.56rem;font-weight:800;background:#0d9488;color:#fff;border-radius:999px;padding:.08rem .45rem}
+.vita-dl-here[hidden]{display:none}
+.vita-dl-panel{margin-top:.9rem}
+.vita-dl-primary{display:flex;align-items:center;gap:.75rem;width:100%;border:0;border-radius:.9rem;background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;padding:.75rem .9rem;text-decoration:none;text-align:left;cursor:pointer;box-shadow:0 8px 20px rgba(13,148,136,.25)}
+.vita-dl-primary:hover{filter:brightness(1.07)}
+.vita-dl-primary i{font-size:1.6rem}
+.vita-dl-primary strong{display:block;font-size:.88rem;font-weight:900}
+.vita-dl-primary small{display:block;font-size:.68rem;opacity:.9}
+.vita-dl-secondary{margin-top:.5rem;border:1.5px solid #99f6e4;border-radius:.7rem;background:#fff;color:#0f766e;font-size:.74rem;font-weight:800;padding:.45rem .7rem;cursor:pointer}
+.vita-dl-info{margin-top:0;border-color:#bae6fd;background:#f0f9ff;color:#0c4a6e}
+.vita-dl-panel .vita-dl-info + .vita-install-steps{margin-top:.6rem}
+.vita-dl-alt{margin-top:.7rem;font-size:.74rem;color:#334155}
+.vita-dl-alt summary{cursor:pointer;font-weight:800;color:#0f766e}
+.vita-dl-alt p{margin:.4rem 0 0;line-height:1.5}
