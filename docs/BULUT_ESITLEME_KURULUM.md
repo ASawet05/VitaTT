@@ -8,31 +8,24 @@ Kod tarafı hazırdır. Aşağıdaki adımlar **Firebase konsolunda proje sahibi
 (kimlik bilgileri ve proje ayarları kodla otomatik oluşturulamaz).
 
 ## 1. Firebase projesi
-1. https://console.firebase.google.com adresine projenin sahibi olan Google hesabıyla girin.
-2. VitaTakip projesini açın (AI Studio'nun oluşturduğu proje; Firestore veritabanı kimliği
-   `ai-studio-android-vitataki-30dafd02-0558-4d73-b7fe-5a4d4b429296`). Proje yoksa yeni proje oluşturun.
+Proje: **`vitatakip-6ef7e`** (https://console.firebase.google.com/project/vitatakip-6ef7e). Web uygulaması kayıtlı ve
+değerleri `js/firebase-config.js` dosyasına yazıldı. Veritabanı olarak projenin **`(default)`** Firestore
+veritabanı kullanılır (web, Android ve `firebase.json` aynı).
 
 ## 2. Google ile giriş
-**Authentication → Sign-in method → Google → Etkinleştir → Kaydet.**
+**Authentication → Başlayın (Get started) → Sign-in method → Google → Etkinleştir → Kaydet.**
 Destek e-postası olarak kendi adresinizi seçin.
 
-## 3. Web uygulaması (bilgisayar)
-1. **Proje ayarları → Genel → Uygulamalarınız → Web (</>) ekle**. Takma ad: `VitaTakip Web`.
-2. Gösterilen `firebaseConfig` değerlerini `app/src/main/assets/vita_web/js/firebase-config.js` dosyasına yazın:
-   ```js
-   window.VITA_FIREBASE_CONFIG = {
-     apiKey: "AIza...",
-     authDomain: "PROJE-ID.firebaseapp.com",
-     projectId: "PROJE-ID",
-     appId: "1:...:web:...",
-     firestoreDatabaseId: "ai-studio-android-vitataki-30dafd02-0558-4d73-b7fe-5a4d4b429296"
-   };
-   ```
-   Bu değerler gizli değildir; güvenliği `firestore.rules` sağlar.
-3. **Authentication → Settings → Authorized domains**: uygulamayı yayınladığınız alan adını ekleyin
-   (ör. `vitatakip.netlify.app`). `localhost` varsayılan olarak eklidir.
+## 3. Firestore veritabanı
+**Firestore Database → Veritabanı oluştur** → Veritabanı kimliği `(default)` → konum olarak
+`eur3 (europe-west)` → **üretim modunda (production mode)** başlatın. (Kurallar 6. adımda yayınlanır.)
 
-## 4. Android uygulaması (telefon)
+## 4. Web (bilgisayar) — yapıldı
+`firebase-config.js` dolu. Uygulamayı Firebase Hosting'de (`vitatakip-6ef7e.web.app`) yayınlarsanız alan adı
+zaten yetkilidir. Başka bir alan adında (ör. Netlify) yayınlarsanız
+**Authentication → Settings → Authorized domains** listesine o adresi ekleyin. `localhost` varsayılan olarak eklidir.
+
+## 5. Android uygulaması (telefon)
 1. **Proje ayarları → Uygulamalarınız → Android ekle**.
    - Paket adı: `com.aistudio.vitatakip.vrkpqm` (Play Store'a yüklemeden önce değiştirilecekse burada da aynısı kullanılmalı)
    - **SHA-1** (test APK'sı için, bu bilgisayardaki `debug.keystore`):
@@ -42,16 +35,16 @@ Destek e-postası olarak kendi adresinizi seçin.
 3. APK'yı yeniden derleyin: `gradlew assembleDebug`.
    Dosya yoksa uygulama çökmez; yalnızca bulut eşitleme kapalı kalır.
 
-## 5. Güvenlik kurallarını yayınlayın
+## 6. Güvenlik kurallarını yayınlayın
 Proje kökünde:
 ```
 npx firebase-tools login
-npx firebase-tools deploy --only firestore:rules --project PROJE-ID
+npx firebase-tools deploy --only firestore:rules
 ```
 Kurallar: her kullanıcı yalnızca `users/{kendi-uid}/...` altını okuyup yazabilir; diğer her şey kapalıdır.
 (Emülatörde doğrulandı: başka hesabın kaydını okuma ve yazma `permission-denied`.)
 
-## 6. Kontrol
+## 7. Kontrol
 1. Bilgisayarda uygulamayı açın → **Bulut Eşitleme → Google ile giriş yap**. Açık rıza sorusunu onaylayın.
 2. Bir tahlil girin; üst çubukta "Bulut Eşitlendi ✓" görünür.
 3. Telefonda aynı Google hesabıyla giriş yapın → tahlil görünür.

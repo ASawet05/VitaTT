@@ -287,7 +287,15 @@
     }).then(function () { feedback("Google hesabınızla giriş yapıldı. Kayıtlarınız eşitleniyor.", "success"); })
       .catch(function (e) {
         if (e && (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request")) { feedback("Giriş iptal edildi.", "info"); return; }
-        feedback("Google ile giriş yapılamadı (" + ((e && e.code) || "hata") + ").", "warning");
+        var code = (e && e.code) || "hata";
+        var why = {
+          "auth/configuration-not-found": "Bulut hizmeti henüz yapılandırılmadı",
+          "auth/operation-not-allowed": "Google ile giriş bu uygulamada henüz açılmadı",
+          "auth/unauthorized-domain": "Bu adres bulut girişi için yetkilendirilmedi",
+          "auth/network-request-failed": "İnternet bağlantısı yok"
+        }[code];
+        feedback(why ? why + ". Verileriniz bu cihazda kayıtlı; dosya yedeğini kullanabilirsiniz. (" + code + ")"
+                     : "Google ile giriş yapılamadı (" + code + ").", "warning");
       });
   }
   function signOutCloud(silent) {

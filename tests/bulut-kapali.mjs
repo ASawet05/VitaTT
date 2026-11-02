@@ -1,7 +1,7 @@
 /* Bulut yapılandırılmamışken arayüz dürüst olmalı: "eşitlendi" denmez, elle e-posta ile hesap bağlanamaz,
    e-posta yazarak başkasının hesabına/yedeğine girilemez. */
 import { boot, sleep } from './lib.mjs';
-const { b, p, errs } = await boot();
+const { b, p, errs } = await boot({ preload: () => { window.VITA_FIREBASE_CONFIG = false; } });
 p.setDefaultTimeout(30000); p.on('dialog', d => d.accept());
 await p.evaluate(() => { try { closeProfileModal(); } catch (e) {} try { finishVitaSpotlightTour(true); } catch (e) {} });
 const results = []; const log = (n, ok, d) => { results.push(ok); console.log((ok ? 'OK   ' : 'FAIL ') + n + (d ? ' -> ' + d : '')); };
