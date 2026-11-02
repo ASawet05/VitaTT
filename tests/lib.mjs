@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer-core';
 /* opts.preload: sayfa betiklerinden önce çalışacak işlev (ör. bulut emülatör yapılandırması)
-   opts.register: false ise kayıt/giriş yapılmaz (giriş ekranında kalır) */
+   opts.register: false ise kayıt/giriş yapılmaz (giriş ekranında kalır)
+   opts.ua: tarayıcı kimliği (ör. iPhone), opts.hash: adrese eklenecek #bölüm */
 export async function boot(opts = {}) {
   const b = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', args: ['--no-sandbox'] });
   const p = await b.newPage();
@@ -9,7 +10,8 @@ export async function boot(opts = {}) {
   p.on('pageerror', e => errs.push('PAGEERR ' + e.message));
   await p.evaluateOnNewDocument(() => { localStorage.setItem('vitatakip_legal_accepted', 'true'); });
   if (opts.preload) await p.evaluateOnNewDocument(opts.preload, opts.preloadArg);
-  await p.goto('http://localhost:8080/index.html', { waitUntil: 'networkidle2' });
+  if (opts.ua) await p.setUserAgent(opts.ua);
+  await p.goto('http://localhost:8080/index.html' + (opts.hash || ''), { waitUntil: 'networkidle2' });
   await new Promise(r => setTimeout(r, 1500));
   if (opts.register === false) return { b, p, errs };
   // kayıt ol
