@@ -26,6 +26,8 @@ Gerçek Chrome ile (puppeteer-core) uygulamayı açıp kullanıcı gibi dener.
 | `rapor.mjs` | Kısa doktor özeti |
 | `klinik-mantik.mjs` | Takviye adayı güvenlik değişmezleri (yüksek değerde aday yok, böbrek/hiperkalsemi kilidi, gebelik/çocuk, eGFR) |
 | `guvenlik-xss.mjs` | Kullanıcı girdisinin kod olarak çalışmaması (XSS) |
+| `bulut-esitleme.mjs` | Gerçek bulut eşitleme (Firebase emülatörü gerekir): iki cihaz, başka hesap, güvenlik kuralları |
+| `bulut-kapali.mjs` | Bulut yapılandırılmamışken dürüst arayüz; e-posta yazarak hesap ele geçirme denemesi |
 | `ana-sayfa-grafik.mjs` | Ana sayfa karşılama kartı ve tahlil gelişim grafiği |
 
 Çalıştırma: `node smoke.mjs` (her biri bağımsızdır).

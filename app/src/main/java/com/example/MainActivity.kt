@@ -122,6 +122,7 @@ import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.UiState
 import com.example.ui.viewmodel.VitaViewModel
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
@@ -183,8 +184,30 @@ enum class VitaTab(
     ANALYTICS("analytics", R.string.tab_analytics, Icons.Filled.Analytics, Icons.Outlined.Analytics)
 }
 
+/**
+ * Firebase yapılandırması (google-services.json) yoksa çökme yerine null döner; uygulama
+ * yerel (cihaz) modunda çalışmaya devam eder, yalnızca bulut eşitleme devre dışı kalır.
+ */
+fun firebaseAuthOrNull(context: Context): FirebaseAuth? = runCatching {
+    if (FirebaseApp.getApps(context).isEmpty() && FirebaseApp.initializeApp(context) == null) {
+        return@runCatching null
+    }
+    Firebase.auth
+}.getOrNull()
+
 @Composable
-fun AppNavigation(auth: FirebaseAuth = Firebase.auth) {
+fun AppNavigation() {
+    val appContext = LocalContext.current.applicationContext
+    val auth = remember { firebaseAuthOrNull(appContext) }
+    if (auth == null) {
+        VitaTakipWebPortalScreen(currentUser = null, onOpenCloudNativePanel = {})
+        return
+    }
+    AppNavigationWithAuth(auth)
+}
+
+@Composable
+private fun AppNavigationWithAuth(auth: FirebaseAuth) {
     val currentUser by auth.authStateFlow().collectAsStateWithLifecycle(initialValue = auth.currentUser)
     var showCloudNativePanel by rememberSaveable { mutableStateOf(false) }
 
@@ -368,9 +391,8 @@ private class AndroidVitaBridge(
 
             if (savedPdfSuccess) {
                 Toast.makeText(context, "PDF indirildi: İndirilenler/$fileName", Toast.LENGTH_LONG).show()
-                val escapedName = fileName.replace("'", "\\'")
                 webView.evaluateJavascript(
-                    "if (typeof window.onAndroidPdfSaved === 'function') { window.onAndroidPdfSaved('$escapedName'); }",
+                    "if (typeof window.onAndroidPdfSaved === 'function') { window.onAndroidPdfSaved(${org.json.JSONObject.quote(fileName)}); }",
                     null
                 )
             }
@@ -475,6 +497,33 @@ private class AndroidVitaBridge(
         }.getOrDefault(false)
     }
 
+    /**
+     * Başka bir cihazdan (ör. bilgisayar) yapılan değişiklikleri almak için buluttaki güncel yedeği
+     * Firestore'dan okur ve web arayüzüne `window.onNativeCloudPayload(json)` ile iletir.
+     * Oturum yoksa veya Firebase yapılandırılmamışsa boş metin gönderilir.
+     */
+    @JavascriptInterface
+    fun refreshCloudBackupFromServer() {
+        coroutineScope.launch {
+            val user = firebaseAuthOrNull(context.applicationContext)?.currentUser
+            val payload = if (user == null) "" else runCatching {
+                VitaRepository(context.applicationContext).loadPortalState(user.uid).getOrNull()
+            }.getOrNull() ?: ""
+            if (user != null && payload.isNotBlank()) {
+                val key = (user.email ?: user.uid).trim().lowercase()
+                context.getSharedPreferences("vitatakip_cloud_sync_prefs", Context.MODE_PRIVATE)
+                    .edit().putString("backup_payload_$key", payload).apply()
+            }
+            val webView = webViewProvider() ?: return@launch
+            webView.post {
+                webView.evaluateJavascript(
+                    "window.onNativeCloudPayload && window.onNativeCloudPayload(${org.json.JSONObject.quote(payload)});",
+                    null
+                )
+            }
+        }
+    }
+
     @JavascriptInterface
     fun loadCloudBackupJson(accountKey: String?): String {
         return runCatching {
@@ -483,9 +532,8 @@ private class AndroidVitaBridge(
                 .trim()
                 .lowercase()
             val prefs = context.getSharedPreferences("vitatakip_cloud_sync_prefs", Context.MODE_PRIVATE)
-            prefs.getString("backup_payload_$key", null)
-                ?: prefs.getString("backup_payload_default", "")
-                ?: ""
+            /* Yalnızca bu hesaba ait yedek döner; başka bir hesabın verisine ("default") düşülmez (gizlilik). */
+            if (key == "default") "" else (prefs.getString("backup_payload_$key", null) ?: "")
         }.getOrDefault("")
     }
 
@@ -684,6 +732,7 @@ fun VitaTakipWebPortalScreen(
                     if (typeof window.updateCameraPermissionUI === 'function') { window.updateCameraPermissionUI(); }
                     if (typeof window.updateNotificationToggleUI === 'function') { window.updateNotificationToggleUI(); }
                     if (typeof window.renderPwaSmartNotificationChecklist === 'function') { window.renderPwaSmartNotificationChecklist(); }
+                    if (typeof window.vitaCloudOnResume === 'function') { window.vitaCloudOnResume(); }
                     """.trimIndent(),
                     null
                 )
@@ -772,14 +821,14 @@ fun VitaTakipWebPortalScreen(
                         @Suppress("DEPRECATION")
                         allowFileAccessFromFileURLs = true
                         @Suppress("DEPRECATION")
-                        allowUniversalAccessFromFileURLs = true
+                        allowUniversalAccessFromFileURLs = false // yerel sayfa her siteye sınırsız erişemez (güvenlik)
                         mediaPlaybackRequiresUserGesture = false
                         loadWithOverviewMode = false
                         useWideViewPort = false
                         builtInZoomControls = false
                         displayZoomControls = false
                         cacheMode = WebSettings.LOAD_NO_CACHE
-                        mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW // şifresiz http içerik yüklenmez
                     }
                     clearCache(true)
 
@@ -790,7 +839,7 @@ fun VitaTakipWebPortalScreen(
                             webViewProvider = { webViewRef },
                             onOpenCloudSyncDialog = { showCloudSyncDialog = true },
                             onStartDirectGoogleSignIn = {
-                                val existingUser = Firebase.auth.currentUser
+                                val existingUser = firebaseAuthOrNull(ctx.applicationContext)?.currentUser
                                 if (existingUser != null) {
                                     scope.launch {
                                         val remotePayload = VitaRepository(ctx.applicationContext)
@@ -804,11 +853,11 @@ fun VitaTakipWebPortalScreen(
                                                 .putString("backup_payload_default", remotePayload)
                                                 .apply()
                                         }
-                                        val safeUid = existingUser.uid.replace("'", "\\'")
-                                        val safeEmail = (existingUser.email ?: "").replace("'", "\\'")
-                                        val safeName = (existingUser.displayName ?: existingUser.email?.substringBefore("@") ?: "Google Kullanıcısı").replace("'", "\\'")
+                                        val safeUid = existingUser.uid
+                                        val safeEmail = (existingUser.email ?: "")
+                                        val safeName = (existingUser.displayName ?: existingUser.email?.substringBefore("@") ?: "Google Kullanıcısı")
                                         webViewRef?.evaluateJavascript(
-                                            "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked('$safeUid', '$safeEmail', '$safeName', true); }",
+                                            "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked(${org.json.JSONObject.quote(safeUid)}, ${org.json.JSONObject.quote(safeEmail)}, ${org.json.JSONObject.quote(safeName)}, true); }",
                                             null
                                         )
                                     }
@@ -835,11 +884,11 @@ fun VitaTakipWebPortalScreen(
                                                             .putString("backup_payload_default", remotePayload)
                                                             .apply()
                                                     }
-                                                    val safeUid = signedUser.uid.replace("'", "\\'")
-                                                    val safeEmail = (signedUser.email ?: "").replace("'", "\\'")
-                                                    val safeName = (signedUser.displayName ?: signedUser.email?.substringBefore("@") ?: "Google Kullanıcısı").replace("'", "\\'")
+                                                    val safeUid = signedUser.uid
+                                                    val safeEmail = (signedUser.email ?: "")
+                                                    val safeName = (signedUser.displayName ?: signedUser.email?.substringBefore("@") ?: "Google Kullanıcısı")
                                                     webViewRef?.evaluateJavascript(
-                                                        "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked('$safeUid', '$safeEmail', '$safeName', true); }",
+                                                        "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked(${org.json.JSONObject.quote(safeUid)}, ${org.json.JSONObject.quote(safeEmail)}, ${org.json.JSONObject.quote(safeName)}, true); }",
                                                         null
                                                     )
                                                 }
@@ -1026,11 +1075,11 @@ fun VitaTakipWebPortalScreen(
                     .putString("backup_payload_default", remotePayload)
                     .apply()
             }
-            val safeUid = (currentUser.uid).replace("'", "\\'")
-            val safeEmail = (currentUser.email ?: "").replace("'", "\\'")
-            val safeName = (currentUser.displayName ?: currentUser.email?.substringBefore("@") ?: "Google Kullanıcısı").replace("'", "\\'")
+            val safeUid = (currentUser.uid)
+            val safeEmail = (currentUser.email ?: "")
+            val safeName = (currentUser.displayName ?: currentUser.email?.substringBefore("@") ?: "Google Kullanıcısı")
             wv.evaluateJavascript(
-                "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked('$safeUid', '$safeEmail', '$safeName', false); }",
+                "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked(${org.json.JSONObject.quote(safeUid)}, ${org.json.JSONObject.quote(safeEmail)}, ${org.json.JSONObject.quote(safeName)}, false); }",
                 null
             )
         }
@@ -1078,11 +1127,11 @@ fun VitaTakipWebPortalScreen(
                 if (currentUser != null) {
                     Button(
                         onClick = {
-                            val safeUid = (currentUser.uid).replace("'", "\\'")
-                            val safeEmail = (currentUser.email ?: "").replace("'", "\\'")
-                            val safeName = (currentUser.displayName ?: currentUser.email?.substringBefore("@") ?: "Google Kullanıcısı").replace("'", "\\'")
+                            val safeUid = (currentUser.uid)
+                            val safeEmail = (currentUser.email ?: "")
+                            val safeName = (currentUser.displayName ?: currentUser.email?.substringBefore("@") ?: "Google Kullanıcısı")
                             webViewRef?.evaluateJavascript(
-                                "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked('$safeUid', '$safeEmail', '$safeName', true); }",
+                                "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked(${org.json.JSONObject.quote(safeUid)}, ${org.json.JSONObject.quote(safeEmail)}, ${org.json.JSONObject.quote(safeName)}, true); }",
                                 null
                             )
                             showCloudSyncDialog = false
@@ -1103,11 +1152,11 @@ fun VitaTakipWebPortalScreen(
                                     showCloudSyncDialog = false
                                     val signedUser = Firebase.auth.currentUser
                                     if (signedUser != null) {
-                                        val safeUid = (signedUser.uid).replace("'", "\\'")
-                                        val safeEmail = (signedUser.email ?: "").replace("'", "\\'")
-                                        val safeName = (signedUser.displayName ?: signedUser.email?.substringBefore("@") ?: "Google Kullanıcısı").replace("'", "\\'")
+                                        val safeUid = (signedUser.uid)
+                                        val safeEmail = (signedUser.email ?: "")
+                                        val safeName = (signedUser.displayName ?: signedUser.email?.substringBefore("@") ?: "Google Kullanıcısı")
                                         webViewRef?.evaluateJavascript(
-                                            "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked('$safeUid', '$safeEmail', '$safeName', true); }",
+                                            "if (window.onNativeGoogleAccountLinked) { window.onNativeGoogleAccountLinked(${org.json.JSONObject.quote(safeUid)}, ${org.json.JSONObject.quote(safeEmail)}, ${org.json.JSONObject.quote(safeName)}, true); }",
                                             null
                                         )
                                     }

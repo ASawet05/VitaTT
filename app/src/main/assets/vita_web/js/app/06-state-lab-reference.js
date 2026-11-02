@@ -1536,6 +1536,9 @@ let currentAuthMode = "login";
       }
       if (Array.isArray(parsed.selectedSymptoms)) {
         state.selectedSymptoms = new Set(parsed.selectedSymptoms);
+        state.selectedSymptomsArray = Array.from(state.selectedSymptoms);
+        /* Analiz seçimi ekrandaki kartlardan yeniden okur; kartlar güncellenmezse gelen belirtiler silinir. */
+        if (typeof syncAnamnesisCardsUI === "function") syncAnamnesisCardsUI();
       }
       if (Array.isArray(parsed.resolvedSymptoms)) {
         state.resolvedSymptoms = new Set(parsed.resolvedSymptoms);

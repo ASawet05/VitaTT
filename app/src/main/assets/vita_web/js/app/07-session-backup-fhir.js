@@ -163,6 +163,7 @@ function checkMidnightReset(userId) {
             }
             if (Array.isArray(parsed.selectedSymptoms)) state.selectedSymptoms = new Set(parsed.selectedSymptoms.filter(k => typeof ANAMNESIS_DICTIONARY !== "undefined" && ANAMNESIS_DICTIONARY[k]));
             state.selectedSymptomsArray = Array.from(state.selectedSymptoms || []);
+            if (typeof syncAnamnesisCardsUI === "function") syncAnamnesisCardsUI(); /* kartlar = veri (yoksa analiz belirtileri siler) */
             if (Array.isArray(parsed.resolvedSymptoms)) state.resolvedSymptoms = new Set(parsed.resolvedSymptoms);
             state.supplementReviews = parsed.supplementReviews || {};
             /* Eski analiz sonucu içe aktarılmaz; güncel kurallarla yeniden hesaplanır */

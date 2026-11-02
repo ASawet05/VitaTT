@@ -275,7 +275,11 @@ class VitaRepository(private val db: FirebaseFirestore) {
         val uid = requireUserId()
         val safeName = displayName.trim().ifEmpty { "Kullanıcı" }.take(100)
         val safeEmail = email.trim().ifEmpty { "user@vitatakip.local" }.take(120)
-        val safePayload = payloadJson.trim().ifEmpty { "{}" }.take(250000)
+        val safePayload = payloadJson.trim().ifEmpty { "{}" }
+        /* Kesmek JSON'u bozar: sınırı aşan yedek yazılmaz, hata döner (kural sınırı 250.000 karakter). */
+        if (safePayload.length > 250000) {
+            return Result.failure(IllegalArgumentException("Bulut yedeği 250.000 karakter sınırını aşıyor."))
+        }
         val docRef = db.collection("users").document(uid)
             .collection("portal_state").document("main")
         return try {

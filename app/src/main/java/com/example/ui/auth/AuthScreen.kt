@@ -108,7 +108,7 @@ fun attemptAutoSignIn(
         return
     }
     val clientId = try {
-        context.getString(R.string.default_web_client_id)
+        context.getString(context.resources.getIdentifier("default_web_client_id", "string", context.packageName).also { require(it != 0) { "default_web_client_id yok" } })
     } catch (e: Exception) {
         onUnauthenticated()
         return
@@ -151,7 +151,7 @@ fun onGoogleSignInClicked(
     onAuthCancelled: () -> Unit = {}
 ) {
     val clientId = try {
-        context.getString(R.string.default_web_client_id)
+        context.getString(context.resources.getIdentifier("default_web_client_id", "string", context.packageName).also { require(it != 0) { "default_web_client_id yok" } })
     } catch (e: Exception) {
         onAuthError("Google Giriş yapılandırması eksik: default_web_client_id bulunamadı")
         return
