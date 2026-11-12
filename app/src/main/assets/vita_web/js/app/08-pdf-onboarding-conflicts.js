@@ -639,6 +639,7 @@ function applyParsedPdfValues() {
         toplamKutuAdedi: kutuAdedi,
         kalanAdet: Number(drugRecord.kalanAdet) > 0 ? Number(drugRecord.kalanAdet) : kutuAdedi,
         gunlukDoz: gunlukDoz,
+        dozPeriyodu: drugRecord.dozPeriyodu === "haftalik" ? "haftalik" : "gunluk",
         zamanBloku: drugRecord.zamanBloku || "Sabah",
         aclikDurumu: drugRecord.aclikDurumu || "Tok Karnına",
         etkilesimKurali: drugRecord.etkilesimKurali || "",
@@ -887,7 +888,7 @@ function applyParsedPdfValues() {
 
       const optgroupsHtml = Object.keys(grouped).map(cat => {
         const opts = grouped[cat].map(item =>
-          `<option value="${escapeHtmlText(item.barcode)}">[${escapeHtmlText(item.barcode)}] ${escapeHtmlText(item.urunAdi)} — ${escapeHtmlText(item.etkenMadde)} (${escapeHtmlText(item.zamanBloku)})</option>`
+          `<option value="${escapeHtmlText(item.barcode)}">${/^\d{8,14}$/.test(String(item.barcode)) ? `[${escapeHtmlText(item.barcode)}] ` : ""}${escapeHtmlText(item.urunAdi)} — ${escapeHtmlText(item.etkenMadde)} (${escapeHtmlText(item.zamanBloku)})</option>`
         ).join("");
         return `<optgroup label="${escapeHtmlText(cat)}">${opts}</optgroup>`;
       }).join("");
@@ -969,7 +970,9 @@ function applyParsedPdfValues() {
               : { hasConflict: false, hasTimingCollision: false, conflictingSupplements: [] };
             const hasConflict = Boolean(conflictInfo && conflictInfo.hasConflict);
             const conflictSupNames = (conflictInfo.conflictingSupplements || []).map(s => s.name).join(", ");
-            const kalanGun = Math.max(0, Math.floor((Number(rx.kalanAdet || rx.kutuAdedi || 30)) / Math.max(1, Number(rx.gunlukDoz || 1))));
+            const rxDbInfo = (window.VITA_PRESCRIPTION_DRUG_DB || []).find(d => d.urunAdi === rx.urunAdi) || {};
+            const isWeekly = (rx.dozPeriyodu || rxDbInfo.dozPeriyodu) === "haftalik";
+            const kalanGun = Math.max(0, Math.floor((Number(rx.kalanAdet || rx.kutuAdedi || 30)) / Math.max(1, Number(rx.gunlukDoz || 1)) * (isWeekly ? 7 : 1)));
 
             return `
               <div class="rounded-xl border ${hasConflict ? 'border-rose-300 bg-rose-50/90' : 'border-emerald-200 bg-emerald-50/70'} p-2.5 transition">
@@ -992,9 +995,9 @@ function applyParsedPdfValues() {
                         <span class="px-1.5 py-0.2 rounded bg-white/90 border border-slate-200 text-[9px] font-extrabold text-indigo-800">${escapeHtmlText(rx.kategori)}</span>
                       </div>
                       <div class="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] text-slate-700 font-semibold">
-                        <span><i class="fa-regular fa-clock text-teal-700 mr-0.5"></i>${escapeHtmlText(rx.zamanBloku)} • ${escapeHtmlText(rx.aclikDurumu)}</span>
+                        <span title="Genel prospektüs bilgisi; doz ve saat için hekiminizin talimatı geçerlidir."><i class="fa-regular fa-clock text-teal-700 mr-0.5"></i>${escapeHtmlText(isWeekly && !/haftada/i.test(String(rx.zamanBloku)) ? `Haftada 1 gün · ${rx.zamanBloku}` : rx.zamanBloku)} • ${escapeHtmlText(rx.aclikDurumu)} <em class="not-italic text-slate-500">(genel bilgi; hekim talimatınız geçerlidir)</em></span>
                         <span>• Kutu: <strong>${escapeHtmlText(rx.kutuAdedi)}</strong> tb (${escapeHtmlText(kalanGun)} gün)</span>
-                        ${rx.barcode ? `<span class="font-mono text-[9px] text-slate-500">EAN: ${escapeHtmlText(rx.barcode)}</span>` : ''}
+                        ${rx.barcode && /^\d{8,14}$/.test(String(rx.barcode)) ? `<span class="font-mono text-[9px] text-slate-500">EAN: ${escapeHtmlText(rx.barcode)}</span>` : ''}
                       </div>
                     </div>
                   </div>

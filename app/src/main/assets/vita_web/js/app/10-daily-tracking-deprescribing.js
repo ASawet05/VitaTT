@@ -868,20 +868,9 @@ function renderDailyTab() {
           }));
         }
 
+        /* Cihazda fotoğraftan yazı okuma yoktur: eşleşme yoksa ürün uydurulmaz. */
         if (!parsedJson || !parsedJson.urunAdi) {
-          const supDb = Array.isArray(window.VITA_SUPPLEMENT_DB) ? window.VITA_SUPPLEMENT_DB : [];
-          parsedJson = supDb[0] || {
-            urunAdi: "Ocean Vitamin D3 1000 IU",
-            marka: "Orzaks",
-            etkenMadde: "Kolekalsiferol (Vitamin D3)",
-            form: "Oral Damla / Sprey",
-            dozaj: "1000 IU (25 mcg) / puf",
-            kutuAdedi: 130,
-            gunlukDoz: 1,
-            zamanBloku: "Sabah",
-            aclikDurumu: "Tok (Yağlı Kahvaltı İle)"
-          };
-          usedLocalEngine = true;
+          throw new Error("Ürün fotoğraftan tanınamadı. Bu sürümde fotoğraftan yazı okuma yok ve fotoğraf hiçbir yere gönderilmez. Listeden seçin, barkodu okutun veya ürün adını elle yazın.");
         }
 
         fillAddSupplementModalFormFromItem({
@@ -897,10 +886,10 @@ function renderDailyTab() {
         });
 
         const recognizedTitle = parsedJson.urunAdi || "Kutu Bilgileri";
-        const engineLabel = usedLocalEngine ? "Yerel Akıllı Kutu Tanıma Motoru" : "Gemini Vision AI";
-        showAddSupFeedback(`✨ ${engineLabel} Başarılı: ${recognizedTitle} form alanlarına otomatik aktarıldı. Bilgileri kontrol edip kaydedebilirsiniz.`, "success");
+        const engineLabel = "Yerel ürün listesi eşleşmesi";
+        showAddSupFeedback(`${engineLabel}: ${recognizedTitle} form alanlarına aktarıldı. Kutudaki bilgilerle karşılaştırıp doğrulayın.`, "success");
         if (window.SoundEffects) SoundEffects.playSuccess();
-        showToast(`Ürün Tanındı: ${recognizedTitle}`, `${engineLabel} ile kutu bilgileri Takviye Ekle formuna dolduruldu.`, "success");
+        showToast(`Eşleşme bulundu: ${recognizedTitle}`, "Bilgileri kutudaki etiketle karşılaştırıp doğrulayın.", "success");
       } catch (err) {
         showAddSupFeedback(`Kutu görseli işlenirken uyarı: ${err?.message || "Lütfen yukarıdaki 30 popüler takviye listesinden seçin veya ürün adını girin."}`, "warning");
       }
@@ -1302,6 +1291,17 @@ function renderDailyTab() {
       };
       if (Object.values(values).every(value => value === null)) {
         showToast("Boş Sonuç", "Lütfen en az bir tahlil değeri giriniz.", "warning");
+        return;
+      }
+      /* Yazım/birim hatası: fizyolojik olarak mümkün olmayan değerler kaydedilmez (negatif, sıfır, aşırı büyük). */
+      const implausible = Object.entries(values).filter(([key, value]) => typeof isVitaLabValuePlausible === "function" && !isVitaLabValuePlausible(key, value));
+      if (implausible.length) {
+        const labelOf = key => (VITA_LAB_APP_REFERENCE_META[key] && VITA_LAB_APP_REFERENCE_META[key].name) || key;
+        const detail = implausible.map(([key, value]) => {
+          const range = (window.VITA_LAB_PLAUSIBLE_RANGES || {})[key];
+          return `${labelOf(key)}: ${value}${range ? ` (beklenen ${range[0]}–${range[1]} ${range[2]})` : ""}`;
+        }).join("; ");
+        showToast("Değeri kontrol edin", `Şu değer(ler) ölçülebilir aralığın dışında; birim veya yazım hatası olabilir: ${detail}`, "warning");
         return;
       }
 

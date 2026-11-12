@@ -224,7 +224,7 @@ function checkPendingSymptomReviews() {
       state.selectedSymptomsArray = Array.from(state.selectedSymptoms);
       try {
         if (typeof safeLocalStorageSetItem === "function") {
-          safeLocalStorageSetItem("vitatakip_selected_symptoms_array", JSON.stringify(state.selectedSymptomsArray));
+          safeLocalStorageRemoveItem("vitatakip_selected_symptoms_array"); /* eski, kullanıcıya özel olmayan anahtar */
           if (activeUserId) {
             safeLocalStorageSetItem(`vitatakip_symptoms_${activeUserId}`, JSON.stringify(state.selectedSymptomsArray));
           }
@@ -299,7 +299,7 @@ function checkPendingSymptomReviews() {
         const store = tx.objectStore(storeName);
         let request;
         let result;
-        try { request = method === "get" ? store.get(valueOrKey) : method === "getAll" ? store.getAll() : store.put(valueOrKey); }
+        try { request = method === "get" ? store.get(valueOrKey) : method === "getAll" ? store.getAll() : method === "delete" ? store.delete(valueOrKey) : store.put(valueOrKey); }
         catch (error) { reject(error); return; }
         // Request success tek başına transaction'ın commit edildiğini garanti etmez.
         // Okuma/yazma sonucunu transaction complete olduktan sonra bildiriyoruz.
@@ -458,6 +458,22 @@ function checkPendingSymptomReviews() {
         .slice(0, 100);
     }
 
+    /* Hesap silinirken bu kullanıcının IndexedDB kayıtlarını (tam anlık görüntü + PDF tarama günlüğü) siler. */
+    async function purgeVitaUserIndexedData(userId) {
+      if (!userId || !window.indexedDB) return true;
+      const wanted = String(userId);
+      /* Bekleyen yazımlar silinen kaydı yeniden oluşturmasın: önce zamanlayıcı iptal edilir, kuyruk boşaltılır. */
+      if (vitaDoctorNotesPersistTimer) { clearTimeout(vitaDoctorNotesPersistTimer); vitaDoctorNotesPersistTimer = null; }
+      try { await vitaIndexedDbWriteQueue; } catch (_) {}
+      await vitaIndexedDbRequest("extendedData", "readwrite", "delete", wanted);
+      const rows = await vitaIndexedDbRequest("pdfScanLogs", "readonly", "getAll");
+      for (const row of (Array.isArray(rows) ? rows : [])) {
+        if (row && String(row.userId || "") === wanted && row.id) await vitaIndexedDbRequest("pdfScanLogs", "readwrite", "delete", row.id);
+      }
+      return true;
+    }
+    window.purgeVitaUserIndexedData = purgeVitaUserIndexedData;
+
     async function getVitaPdfScanLogs(userId = activeUserId) {
       if (!userId) return [];
       const fallback = readStoredJSON(`vitatakip_pdfscanlogs_${userId}`, []);
@@ -514,6 +530,24 @@ function checkPendingSymptomReviews() {
       ["inputLabCreatinine", "creatinine"], ["inputLabFolate", "folate"], ["inputLabAlt", "alt"],
       ["inputLabHb", "hb"], ["inputLabMcv", "mcv"], ["inputLabCrp", "crp"]
     ];
+
+    /* Ölçülebilir (fizyolojik olarak mümkün) değer aralıkları. Referans aralığı DEĞİLDİR: yalnızca yazım/birim
+       hatalarını (negatif, sıfır, 100 kat büyük değer) yakalar. Uç ama gerçek değerler (ör. hemokromatozda ferritin) kabul edilir. */
+    const VITA_LAB_PLAUSIBLE_RANGES = {
+      d3: [1, 300, "ng/mL"], b12: [30, 20000, "pg/mL"], ferritin: [1, 100000, "ng/mL"], iron: [5, 1000, "µg/dL"],
+      tsat: [1, 100, "%"], mg: [0.3, 10, "mg/dL"], ca: [3, 20, "mg/dL"], zinc: [10, 500, "µg/dL"],
+      creatinine: [0.1, 25, "mg/dL"], folate: [0.3, 100, "ng/mL"], alt: [1, 10000, "U/L"], hb: [2, 25, "g/dL"],
+      hgb: [2, 25, "g/dL"], hct: [5, 75, "%"], rbc: [0.5, 10, "milyon/µL"], mcv: [40, 150, "fL"],
+      crp: [0, 1000, "mg/L"], hba1c: [2, 25, "%"], tsh: [0.001, 500, "mIU/L"], ft4: [0.05, 15, "ng/dL"]
+    };
+    function isVitaLabValuePlausible(key, value) {
+      const range = VITA_LAB_PLAUSIBLE_RANGES[key];
+      if (value === null || value === undefined) return true;
+      if (!Number.isFinite(value)) return false;
+      return !range || (value >= range[0] && value <= range[1]);
+    }
+    window.isVitaLabValuePlausible = isVitaLabValuePlausible;
+    window.VITA_LAB_PLAUSIBLE_RANGES = VITA_LAB_PLAUSIBLE_RANGES;
 
     function parseVitaLabDecimal(raw) {
       if (typeof raw === "number") return Number.isFinite(raw) ? raw : null;
@@ -598,7 +632,6 @@ function checkPendingSymptomReviews() {
           [`vitatakip_labreferences_${userId}`, JSON.stringify(state.labReferences || {})],
           [`vitatakip_labhistory_${userId}`, JSON.stringify(state.labHistory)],
           [`vitatakip_symptoms_${userId}`, JSON.stringify(symptomsArr)],
-          ["vitatakip_selected_symptoms_array", JSON.stringify(symptomsArr)],
           [`vitatakip_resolved_symptoms_${userId}`, JSON.stringify(Array.from(state.resolvedSymptoms))],
           [`vitatakip_reviews_${userId}`, JSON.stringify(state.supplementReviews || {})]
         );
@@ -625,16 +658,6 @@ function checkPendingSymptomReviews() {
 
         // IndexedDB tam snapshot'tır; localStorage yazımı başarılı olsa da senkronize edilir.
         persistVitaExtendedData(userId, updatedAt);
-        try {
-          if (typeof isCloudAutoSyncEnabled === "function" && isCloudAutoSyncEnabled() && typeof getLinkedGoogleCloudAccount === "function") {
-            const linkedAcc = getLinkedGoogleCloudAccount();
-            if (linkedAcc && linkedAcc.connected && linkedAcc.email && typeof syncDataToCloudNow === "function") {
-              syncDataToCloudNow(false);
-            }
-          }
-        } catch (cloudSyncErr) {
-          console.warn("Otomatik bulut yedekleme sırasında uyarı:", cloudSyncErr);
-        }
         return allSaved;
       } catch (error) {
         notifyLocalStorageProblem(error);
@@ -980,7 +1003,8 @@ function checkPendingSymptomReviews() {
         dietPattern: document.getElementById("modalDietPattern")?.value || "unspecified",
         fishPerWeek: document.getElementById("modalFishPerWeek")?.value || "unspecified",
         redMeatPerWeek: document.getElementById("modalRedMeatPerWeek")?.value || "unspecified",
-        sunExposureDaily: document.getElementById("modalSunExposure")?.value || "unspecified"
+        sunExposureDaily: document.getElementById("modalSunExposure")?.value || "unspecified",
+        profileCompleted: true
       });
 
       recalculateSupplementsForNewWeight();
@@ -1021,6 +1045,89 @@ function checkPendingSymptomReviews() {
       });
     }
 
+    /* Profil (yaş, cinsiyet, boy, kilo) kullanıcı tarafından kaydedildi mi? Kaydedilmediyse varsayılan değerler
+       (28 yaş, kadın, 168 cm, 68 kg) analizde gerçekmiş gibi kullanılmamalıdır. Bayrağı olmayan eski kayıtlarda
+       değerler varsayılanlardan farklıysa profil tamamlanmış kabul edilir. */
+    function isVitaProfileComplete() {
+      const u = typeof state !== "undefined" ? state.user : null;
+      if (!u) return false;
+      if (u.profileCompleted === true) return true;
+      if (u.profileCompleted === false) return false;
+      const d = defaultUserProfile;
+      return !(Number(u.age) === d.age && u.gender === d.gender && Number(u.height) === d.height && Number(u.weight) === d.weight);
+    }
+    window.isVitaProfileComplete = isVitaProfileComplete;
+
+    function renderVitaProfileIncompleteNotice() {
+      const show = Boolean(activeUserId) && !isVitaProfileComplete();
+      ["view-clinical-results", "view-report"].forEach(viewId => {
+        const view = document.getElementById(viewId);
+        if (!view) return;
+        let box = view.querySelector(".vita-profile-incomplete-notice");
+        if (!show) { if (box) box.remove(); return; }
+        if (!box) {
+          box = document.createElement("div");
+          box.className = "vita-profile-incomplete-notice mb-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950 flex flex-wrap items-center justify-between gap-2";
+          box.setAttribute("role", "status");
+          const text = document.createElement("span");
+          text.innerHTML = "<strong>Profiliniz tamamlanmadı.</strong> Yaş, cinsiyet, boy ve kilo girilmeden yapılan değerlendirmeler genel varsayımlara dayanır; eGFR hesaplanmaz.";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "rounded-lg bg-amber-600 hover:bg-amber-700 px-3 py-1.5 text-[11px] font-black text-white";
+          btn.textContent = "Profili tamamla";
+          btn.addEventListener("click", () => openProfileModal(true));
+          box.append(text, btn);
+          view.prepend(box);
+        }
+      });
+    }
+    window.renderVitaProfileIncompleteNotice = renderVitaProfileIncompleteNotice;
+
+    /* G6 — Çoklu sekme: başka bir sekmede bu hesabın verisi değişirse bu sekme yeniden yüklenir.
+       Böylece eski veriyle yapılan bir sonraki kayıt diğer sekmedeki değişiklikleri silmez. */
+    const VITA_SYNCED_KEY_PREFIXES = ["vitatakip_user_", "vitatakip_supplements_", "vitatakip_hydration_", "vitatakip_labs_",
+      "vitatakip_labreferences_", "vitatakip_labhistory_", "vitatakip_symptoms_", "vitatakip_resolved_symptoms_", "vitatakip_reviews_", "vitatakip_notes_"];
+    let vitaCrossTabTimer = null;
+    window.addEventListener("storage", event => {
+      try {
+        if (!activeUserId || !event.key) return;
+        if (event.key === "vitatakip_users_db" && !getUsersDb().some(u => u && u.id === activeUserId)) {
+          /* Hesap başka sekmede silindi: bu sekmede oturum kapatılır. */
+          activeUserId = null;
+          resetApplicationDOMAndState();
+          if (typeof openAuthModal === "function") openAuthModal();
+          return;
+        }
+        const own = VITA_SYNCED_KEY_PREFIXES.some(prefix => event.key === prefix + activeUserId);
+        if (!own) return;
+        clearTimeout(vitaCrossTabTimer);
+        vitaCrossTabTimer = setTimeout(() => {
+          loadUserSessionData(activeUserId);
+          renderAllAppViews();
+          showToast("Başka sekmede güncellendi", "Bu hesabın verileri başka bir sekmede değişti; bu sayfa güncel verilerle yenilendi.", "info");
+        }, 400);
+      } catch (error) { console.warn("Sekmeler arası eşitleme uyarısı:", error); }
+    });
+
+    /* G7 — Kalıcı depolama + yedek hatırlatması: veriler yalnızca bu cihazda olduğu için tarayıcının
+       (ör. Safari 7 gün kuralı) site verisini silmemesi istenir ve düzenli yedek hatırlatılır. */
+    let vitaBackupReminderShown = false;
+    function checkVitaStorageSafety() {
+      try { if (navigator.storage && typeof navigator.storage.persist === "function") navigator.storage.persist().catch(() => {}); } catch (_) {}
+      if (vitaBackupReminderShown || !activeUserId) return;
+      const hasData = (Array.isArray(state.labHistory) && state.labHistory.length > 0) || (Array.isArray(state.supplements) && state.supplements.length > 0);
+      if (!hasData) return;
+      const last = Number(safeLocalStorageGetItem(`vitatakip_last_backup_${activeUserId}`) || 0);
+      const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+      if (days !== null && days < 30) return;
+      vitaBackupReminderShown = true;
+      setTimeout(() => showToast("Yedek almayı unutmayın",
+        days === null
+          ? "Verileriniz yalnızca bu cihazda. Cihaz değişirse veya tarayıcı verileri silinirse kaybolur: Ayarlar > Yedek İndir."
+          : `Son yedeğiniz ${days} gün önce alındı. Ayarlar > Yedek İndir ile güncel bir yedek alın.`, "info"), 2500);
+    }
+    window.checkVitaStorageSafety = checkVitaStorageSafety;
+
     function renderAllAppViews() {
       if (removeLegacyDemoSupplements() && activeUserId) {
         safeLocalStorageSetItem(`vitatakip_supplements_${activeUserId}`, JSON.stringify(state.supplements));
@@ -1042,7 +1149,8 @@ function checkPendingSymptomReviews() {
       }
       if (typeof renderSettingsView === "function") renderSettingsView();
       renderReportTab();
-      if (typeof refreshCloudSyncUI === "function") refreshCloudSyncUI();
+      renderVitaProfileIncompleteNotice();
+      checkVitaStorageSafety();
     }
 
     let toastTimeout = null;

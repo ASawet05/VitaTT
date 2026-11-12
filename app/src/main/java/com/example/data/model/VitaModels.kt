@@ -1,13 +1,9 @@
 package com.example.data.model
 
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentId
-import com.google.firebase.firestore.IgnoreExtraProperties
-import com.google.firebase.firestore.ServerTimestamp
+import java.util.Date
 
-@IgnoreExtraProperties
 data class Supplement(
-    @DocumentId val id: String = "",
+    val id: String = "",
     val userId: String = "",
     val name: String = "",
     val dosage: String = "",
@@ -16,13 +12,12 @@ data class Supplement(
     val takenToday: Boolean = false,
     val stockCount: Long = 30L,
     val notes: String? = null,
-    @ServerTimestamp val createdAt: Timestamp? = null,
-    @ServerTimestamp val updatedAt: Timestamp? = null
+    val createdAt: Date? = null,
+    val updatedAt: Date? = null
 )
 
-@IgnoreExtraProperties
 data class VitalLog(
-    @DocumentId val id: String = "",
+    val id: String = "",
     val userId: String = "",
     val type: String = "Su", // Su, Tansiyon, Nabiz, Kilo, Seker, Uyku, Gider
     val title: String = "",
@@ -30,8 +25,8 @@ data class VitalLog(
     val secondaryValue: Long = 0L,
     val unit: String = "ml",
     val note: String? = null,
-    @ServerTimestamp val createdAt: Timestamp? = null,
-    @ServerTimestamp val updatedAt: Timestamp? = null
+    val createdAt: Date? = null,
+    val updatedAt: Date? = null
 )
 
 enum class SupplementCategory(val code: String, val displayLabel: String) {

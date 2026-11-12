@@ -54,7 +54,9 @@ if (!only || only === 'T2') {
   const id = await p.evaluate(() => state.labHistory[0].id);
   await p.evaluate((id) => deleteLabRecord(id), id); await sleep(500);
   const t = await analysisText(p);
-  log('T2a silinen tahlil sonrası analizde kreatinin/ferritin izi yok', !/9\.37|Kreatinin 1\.5|eGFR/.test(t) || false, (t.match(/.{0,30}(9\.37|1\.5|eGFR).{0,30}/) || [''])[0]);
+  /* "Profil eksik" uyarısı genel bir bilgi metnidir (eGFR kelimesi geçer); silinen tahlilin izi sayılmaz. */
+  const tNoNotice = t.replace(/Profiliniz tamamlanmadı\.[^\n]*/, '');
+  log('T2a silinen tahlil sonrası analizde kreatinin/ferritin izi yok', !/9\.37|Kreatinin 1\.5|eGFR/.test(tNoNotice) || false, (t.match(/.{0,30}(9\.37|1\.5|eGFR).{0,30}/) || [''])[0]);
   log('T2b "güncel tahlil yok" moduna geçti', await p.evaluate(() => state.lastCDSS && state.lastCDSS.hasNoCurrentLabs === true && state.lastCDSS.hasArchiveLabs !== true), JSON.stringify(await p.evaluate(() => ({ nl: state.lastCDSS?.hasNoCurrentLabs, al: state.lastCDSS?.hasArchiveLabs, hist: state.labHistory.length }))));
   await b.close();
 }
@@ -92,7 +94,7 @@ if (!only || only === 'T5') {
   await p.evaluate(() => editSymptomsFromClinicalResults()); await sleep(600);
   await p.evaluate(() => { const c = document.querySelectorAll('.anamnesis-card')[0]; c.click(); }); await sleep(400);
   const removed = await p.evaluate(() => { const meta = ANAMNESIS_DICTIONARY; return null; });
-  const arr = await p.evaluate(() => ({ set: [...state.selectedSymptoms].length, arr: state.selectedSymptomsArray.length, ls: JSON.parse(localStorage.getItem('vitatakip_selected_symptoms_array') || '[]').length }));
+  const arr = await p.evaluate(() => ({ set: [...state.selectedSymptoms].length, arr: state.selectedSymptomsArray.length, ls: JSON.parse(localStorage.getItem('vitatakip_symptoms_' + activeUserId) || '[]').length }));
   log('T5a işaret kaldırılınca set/array/localStorage 2', arr.set === 2 && arr.arr === 2 && arr.ls === 2, JSON.stringify(arr));
   await p.evaluate(() => navigateToView('view-clinical-results')); await sleep(1600);
   const info = await p.evaluate(() => ({ cnt: state.lastCDSS.selectedSymptoms.length, tests: window.computeDoctorTests().symTests.length, sectionText: document.getElementById('doctorTestsSection').innerText }));

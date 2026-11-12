@@ -108,6 +108,33 @@ function checkMidnightReset(userId) {
       });
     }
 
+    /* Dosya kaydetme: Android uygulamasında yerel köprü (İndirilenler klasörü), tarayıcıda Blob bağlantısı.
+       WebView data:/blob: indirmelerini kendiliğinden kaydetmediği için köprü zorunludur. */
+    function vitaSaveTextFile(fileName, mimeType, text) {
+      const safeFile = String(fileName || "VitaTakip.json").replace(/[\\/:*?"<>|]+/g, "_").slice(0, 120);
+      const bridge = window.AndroidVitaBridge;
+      if (bridge && typeof bridge.saveTextFile === "function") {
+        try { return Boolean(bridge.saveTextFile(safeFile, mimeType || "application/json", String(text))); }
+        catch (error) { console.warn("Android dosya kaydı başarısız:", error); return false; }
+      }
+      try {
+        const blob = new Blob([String(text)], { type: `${mimeType || "application/json"};charset=utf-8` });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = safeFile;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        return true;
+      } catch (error) {
+        console.warn("Dosya indirilemedi:", error);
+        return false;
+      }
+    }
+    window.vitaSaveTextFile = vitaSaveTextFile;
+
     function exportDataBackup() {
       if (!activeUserId) { showToast("Hata", "Oturum açmadan yedek alamazsınız.", "error"); return; }
       const backupPayload = {
@@ -120,61 +147,162 @@ function checkMidnightReset(userId) {
         lastCDSS: state.lastCDSS,
         doctorNotes: safeLocalStorageGetItem(`vitatakip_notes_${activeUserId}`) || ""
       };
+      const safeName = String(state.user?.name || "Kullanici").replace(/\s+/g, "_");
+      const fileName = `VitaTakip_Yedek_${safeName}_${new Date().toISOString().slice(0, 10)}.json`;
+      if (!vitaSaveTextFile(fileName, "application/json", JSON.stringify(backupPayload, null, 2))) {
+        showToast("Yedek Alınamadı", "Yedek dosyası kaydedilemedi. Depolama iznini ve boş alanı kontrol edin.", "error");
+        return;
+      }
+      safeLocalStorageSetItem(`vitatakip_last_backup_${activeUserId}`, String(Date.now()));
+      showToast("Yedek Alındı", window.AndroidVitaBridge ? `Yedek İndirilenler klasörüne kaydedildi: ${fileName}` : "Verileriniz JSON dosyası olarak indirildi.", "success");
+    }
 
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPayload, null, 2));
-      const downloadAnchor = document.createElement("a");
-      const safeName = (state.user?.name || "Kullanici").replace(/\s+/g, "_");
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `VitaTakip_Yedek_${safeName}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      showToast("Yedek Alındı", "Verileriniz JSON dosyası olarak indirildi.", "success");
+    /* ---------- Yedekten içe aktarma: tür ve aralık doğrulaması ---------- */
+    /* JSON değerini güvenli biçime indirger: uzun metin/dizi kırpılır, sonsuz/NaN sayılar ve aşırı derinlik atılır. */
+    function vitaSanitizeJsonValue(value, depth = 0) {
+      if (value === null || value === undefined) return null;
+      if (typeof value === "string") return value.slice(0, 2000);
+      if (typeof value === "number") return Number.isFinite(value) ? value : null;
+      if (typeof value === "boolean") return value;
+      if (depth >= 6) return null;
+      if (Array.isArray(value)) return value.slice(0, 1000).map(item => vitaSanitizeJsonValue(item, depth + 1));
+      if (typeof value === "object") {
+        const out = {};
+        Object.keys(value).slice(0, 300).forEach(key => {
+          if (key === "__proto__" || key === "constructor" || key === "prototype") return;
+          const clean = vitaSanitizeJsonValue(value[key], depth + 1);
+          if (clean !== null && clean !== undefined) out[String(key).slice(0, 120)] = clean;
+        });
+        return out;
+      }
+      return null;
+    }
+
+    function vitaNumberInRange(raw, min, max) {
+      const n = typeof parseVitaLabDecimal === "function" ? parseVitaLabDecimal(raw) : Number(raw);
+      return n !== null && Number.isFinite(n) && n >= min && n <= max ? n : null;
+    }
+
+    function sanitizeImportedUser(rawUser) {
+      const src = vitaSanitizeJsonValue(rawUser) || {};
+      const user = { ...defaultUserProfile, ...src };
+      user.name = String(src.name || "").trim().slice(0, 120);
+      user.gender = src.gender === "E" ? "E" : "K";
+      const age = vitaNumberInRange(src.age, 1, 120);
+      const height = vitaNumberInRange(src.height, 50, 250);
+      const weight = vitaNumberInRange(src.weight, 2, 400);
+      user.age = age !== null ? Math.round(age) : defaultUserProfile.age;
+      user.height = height !== null ? height : defaultUserProfile.height;
+      user.weight = weight !== null ? weight : defaultUserProfile.weight;
+      /* Aralık dışı/eksik profil "tamamlandı" sayılmaz; kullanıcıdan profili gözden geçirmesi istenir.
+         Eski yedeklerde bayrak yoktur: geçerli yaş/boy/kilo varsa tamamlanmış kabul edilir. */
+      user.profileCompleted = (src.profileCompleted === undefined || src.profileCompleted === true) && age !== null && height !== null && weight !== null;
+      user.chronic = Array.isArray(src.chronic) ? src.chronic.filter(item => typeof item === "string").map(item => item.slice(0, 60)).slice(0, 50) : [];
+      ["medications", "prescriptionDrugRecords"].forEach(key => { if (key in src && !Array.isArray(src[key])) delete user[key]; });
+      ["bmiCategory", "bmiBadgeColor"].forEach(key => { if (typeof user[key] !== "string") delete user[key]; });
+      return user;
+    }
+
+    function sanitizeImportedLabValues(raw) {
+      const out = {};
+      const src = raw && typeof raw === "object" ? raw : {};
+      ALL_VITA_LAB_KEYS.forEach(key => {
+        const n = typeof parseVitaLabDecimal === "function" ? parseVitaLabDecimal(src[key]) : null;
+        out[key] = n !== null && (typeof isVitaLabValuePlausible !== "function" || isVitaLabValuePlausible(key, n)) ? n : null;
+      });
+      return out;
+    }
+
+    function sanitizeImportedLabReferences(raw) {
+      const out = {};
+      if (!raw || typeof raw !== "object") return out;
+      Object.keys(raw).forEach(key => {
+        if (ALL_VITA_LAB_KEYS.includes(key) && typeof raw[key] === "string") out[key] = raw[key].trim().slice(0, 120);
+      });
+      return out;
+    }
+
+    function sanitizeImportedLabRecord(raw) {
+      if (!raw || typeof raw !== "object" || !/^\d{4}-\d{2}-\d{2}$/.test(String(raw.date || ""))) return null;
+      const record = vitaSanitizeJsonValue(raw);
+      Object.assign(record, sanitizeImportedLabValues(raw));
+      record.references = sanitizeImportedLabReferences(raw.references);
+      if (record.applicationReferences && typeof record.applicationReferences !== "object") delete record.applicationReferences;
+      record.genderAtTest = raw.genderAtTest === "E" ? "E" : "K";
+      record.id = typeof raw.id === "string" ? raw.id.slice(0, 80) : `lab_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      record.timestamp = Number.isFinite(Number(raw.timestamp)) ? Number(raw.timestamp) : (new Date(`${record.date}T00:00:00`).getTime() || 0);
+      return ALL_VITA_LAB_KEYS.some(key => record[key] !== null) ? record : null;
+    }
+
+    function sanitizeImportedSupplement(raw) {
+      if (!raw || typeof raw !== "object" || typeof raw.name !== "string" || !raw.name.trim()) return null;
+      const item = vitaSanitizeJsonValue(raw);
+      item.name = raw.name.trim().slice(0, 120);
+      item.id = typeof raw.id === "string" && raw.id ? raw.id.slice(0, 80) : `sup_import_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      ["kalanAdet", "toplamKutuAdedi", "gunlukDoz"].forEach(key => {
+        if (key in item) { const n = vitaNumberInRange(item[key], 0, 100000); if (n === null) delete item[key]; else item[key] = n; }
+      });
+      if (Array.isArray(item.scheduleDays)) item.scheduleDays = item.scheduleDays.filter(d => Number.isInteger(d) && d >= 0 && d <= 6);
+      item.taken = item.taken === true;
+      return item;
     }
 
     function importDataBackup(event) {
       const file = event.target.files[0];
       if (!file) return;
+      if (!activeUserId) { showToast("Oturum Gerekli", "Yedeği yüklemek için önce bir hesap açın veya giriş yapın.", "warning"); event.target.value = ""; return; }
       if (file.size > 10 * 1024 * 1024) { showToast("Dosya çok büyük", "Yedek dosyası 10 MB'tan büyük olamaz.", "error"); event.target.value = ""; return; }
 
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           const parsed = JSON.parse(e.target.result);
-          if (!parsed.app || parsed.app !== "VitaTakip") {
+          if (!parsed || typeof parsed !== "object" || parsed.app !== "VitaTakip") {
             showToast("Geçersiz Dosya", "Bu dosya geçerli bir VitaTakip yedeği değil.", "error");
             return;
           }
 
           if (confirm("Yedek yüklendiğinde mevcut verilerinizin üzerine yazılacaktır. Onaylıyor musunuz?")) {
+            const keepName = state.user?.name;
             resetApplicationDOMAndState();
-            if (parsed.user) state.user = { ...state.user, ...parsed.user };
-            if (Array.isArray(parsed.supplements)) state.supplements = parsed.supplements.filter(s => s && typeof s === "object" && typeof s.name === "string");
-            if (parsed.hydration) state.hydration = parsed.hydration;
-            if (parsed.labValues) state.labValues = { d3: null, b12: null, ferritin: null, mg: null, ca: null, zinc: null, creatinine: null, folate: null, alt: null, hb: null, mcv: null, crp: null, ...parsed.labValues };
-            if (parsed.labReferences && typeof parsed.labReferences === "object") state.labReferences = { ...parsed.labReferences };
-            if (parsed.labHistory && Array.isArray(parsed.labHistory)) {
-              state.labHistory = parsed.labHistory.filter(r => r && typeof r === "object" && /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")));
-              state.labHistory.sort((a, b) => {
-                const tb = (typeof b.timestamp === "number") ? b.timestamp : (b.date ? new Date(b.date + "T00:00:00").getTime() : 0);
-                const ta = (typeof a.timestamp === "number") ? a.timestamp : (a.date ? new Date(a.date + "T00:00:00").getTime() : 0);
-                return (tb || 0) - (ta || 0);
-              });
+            if (parsed.user) {
+              state.user = sanitizeImportedUser(parsed.user);
+              /* Ekrandaki ad, giriş yapılan hesap adıyla aynı kalır (yedekteki farklı ad karışıklık yaratmaz). */
+              if (keepName) state.user.name = keepName;
             }
-            if (Array.isArray(parsed.selectedSymptoms)) state.selectedSymptoms = new Set(parsed.selectedSymptoms.filter(k => typeof ANAMNESIS_DICTIONARY !== "undefined" && ANAMNESIS_DICTIONARY[k]));
+            if (Array.isArray(parsed.supplements)) state.supplements = parsed.supplements.map(sanitizeImportedSupplement).filter(Boolean).slice(0, 300);
+            if (parsed.hydration && typeof parsed.hydration === "object") {
+              const current = vitaNumberInRange(parsed.hydration.current, 0, 20000);
+              state.hydration = { ...state.hydration, current: current !== null ? current : 0 };
+            }
+            if (parsed.labValues) state.labValues = sanitizeImportedLabValues(parsed.labValues);
+            if (parsed.labReferences) state.labReferences = sanitizeImportedLabReferences(parsed.labReferences);
+            if (Array.isArray(parsed.labHistory)) {
+              state.labHistory = parsed.labHistory.map(sanitizeImportedLabRecord).filter(Boolean).slice(0, 1000);
+              state.labHistory.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            }
+            if (Array.isArray(parsed.selectedSymptoms)) state.selectedSymptoms = new Set(parsed.selectedSymptoms.filter(k => typeof k === "string" && typeof ANAMNESIS_DICTIONARY !== "undefined" && ANAMNESIS_DICTIONARY[k]));
             state.selectedSymptomsArray = Array.from(state.selectedSymptoms || []);
             if (typeof syncAnamnesisCardsUI === "function") syncAnamnesisCardsUI(); /* kartlar = veri (yoksa analiz belirtileri siler) */
-            if (Array.isArray(parsed.resolvedSymptoms)) state.resolvedSymptoms = new Set(parsed.resolvedSymptoms);
-            state.supplementReviews = parsed.supplementReviews || {};
+            if (Array.isArray(parsed.resolvedSymptoms)) state.resolvedSymptoms = new Set(parsed.resolvedSymptoms.filter(k => typeof k === "string" && typeof ANAMNESIS_DICTIONARY !== "undefined" && ANAMNESIS_DICTIONARY[k]));
+            const reviews = vitaSanitizeJsonValue(parsed.supplementReviews);
+            state.supplementReviews = reviews && typeof reviews === "object" && !Array.isArray(reviews) ? reviews : {};
+            if (typeof parsed.doctorNotes === "string") safeLocalStorageSetItem(`vitatakip_notes_${activeUserId}`, parsed.doctorNotes.slice(0, 20000));
             /* Eski analiz sonucu içe aktarılmaz; güncel kurallarla yeniden hesaplanır */
             state.lastCDSS = null;
 
             if (typeof recalculateUserBmi === "function") recalculateUserBmi();
+            if (typeof updateDynamicTargetHydration === "function") updateDynamicTargetHydration();
             saveState();
             if (typeof invalidateClinicalAnalysisCache === "function") invalidateClinicalAnalysisCache({ clearDOM: true });
             if (typeof canRunClinicalAnalysis === "function" && canRunClinicalAnalysis() && typeof executeCDSSRules === "function") executeCDSSRules();
             renderAllAppViews();
-            showToast("Geri Yüklendi", "Verileriniz başarıyla yüklendi ve sıralandı.", "success");
+            const skipped = (Array.isArray(parsed.labHistory) ? parsed.labHistory.length - state.labHistory.length : 0)
+              + (Array.isArray(parsed.supplements) ? parsed.supplements.length - state.supplements.length : 0);
+            showToast("Geri Yüklendi", skipped > 0
+              ? `Verileriniz yüklendi. Geçersiz veya aralık dışı ${skipped} kayıt atlandı.`
+              : "Verileriniz başarıyla yüklendi ve sıralandı.", skipped > 0 ? "warning" : "success");
+            if (state.user && !state.user.profileCompleted && typeof openProfileModal === "function") openProfileModal(false);
           }
         } catch (err) {
           showToast("Okuma Hatası", "Yedek dosyası okunamadı.", "error");
@@ -435,15 +563,10 @@ function checkMidnightReset(userId) {
         return;
       }
       if (validation.warnings.length) console.warn("FHIR R4 ön denetim uyarıları (resmî validator değildir):", validation.warnings);
-      const blob = new Blob([JSON.stringify(fhirBundle, null, 2)], { type: "application/fhir+json;charset=utf-8" });
-      const objectUrl = URL.createObjectURL(blob);
-      const downloadAnchor = document.createElement("a");
-      downloadAnchor.href = objectUrl;
-      downloadAnchor.download = `VitaTakip_FHIR_R4_${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      if (!vitaSaveTextFile(`VitaTakip_FHIR_R4_${new Date().toISOString().slice(0, 10)}.json`, "application/fhir+json", JSON.stringify(fhirBundle, null, 2))) {
+        showToast("FHIR Kaydedilemedi", "Dosya kaydedilemedi. Depolama iznini ve boş alanı kontrol edin.", "error");
+        return;
+      }
       if (window.SoundEffects) SoundEffects.playSuccess();
       const counts = fhirBundle.entry.reduce((result, entry) => { const type = entry.resource?.resourceType; if (type) result[type] = (result[type] || 0) + 1; return result; }, {});
       showToast("FHIR R4 Ön Denetimi Geçti", `${counts.Patient || 0} Patient, ${counts.Observation || 0} Observation, ${counts.MedicationStatement || 0} MedicationStatement ve ${counts.Condition || 0} Condition kaynağı oluşturuldu. Resmî HL7 validator doğrulaması ayrıca yapılmalıdır.`, "success");

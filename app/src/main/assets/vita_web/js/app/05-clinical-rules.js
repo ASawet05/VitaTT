@@ -117,11 +117,17 @@ const KDSSRuleEngine = {
             else { statusText = 'Yüksek'; color = 'blue'; tier = 'high'; isHigh = true; }
             break;
 
-          case 'alt':
-            if (val <= 35) { statusText = 'Optimal / Normal'; color = 'green'; tier = 'optimal'; }
-            else if (val <= 50) { statusText = 'Sınırda Yüksek'; color = 'yellow'; tier = 'borderline_high'; isHigh = true; }
+          case 'alt': {
+            /* Üst sınır: laboratuvar referansı varsa o; yoksa cinsiyete göre genel aralık (K 35, E 45 U/L).
+               Hepatik güvenlik uyarısı K >50, E >60 U/L (laboratuvar üst sınırı daha yüksekse o). */
+            const labAltRange = isVitaLabReferenceCompatible('alt', referenceText) ? parseVitaLabReferenceRange(referenceText) : null;
+            const altUpper = labAltRange && Number.isFinite(labAltRange.max) ? labAltRange.max : (gender === 'E' ? 45 : 35);
+            const altAlert = Math.max(altUpper, gender === 'E' ? 60 : 50);
+            if (val <= altUpper) { statusText = 'Optimal / Normal'; color = 'green'; tier = 'optimal'; }
+            else if (val <= altAlert) { statusText = 'Sınırda Yüksek'; color = 'yellow'; tier = 'borderline_high'; isHigh = true; }
             else { statusText = '⚠️ Hepatik Güvenlik Uyarısı (Hekim Kontrolü Gerekli)'; color = 'red'; tier = 'critical_high'; isHigh = true; isToxic = true; }
             break;
+          }
         }
 
         // Bu bitirme projesi prototipi, önceden tanımlı eşiklere göre sınıflandırmayı
@@ -252,7 +258,10 @@ const KDSSRuleEngine = {
     function calculateCKDEPI_eGFR(creatinine, age, gender, opts) {
       const scr = Number(creatinine);
       const ageYears = Number(age);
-      if (!Number.isFinite(scr) || scr <= 0 || !Number.isFinite(ageYears) || ageYears < 1 || ageYears > 120) return null;
+      /* CKD-EPI yalnızca yetişkinler (≥18) için geçerlidir; çocuklarda bedside Schwartz kullanılır. */
+      if (!Number.isFinite(scr) || scr <= 0 || !Number.isFinite(ageYears) || ageYears < 18 || ageYears > 120) return null;
+      /* Profil (yaş/cinsiyet) kaydedilmemişse varsayılan değerlerle eGFR üretilmez. Bağımsız hesaplayıcı kendi girdilerini kullanır. */
+      if (!(opts && opts.ignorePregnancy) && typeof isVitaProfileComplete === "function" && !isVitaProfileComplete()) return null;
       if (!(opts && opts.ignorePregnancy) && isPregnantNow()) return null; // gebelikte CKD-EPI geçerli değildir
 
 

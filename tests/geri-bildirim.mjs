@@ -4,37 +4,29 @@ p.setDefaultTimeout(20000); p.on('dialog', d => d.dismiss());
 await p.evaluate(() => closeProfileModal()); await sleep(1200);
 await p.evaluate(() => document.getElementById('vitaSpotlightLayer')?.classList.add('hidden'));
 const results = []; const log = (n, ok, d) => { results.push(ok); console.log((ok ? 'OK   ' : 'FAIL ') + n + (d ? ' -> ' + d : '')); };
-// Gerçek e-posta göndermemek için formsubmit isteklerini yakala ve sahte yanıt ver
-let mode = 'ok'; const sent = [];
+// Geri bildirim hiçbir sunucuya gitmemeli: localhost dışındaki her istek kaydedilir; mailto gezintisi engellenir.
+const external = []; const mailto = [];
 await p.setRequestInterception(true);
 p.on('request', r => {
-  if (r.url().includes('formsubmit.co') && r.method() === 'OPTIONS') { r.respond({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type, accept' } }); }
-  else if (r.url().includes('formsubmit.co')) {
-    sent.push({ url: r.url(), body: r.postData() });
-    if (mode === 'ok') r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ success: 'true', message: 'ok' }) });
-    else if (mode === 'inactive') r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ success: 'false', message: 'This form needs Activation.' }) });
-    else r.abort('failed');
-  } else r.continue();
+  const u = r.url();
+  if (u.startsWith('mailto:')) { mailto.push(u); r.abort('aborted'); return; }
+  if (!/^https?:\/\/localhost[:/]/.test(u) && !u.startsWith('data:') && !u.startsWith('blob:')) external.push(u);
+  r.continue();
 });
-const submit = async (text) => { await p.evaluate(() => openVitaFeedback()); await sleep(400); await p.type('#vitaFeedbackMessage', text); await p.evaluate(() => document.getElementById('vitaFeedbackForm').requestSubmit()); await sleep(1500); };
-const st = () => p.evaluate(() => ({ status: document.getElementById('vitaFeedbackDeliveryStatus').innerText.replace(/\s+/g, ' '), entries: getVitaFeedbackEntries().map(e => ({ d: e.deliveredToEmail, a: e.deliveryAttempts, s: e.sender })) }));
+const submit = async (text) => { await p.evaluate(() => openVitaFeedback()); await sleep(400); await p.type('#vitaFeedbackMessage', text); await p.evaluate(() => document.getElementById('vitaFeedbackForm').requestSubmit()); await sleep(1200); };
 await p.evaluate(() => openVitaFeedback()); await sleep(400);
 const ui = await p.evaluate(() => ({ text: document.getElementById('feedbackModal').innerText, hasNameInput: !!document.getElementById('vitaFeedbackSenderName'), line: document.getElementById('vitaFeedbackSenderLine').innerText }));
 log('Pencerede e-posta adresi görünmüyor', !/gmail|@/.test(ui.text), (ui.text.match(/\S*@\S*/) || [''])[0]);
 log('Ad alanı yok, gönderen profilden', !ui.hasNameInput && ui.line === 'Test Kullanici', ui.line);
-mode = 'ok'; await submit('Test mesajı: her şey çalışıyor mu?'); let s = await st();
-log('Başarılı gönderim: iletildi', /iletildi/i.test(s.status) && s.entries[0].d === true, s.status);
-const body = JSON.parse(sent[sent.length - 1].body);
-log('Gönderen profil adı, e-posta/sağlık verisi yok', body.Gonderen === 'Test Kullanici' && !/gmail/.test(sent[sent.length - 1].body.replace(/sxgsawet/g, '')), JSON.stringify(Object.keys(body)));
-log('İstek doğru adrese gidiyor', /formsubmit\.co\/ajax\/sxgsawet@gmail\.com/.test(sent[sent.length - 1].url));
-mode = 'inactive'; await submit('Etkinleştirme bekleyen alıcı testi'); s = await st();
-log('Etkinleşmemiş alıcı: "iletildi" DENMEZ, bekliyor', !/Teşekkürler/.test(s.status) && /iletilemedi/.test(s.status) && s.entries[0].d === false, s.status);
-mode = 'fail'; await submit('Ağ hatası testi'); s = await st();
-log('Ağ hatası: kayıtlı ve bekliyor', s.entries[0].d === false && /iletilemedi/.test(s.status));
-mode = 'ok'; await p.evaluate(() => closeVitaFeedback()); await p.evaluate(() => openVitaFeedback()); await sleep(2500); s = await st();
-log('Açılışta bekleyenler otomatik yeniden denenir ve iletilir', s.entries.every(e => e.d === true), JSON.stringify(s.entries));
+await submit('Test mesajı: her şey çalışıyor mu?');
+const s = await p.evaluate(() => ({ status: document.getElementById('vitaFeedbackDeliveryStatus').innerText.replace(/\s+/g, ' '), entries: getVitaFeedbackEntries().map(e => ({ s: e.sender, m: e.message })) }));
+log('Geri bildirim cihaza kaydedildi', s.entries.length === 1 && s.entries[0].s === 'Test Kullanici' && /çalışıyor/.test(s.entries[0].m), JSON.stringify(s.entries));
+log('Durum: cihazda kayıtlı, e-posta uygulamasıyla gönderilir', /kaydedildi/.test(s.status) && /e-posta uygulamanız/.test(s.status), s.status);
 const hist = await p.evaluate(() => document.getElementById('vitaFeedbackHistoryList').innerText);
-log('Geçmişte "İletildi" durumu görünür', /İletildi/.test(hist));
+log('Geçmişte "Cihazda kayıtlı" görünür', /Cihazda kayıtlı/.test(hist));
+const src = await p.evaluate(() => submitVitaFeedback.toString() + sendVitaFeedbackViaEmailClient.toString());
+log('Geri bildirim kodunda ağ isteği yok', !/fetch\(|XMLHttpRequest|formsubmit/i.test(src));
+log('Hiçbir dış sunucuya istek gitmedi', external.length === 0, external.join(', '));
 log('Hata yok', errs.length === 0, errs.join('|'));
 console.log('ÖZET', results.filter(Boolean).length + '/' + results.length);
 await b.close(); process.exit(0);

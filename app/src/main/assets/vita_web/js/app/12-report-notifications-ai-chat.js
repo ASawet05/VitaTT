@@ -860,14 +860,15 @@ function getDoctorReportMode() {
       }
 
       if (creatinine !== null) {
-        if (isPregnantOrLactating && creatinine > 0.85) {
+        if (isPregnantOrLactating && creatinine > (typeof getCreatinineUpperLimit === "function" && isPregnantNow() ? getCreatinineUpperLimit(gender) : 0.8)) {
           addAlarm("critical", `Gebelik Fizyolojisinde Yüksek Kreatinin Alarmı (Kreatinin: ${creatinine} mg/dL)`, "Gebelikte glomerüler hiperfiltrasyon nedeniyle normal serum kreatinin <0,80 mg/dL'dir; >0,85 mg/dL değerler gebe olmayan referansında 'normal' görünse dahi gebelikte böbrek fonksiyon kaybı veya preeklampsi açısından anlamlıdır.", "Standart CKD-EPI formülü gebelikte kullanılmaz; Kadın Doğum ve Nefroloji/Dahiliye değerlendirmesi önerilir.");
         } else if (egfrObj && egfrObj.egfr < 60) {
           addAlarm(egfrObj.egfr < 30 ? "critical" : "high", `Azalmış Renal Filtrasyon Alarmı (CKD-EPI eGFR: ${egfrObj.egfr} mL/dk/1.73m² — Evre ${egfrObj.stage})`, "Böbrek süzme hızı <60 mL/dk/1.73m² altındadır; magnezyum, kalsiyum, potasyum ve kreatin gibi bileşenlerin renal klirensi azalır ve birikim/toksisite riski doğar.", "Nefrotoksik ilaç/takviyelerden kaçınılmalı; idrar albümin/kreatinin oranı (ACR) ve elektrolit paneli hekimce izlenmelidir.");
         }
       }
 
-      if (alt !== null && alt > 50) {
+      const altAlarmLimit = gender === "E" ? 60 : 50;
+      if (alt !== null && alt > altAlarmLimit) {
         addAlarm(alt > 120 ? "critical" : "high", `Hepatik Güvenlik / Karaciğer Enzim Alarmı (ALT: ${alt} U/L)`, `ALT düzeyi ${alt > 120 ? "normal üst sınırın >3 katı düzeyinde" : "referans üstünde (>50 U/L)"} saptanmıştır; ilaç/bitkisel takviye ilişkili karaciğer hasarı (DILI), yağlı karaciğer (MASLD) veya viral/otoimmün süreçler araştırılmalıdır.`, "Karaciğerde metabolize olan yoğun takviye protokolleri başlatılmamalı; AST, GGT, ALP, Bilirubin ve hepatobiliyer ultrasonografi değerlendirilmelidir.");
       }
 
@@ -881,14 +882,21 @@ function getDoctorReportMode() {
         const meta = ANAMNESIS_DICTIONARY[symKey];
         if (!meta) return;
         const relatedMarkers = [];
-        if ((meta.nutrients || []).includes("B12") && b12 !== null) relatedMarkers.push({ label: "B12", val: `${b12} pg/mL`, concordant: b12 < 350 });
-        if ((meta.nutrients || []).includes("Demir") && ferritin !== null) relatedMarkers.push({ label: "Ferritin", val: `${ferritin} ng/mL`, concordant: ferritin < 45 || (crp > 5 && ferritin < 70) });
-        if ((meta.nutrients || []).includes("Demir") && hb !== null) relatedMarkers.push({ label: "Hb", val: `${hb} g/dL`, concordant: hb < (gender === "E" ? 13 : 12) });
-        if ((meta.nutrients || []).includes("D3_K2") && d3 !== null) relatedMarkers.push({ label: "25(OH)D", val: `${d3} ng/mL`, concordant: d3 < 30 });
-        if ((meta.nutrients || []).includes("Magnezyum") && mg !== null) relatedMarkers.push({ label: "Magnezyum", val: `${mg} mg/dL`, concordant: mg < 1.95 });
-        if ((meta.nutrients || []).includes("Kalsiyum") && ca !== null) relatedMarkers.push({ label: "Kalsiyum", val: `${ca} mg/dL`, concordant: ca < 8.8 });
-        if ((meta.nutrients || []).includes("Folat") && folate !== null) relatedMarkers.push({ label: "Folat", val: `${folate} ng/mL`, concordant: folate < 5.0 });
-        if ((meta.nutrients || []).includes("Çinko") && zinc !== null) relatedMarkers.push({ label: "Çinko", val: `${zinc} µg/dL`, concordant: zinc < 75 });
+        /* "Uyumlu" (belirtiyi destekleyen) düşüklük, ekrandaki tahlil sınıflandırmasıyla AYNI motordan gelir
+           (laboratuvar referansı, yoksa kaynaklı klinik eşik); ayrı sabit eşik kullanılmaz. */
+        const lowSide = key => {
+          const e = evaluatedLabs.find(x => x.key === key);
+          return Boolean(e && e.ev && (e.ev.isLow || e.ev.status === "below_ref" || e.ev.tier === "borderline_low" || e.ev.tier === "critical_low"));
+        };
+        const nutrients = meta.nutrients || [];
+        if (nutrients.includes("B12") && b12 !== null) relatedMarkers.push({ label: "B12", val: `${b12} pg/mL`, concordant: lowSide("b12") });
+        if (nutrients.includes("Demir") && ferritin !== null) relatedMarkers.push({ label: "Ferritin", val: `${ferritin} ng/mL`, concordant: lowSide("ferritin") });
+        if (nutrients.includes("Demir") && hb !== null) relatedMarkers.push({ label: "Hb", val: `${hb} g/dL`, concordant: lowSide("hb") });
+        if (nutrients.includes("D3_K2") && d3 !== null) relatedMarkers.push({ label: "25(OH)D", val: `${d3} ng/mL`, concordant: lowSide("d3") });
+        if (nutrients.includes("Magnezyum") && mg !== null) relatedMarkers.push({ label: "Magnezyum", val: `${mg} mg/dL`, concordant: lowSide("mg") });
+        if (nutrients.includes("Kalsiyum") && ca !== null) relatedMarkers.push({ label: "Kalsiyum", val: `${ca} mg/dL`, concordant: lowSide("ca") });
+        if (nutrients.includes("Folat") && folate !== null) relatedMarkers.push({ label: "Folat", val: `${folate} ng/mL`, concordant: lowSide("folate") });
+        if (nutrients.includes("Çinko") && zinc !== null) relatedMarkers.push({ label: "Çinko", val: `${zinc} µg/dL`, concordant: lowSide("zinc") });
 
         const concordantHits = relatedMarkers.filter(m => m.concordant);
         if (concordantHits.length > 0) {
@@ -1878,163 +1886,38 @@ function getDoctorReportMode() {
     }
 
     /* ========================================================================= */
-    /*   GÜVENLİ GOOGLE GEMINI API & GELİŞMİŞ ÇOKLU YEDEK KLİNİK MOTORU (CHATBOT)   */
+    /*   VITA AI: YALNIZCA YEREL YANIT MOTORU                                      */
     /* ========================================================================= */
-    // Gemini API anahtarı kalıcı depolamaya yazılmaz; yalnızca sayfa belleğinde tutulur.
-    let geminiApiKeyMemory = "";
-    let geminiMemoryNoSession = false;
-    let geminiLegacyStorageCleared = false;
-    let legacyAIProviderPreferenceCleared = false;
-    function getAIProvider() {
-      // Kullanıcıya sağlayıcı seçimi sunulmaz: onay + API anahtarı varsa Gemini denenir.
-      // Onay yoksa, anahtar yoksa veya istek başarısızsa mevcut VitaTakip yerel motoru yanıtlar.
-      if (!legacyAIProviderPreferenceCleared) {
-        safeLocalStorageRemoveItem("vitatakip_ai_provider");
-        legacyAIProviderPreferenceCleared = true;
-      }
-      return "gemini";
-    }
-    function setAIProvider(_value) {
-      // Eski sürüm düğmeleriyle uyumluluk; uygulamada sağlayıcı seçimi artık bulunmaz.
-      safeLocalStorageRemoveItem("vitatakip_ai_provider");
-      const consent = document.getElementById("aiHealthDataConsent");
-      if (consent) consent.checked = false;
-      if (window.VitaAIChat) window.VitaAIChat.closeConsentPanel();
-      updateAIProviderUI();
-    }
+    /* Uygulama hiçbir dış yapay zekâ servisine bağlanmaz ve API anahtarı kullanmaz.
+       Eski sürümlerden kalmış olabilecek anahtar kayıtları açılışta bu cihazdan silinir. */
+    (function purgeLegacyAiKeys() {
+      try {
+        const doomed = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k === "vita_gemini_api_key" || k.indexOf("vita_gemini_api_key_") === 0 || k === "vitatakip_ai_provider")) doomed.push(k);
+        }
+        doomed.forEach(k => localStorage.removeItem(k));
+      } catch (_) { /* depolama erişilemiyor */ }
+    })();
+
+    function getAIProvider() { return "local"; }
+    function setAIProvider(_value) { updateAIProviderUI(); }
     function updateAIProviderUI() {
       const consentLabel = document.getElementById("aiConsentProviderLabel");
-      if (consentLabel) consentLabel.textContent = "Google Gemini veri paylaşım onayı:";
+      if (consentLabel) consentLabel.textContent = "Yerel yanıt motoru:";
     }
-
-    /* API anahtarı HESABA özeldir: aynı hesapla çıkış/giriş yapınca korunur, başka hesaba geçilince o hesabın
-       kendi anahtarı (yoksa boş) gelir. Oturum yokken yalnızca bellekte tutulur. */
-    function geminiKeyStorageName() {
-      return (typeof activeUserId !== "undefined" && activeUserId) ? `vita_gemini_api_key_${activeUserId}` : "";
-    }
-    function getGeminiApiKey() {
-      const name = geminiKeyStorageName();
-      if (!name) return geminiMemoryNoSession ? geminiApiKeyMemory : "";
-      let stored = String(safeLocalStorageGetItem(name) || "").trim();
-      if (!stored) {
-        // Eski sürümde tek ortak anahtar vardı: ilk girişte o oturumdaki hesaba taşınır, ortak kopya silinir.
-        const legacy = String(safeLocalStorageGetItem("vita_gemini_api_key") || "").trim();
-        if (legacy) {
-          stored = legacy;
-          safeLocalStorageSetItem(name, legacy);
-          safeLocalStorageRemoveItem("vita_gemini_api_key");
-        }
-      }
-      geminiApiKeyMemory = stored;
-      return stored;
-    }
-
-    function showGeminiApiSaveFeedback(message, tone = "success") {
-      const box = document.getElementById("geminiApiSaveFeedbackBox");
-      if (!box) return;
-      box.classList.remove("hidden");
-      if (tone === "success") {
-        box.className = "rounded-xl px-3 py-2 text-xs font-bold border bg-emerald-50 text-emerald-900 border-emerald-300";
-      } else if (tone === "warning") {
-        box.className = "rounded-xl px-3 py-2 text-xs font-bold border bg-amber-50 text-amber-900 border-amber-300";
-      } else {
-        box.className = "rounded-xl px-3 py-2 text-xs font-bold border bg-slate-100 text-slate-800 border-slate-300";
-      }
-      box.innerHTML = message;
-    }
-
-    function saveGeminiApiKey(val) {
-      const input = document.getElementById("drawerGeminiApiKeyInput");
-      const rawCandidate = val !== undefined && val !== null
-        ? String(val).trim()
-        : String(input?.value || "").trim();
-      const existingKey = getGeminiApiKey();
-
-      // Eğer kullanıcı kutuya yeni bir anahtar yazmadan "Kaydet & Durumu Güncelle"ye bastıysa:
-      if (!rawCandidate) {
-        if (existingKey) {
-          updateApiKeyUI();
-          showGeminiApiSaveFeedback(
-            `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Kayıtlı Gemini API anahtarınız aktif (${escapeHtmlText(existingKey.slice(0, 6))}••••). Yapay zeka kutu tanıma ve klinik asistan kullanıma hazır.`,
-            "success"
-          );
-          showToast("Gemini API Anahtarı Aktif", "Kayıtlı API anahtarınız doğrulanarak aktif tutuldu.", "success");
-          return;
-        }
-        showGeminiApiSaveFeedback(
-          `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i>Lütfen kaydetmek için Google AI Studio'dan aldığınız <strong>AIza...</strong> ile başlayan API anahtarınızı kutuya yapıştırın.`,
-          "warning"
-        );
-        showToast("API Anahtarı Girilmedi", "Lütfen 'AIza...' ile başlayan Gemini API anahtarınızı kutuya yapıştırıp Kaydet'e basın.", "warning");
-        input?.focus();
-        return;
-      }
-
-      geminiApiKeyMemory = rawCandidate;
-      geminiMemoryNoSession = !geminiKeyStorageName();
-      if (geminiKeyStorageName()) safeLocalStorageSetItem(geminiKeyStorageName(), geminiApiKeyMemory);
-      if (input) {
-        input.value = geminiApiKeyMemory;
-      }
-      updateApiKeyUI();
-      if (window.VitaAIChat && typeof window.VitaAIChat.setRuntimeStatus === "function") {
-        window.VitaAIChat.setRuntimeStatus("LIVE");
-      }
-      showGeminiApiSaveFeedback(
-        `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Gemini API anahtarı başarıyla kaydedildi (${escapeHtmlText(geminiApiKeyMemory.slice(0, 6))}••••). Barkod/AI Kutu Tanıma ve Vita AI Asistanı aktif edildi.`,
-        "success"
-      );
-      showToast("API Anahtarı Kaydedildi", "Gemini API anahtarı kaydedildi ve yapay zeka kutu tanıma aktif edildi.", "success");
-    }
-
-    function clearGeminiApiKeyFromSettings() {
-      geminiApiKeyMemory = "";
-      if (geminiKeyStorageName()) safeLocalStorageRemoveItem(geminiKeyStorageName());
-      const input = document.getElementById("drawerGeminiApiKeyInput");
-      if (input) input.value = "";
-      updateApiKeyUI();
-      if (window.VitaAIChat && typeof window.VitaAIChat.setRuntimeStatus === "function") {
-        window.VitaAIChat.setRuntimeStatus("CONFIGURATION_REQUIRED");
-      }
-      showGeminiApiSaveFeedback(
-        `<i class="fa-solid fa-circle-info text-slate-600 mr-1"></i>Kayıtlı API anahtarı kaldırıldı. Uygulama yerel klinik karar destek motoruyla çalışmaya devam ediyor.`,
-        "info"
-      );
-      showToast("API Anahtarı Kaldırıldı", "Sistem yerel klinik yanıt motoruna geçti.", "info");
-    }
-
+    function getGeminiApiKey() { return ""; }
+    function saveGeminiApiKey() { updateApiKeyUI(); }
+    function clearGeminiApiKeyFromSettings() { updateApiKeyUI(); }
     function updateApiKeyUI() {
-      const key = getGeminiApiKey();
-      const input = document.getElementById("drawerGeminiApiKeyInput");
       const badge = document.getElementById("apiStatusBadge");
-      const clearBtn = document.getElementById("btnClearGeminiApiKey");
-      if (input) input.value = key || "";
-      if (clearBtn) {
-        clearBtn.classList.toggle("hidden", !key);
-      }
       if (badge) {
-        if (key) {
-          badge.className = "text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-800 border border-emerald-200";
-          badge.textContent = "Hazır (Gemini AI Aktif ✓)";
-        } else {
-          badge.className = "text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 border border-slate-200";
-          badge.textContent = "Yerel Asistan Aktif";
-        }
+        badge.className = "text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 border border-slate-200";
+        badge.textContent = "Yerel Asistan Aktif";
       }
       updateAIProviderUI();
     }
-
-    /* ========================================================================= */
-    /*   KADEMELİ MODEL FALLBACK ZİNCİRİ (callGeminiWithFallback)                */
-    /* ========================================================================= */
-    const VITA_GEMINI_FALLBACK_MODELS = [
-      "gemini-3.5-flash-lite",
-      "gemini-3.1-flash-lite",
-      "gemini-3.6-flash",
-      "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "gemini-1.5-flash"
-    ];
 
     function LocalClinicalFallbackEngine(promptText = "", base64Image = null, options = {}) {
       const hintName = String(options.fileName || options.hintText || "").trim();
@@ -2081,37 +1964,8 @@ function getDoctorReportMode() {
           }
         }
 
-        if (mode === "medication" && rxDb.length > 0) {
-          const fallbackRx = rxDb[0];
-          return JSON.stringify({
-            urunAdi: fallbackRx.urunAdi,
-            marka: fallbackRx.kategori,
-            etkenMadde: fallbackRx.etkenMadde,
-            form: "Tablet",
-            dozaj: "100 mcg",
-            kutuAdedi: fallbackRx.kutuAdedi || 50,
-            gunlukDoz: fallbackRx.gunlukDoz || 1,
-            zamanBloku: fallbackRx.zamanBloku || "Sabah",
-            aclikDurumu: fallbackRx.aclikDurumu || "Aç Karnına",
-            source: "LocalClinicalFallbackEngine"
-          });
-        }
-
-        const defaultSup = supDb[0] || {
-          urunAdi: "Ocean Vitamin D3 1000 IU",
-          marka: "Orzaks",
-          etkenMadde: "Kolekalsiferol (Vitamin D3)",
-          form: "Oral Damla / Sprey",
-          dozaj: "1000 IU (25 mcg) / puf",
-          kutuAdedi: 130,
-          gunlukDoz: 1,
-          zamanBloku: "Sabah",
-          aclikDurumu: "Tok (Yağlı Kahvaltı İle)"
-        };
-        return JSON.stringify({
-          ...defaultSup,
-          source: "LocalClinicalFallbackEngine"
-        });
+        /* Eşleşme yoksa ürün UYDURULMAZ: boş sonuç döner, arayüz "tanınamadı" der. */
+        return JSON.stringify({ urunAdi: "", etkenMadde: "", form: "", dozaj: "", kutuAdedi: 0, recognized: false, source: "LocalClinicalFallbackEngine" });
       }
 
       // Metin / Klinik Sentez İsteği İçin Yerel Yanıt
@@ -2122,69 +1976,8 @@ function getDoctorReportMode() {
       return "Yerel Klinik Karar Destek Motoru devreye girdi: Tahlil, semptom ve ilaç etkileşim verileriniz yerel kurallarla değerlendirildi.";
     }
 
-    async function callGeminiWithFallback(promptText, base64Image = null, mimeType = "image/jpeg", options = {}) {
-      const apiKey = String(options.apiKey || getGeminiApiKey() || "").trim();
-      const statusToast = Boolean(options.showFallbackToast);
-
-      if (apiKey) {
-        const modelsToTry = Array.isArray(options.models) && options.models.length > 0
-          ? options.models
-          : VITA_GEMINI_FALLBACK_MODELS;
-
-        for (let idx = 0; idx < modelsToTry.length; idx++) {
-          const modelId = String(modelsToTry[idx]).trim().replace(/\s+/g, "-");
-          // Görsel varsa yalnız metin destekli 3.6-flash yerine vision uyumlu model kullan
-          if (base64Image && modelId === "gemini-3.6-flash") continue;
-
-          try {
-            if (idx > 0 && statusToast && typeof showToast === "function") {
-              showToast("Yedek AI Modeline Geçiliyor", `Yoğunluk algılandı, yedek yapay zeka modeline (${modelId}) geçiliyor...`, "info");
-            }
-            const parts = [{ text: promptText }];
-            if (base64Image) {
-              parts.push({ inline_data: { mime_type: mimeType || "image/jpeg", data: base64Image } });
-            }
-            const generationConfig = {
-              temperature: options.temperature ?? 0.15
-            };
-            if (options.expectBoxJson || options.responseMimeType === "application/json") {
-              generationConfig.responseMimeType = "application/json";
-            }
-
-            const controller = new AbortController();
-            const timer = window.setTimeout(() => controller.abort(), options.timeoutMs || 12000);
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-            const response = await fetch(endpoint, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              signal: controller.signal,
-              body: JSON.stringify({
-                contents: [{ parts }],
-                generationConfig
-              })
-            });
-            clearTimeout(timer);
-
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}`);
-            }
-            const data = await response.json();
-            const textOut = (data?.candidates?.[0]?.content?.parts || [])
-              .map(p => p.text || "")
-              .join("\n")
-              .trim();
-            if (textOut) {
-              if (window.VitaAIChat && typeof window.VitaAIChat.setRuntimeStatus === "function") {
-                window.VitaAIChat.setRuntimeStatus("LIVE");
-              }
-              return { text: textOut, model: modelId, usedLocalFallback: false };
-            }
-          } catch (err) {
-            console.warn(`[VitaAI Fallback] Model ${modelId} başarısız oldu, sıradaki modele geçiliyor:`, err?.message || err);
-          }
-        }
-      }
-
+    /* Yalnızca yerel motor: istek cihaz dışına çıkmaz. */
+    async function callGeminiWithFallback(promptText, base64Image = null, _mimeType = "image/jpeg", options = {}) {
       const fallbackText = LocalClinicalFallbackEngine(promptText, base64Image, options);
       return { text: fallbackText, model: "LocalClinicalFallbackEngine", usedLocalFallback: true };
     }
@@ -2196,9 +1989,6 @@ function getDoctorReportMode() {
     window.LocalClinicalFallbackEngine = LocalClinicalFallbackEngine;
 
     const VitaAIChat = (() => {
-      // Hız/etkinlik için birincil model Gemini 3.5 Flash-Lite; erişim/model sorunu olursa 3.8 Flash yedeklenir.
-      const GEMINI_MODEL = "gemini-3.5-flash-lite";
-      const GEMINI_FALLBACK_MODEL = "gemini-3.8-flash";
 
       let isOpen = false;
       let chatHistory = [];
@@ -2292,9 +2082,10 @@ function getDoctorReportMode() {
           input.focus();
           return;
         }
-        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        // Tarayıcı konuşma tanıma hizmetleri sesi dış sunuculara gönderebildiği için sesli giriş kapalıdır.
+        const Recognition = null;
         if (!Recognition) {
-          const message = "Bu tarayıcı konuşma tanımayı desteklemiyor. Sorunuzu yazabilirsiniz; destekleyen güncel bir tarayıcıda mikrofon düğmesini yeniden deneyin.";
+          const message = "Sesli giriş kapalı: tarayıcının konuşma tanıma hizmeti sesinizi dış sunuculara gönderebilir. Sorunuzu yazarak sorabilirsiniz.";
           showToast("Sesli yazma desteklenmiyor", message, "warning");
           setVoiceInputState(false, message);
           input.focus();
@@ -2718,6 +2509,12 @@ ${context.length ? context.join("\n") : "Bu soruyla ilgili kişisel sağlık kay
         const utterance = new window.SpeechSynthesisUtterance(cleanText);
         utterance.lang = "tr-TR";
         utterance.rate = 0.98;
+        const localVoice = typeof window.vitaLocalTurkishVoice === "function" ? window.vitaLocalTurkishVoice() : { voice: null, blocked: false };
+        if (localVoice.voice) utterance.voice = localVoice.voice;
+        else if (localVoice.blocked) {
+          showToast("Cihazda Türkçe ses yok", "Sesli okuma yalnızca cihazdaki seslerle yapılır. Cihaz ayarlarından Türkçe ses paketi yükleyebilirsiniz.", "info");
+          return;
+        }
         utterance.pitch = 1;
         const restore = () => {
           if (token !== messageSpeechToken) return;
@@ -2852,91 +2649,11 @@ ${context.length ? context.join("\n") : "Bu soruyla ilgili kişisel sağlık kay
         appendAutomaticFallback(request.userText, { aiManualFallback: true, message: "Kullanıcı yerel yanıtı seçti." });
       }
 
-      /* GEMINI v1beta REST API: model erişilemezse desteklenen güncel modele geçiş */
-      async function callGeminiAPI(userPrompt, useHistory = true, options = {}) {
-        // Sabit süre aşımı kullanılmaz: gerçek ağ/API hataları yerel motora düşer; kullanıcı beklerken yerel yanıtı da seçebilir.
-        const externalSignal = options && options.signal ? options.signal : undefined;
-        const apiKey = getGeminiApiKey();
-        if (!apiKey) {
-          const noKeyErr = new Error("API anahtarı girilmedi.");
-          noKeyErr.noApiKey = true;
-          throw noKeyErr;
-        }
-
-        const consentInput = document.getElementById("aiHealthDataConsent");
-        const externalConsent = Boolean(consentInput && consentInput.checked);
-        // Açık onay yalnızca arayüzdeki onay kutusu işaretlendiğinde geçerlidir.
-        // Onay yoksa sağlık bağlamı hiçbir koşulda dış servise gönderilmez.
-        if (!externalConsent) {
-          const consentError = new Error("Dış yapay zekâ ile sağlık verisi paylaşım onayı verilmedi.");
-          consentError.aiPrivacyDeclined = true;
-          throw consentError;
-        }
-
-        const requestSignal = externalSignal;
-
-        const isLabPanel = buildPatientContextPrompt(userPrompt).includes("[TAHLİL PANELİ");
-        const systemInstruction = `${buildPatientContextPrompt(userPrompt)}
-Yanıt dili: Türkçe. Yalnızca sunulan hasta verilerini kullan; eksik değerleri varsayma.
-YANIT BİÇİMİ (zorunlu): Sıradan bir kullanıcının anlayacağı sade dille yaz. Önce tek cümlelik net cevap ver, sonra en fazla ${isLabPanel ? 4 : 3} kısa madde (her biri tek cümle). Toplam ${isLabPanel ? "150" : "90"} kelimeyi geçme. Başlık, tablo, tekrar, uzun uyarı ve genel giriş/sonuç cümlesi yazma. Tıbbi terim kullanırsan parantezle kısaca açıkla. Uyarıyı yalnızca gerçekten gerekliyse tek kısa cümleyle ekle. Konu geniş ise sonda "Hangi kısmı ayrıntılandırayım?" diye sor.`;
-        const contents = useHistory ? [...chatHistory] : [];
-        contents.push({ role: "user", parts: [{ text: String(userPrompt || "") }] });
-
-        async function requestModel(modelName) {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: systemInstruction }] },
-              contents,
-              generationConfig: { temperature: 0.3, maxOutputTokens: isLabPanel ? 900 : 450 }
-            }),
-            signal: requestSignal
-          });
-
-          if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            const apiError = new Error(errData?.error?.message || `HTTP ${response.status}`);
-            apiError.status = response.status;
-            apiError.code = errData?.error?.status || errData?.error?.code || "";
-            apiError.modelName = modelName;
-            throw apiError;
-          }
-
-          const data = await response.json();
-          const candidateParts = data?.candidates?.[0]?.content?.parts;
-          const aiText = Array.isArray(candidateParts)
-            ? candidateParts.map(part => part.text || "").join("")
-            : "";
-          if (!aiText.trim()) throw new Error("Gemini boş yanıt döndürdü.");
-          return aiText;
-        }
-
-        try {
-          let aiText;
-          try {
-            aiText = await requestModel(GEMINI_MODEL);
-          } catch (primaryError) {
-            const errorText = String(primaryError?.message || "").toLowerCase();
-            const modelUnavailable = primaryError?.status === 404 ||
-              (primaryError?.status === 400 && (
-                errorText.includes("model") || errorText.includes("not found") ||
-                errorText.includes("not supported") || errorText.includes("not available")
-              ));
-            if (!modelUnavailable || GEMINI_FALLBACK_MODEL === GEMINI_MODEL) throw primaryError;
-            aiText = await requestModel(GEMINI_FALLBACK_MODEL);
-          }
-
-          if (useHistory) {
-            chatHistory.push({ role: "user", parts: [{ text: String(userPrompt || "") }] });
-            chatHistory.push({ role: "model", parts: [{ text: aiText }] });
-            if (chatHistory.length > 12) chatHistory = chatHistory.slice(-12);
-          }
-          return formatMarkdownToHtml(aiText);
-        } catch (requestError) {
-          throw requestError;
-        }
+      /* Dış yapay zekâ servisi yoktur: çağıranlar bu hatayı yakalayıp yerel motorla yanıt verir. */
+      async function callGeminiAPI(_userPrompt, _useHistory = true, _options = {}) {
+        const err = new Error("Yalnızca yerel yanıt motoru kullanılır.");
+        err.noApiKey = true;
+        throw err;
       }
 
       async function callSelectedAI(userPrompt, useHistory = true, options = {}) {
@@ -2946,55 +2663,9 @@ YANIT BİÇİMİ (zorunlu): Sıradan bir kullanıcının anlayacağı sade dille
         throw err;
       }
 
-      /* İLAÇ KUTUSU FOTOĞRAFI: yalnızca kullanıcı onayıyla fotoğraf gönderilir; hasta profili/tahlil bağlamı eklenmez. */
-      async function analyzeMedicationImage(imageBase64, mimeType = "image/jpeg") {
-        const apiKey = getGeminiApiKey();
-        if (!apiKey) throw new Error("Gemini API anahtarı bulunamadı. Sol menüden anahtar girin.");
-        const photoConsent = document.getElementById("barcodePhotoConsent");
-        if (!photoConsent || !photoConsent.checked) throw new Error("Fotoğrafı Gemini'ye göndermek için önce fotoğraf paylaşım onayını işaretleyin.");
-        if (!imageBase64 || typeof imageBase64 !== "string") throw new Error("Fotoğraf verisi okunamadı.");
-        const prompt = [
-          "Sen bir ilaç ambalajı yazı okuma asistanısın. Bu görseli yalnızca üzerinde görünen metni tanımak için incele.",
-          "Yanıtını Türkçe ve şu başlıklarla ver: Görünen ürün adı/marka: [yalnızca açıkça okunuyorsa]; ürün türü: [takviye/ilaç/harici ürün/belirsiz]; okunabilen etken madde veya içerik; görünen doz/kuvvet ve farmasötik form; okunamayan veya belirsiz kısımlar.",
-          "Yalnızca görüntüde açıkça okunabilen yazıları belirt. Barkod veya görünüşten ürün adını, etken maddeyi, dozu, sahte/gerçek olma durumunu tahmin ederek kesinleştirme. Okunamıyorsa 'fotoğraftan doğrulanamadı' yaz.",
-          "Doz önerme, kullanım talimatı üretme ve reçeteli bir ilaca başlanmasını/bırakılmasını söyleme. Resmî İTS/ürün kataloğu bağlantısı bulunmadığını ve kutu/prospektüs ya da eczacıyla doğrulama gerektiğini kısa biçimde belirt."
-        ].join(" ");
-
-        async function requestVisionModel(modelName) {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ role: "user", parts: [
-                { text: prompt },
-                { inlineData: { mimeType: mimeType || "image/jpeg", data: imageBase64 } }
-              ] }],
-              generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
-            })
-          });
-          if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            const error = new Error(errData?.error?.message || `HTTP ${response.status}`);
-            error.status = response.status;
-            error.code = errData?.error?.status || errData?.error?.code || "";
-            throw error;
-          }
-          const data = await response.json();
-          const parts = data?.candidates?.[0]?.content?.parts;
-          const result = Array.isArray(parts) ? parts.map(part => part.text || "").join("\n").trim() : "";
-          if (!result) throw new Error("Gemini fotoğraf için boş yanıt döndürdü.");
-          return result;
-        }
-
-        try {
-          return await requestVisionModel(GEMINI_MODEL);
-        } catch (error) {
-          const message = String(error?.message || "").toLowerCase();
-          const modelUnavailable = error?.status === 404 || (error?.status === 400 && (message.includes("model") || message.includes("not found") || message.includes("not supported") || message.includes("not available")));
-          if (!modelUnavailable || GEMINI_FALLBACK_MODEL === GEMINI_MODEL) throw error;
-          return await requestVisionModel(GEMINI_FALLBACK_MODEL);
-        }
+      /* İLAÇ KUTUSU FOTOĞRAFI: fotoğraf hiçbir servise gönderilmez; yalnızca barkod ve yerel ürün listesi kullanılır. */
+      async function analyzeMedicationImage(_imageBase64, _mimeType = "image/jpeg") {
+        throw new Error("Fotoğraftan yapay zekâ ile tanıma bu sürümde yok. Barkodu okutun veya ürün adını yazarak arayın.");
       }
 
       /* YEREL KLİNİK YEDEK MOTOR: SORU NİYETİNE GÖRE FARKLI, PROFİL/Tahlil VERİSİNE DUYARLI YANITLAR */
@@ -3312,7 +2983,7 @@ YANIT BİÇİMİ (zorunlu): Sıradan bir kullanıcının anlayacağı sade dille
           fallbackHtml = generateFallbackClinicalReply(userText);
           if (err && err.aiPrivacyDeclined) setRuntimeStatus("LOCAL");
           else if (err && err.aiManualFallback) setRuntimeStatus("LOCAL");
-          else if (!getGeminiApiKey()) setRuntimeStatus("CONFIGURATION_REQUIRED");
+          else if (getAIProvider() === "local") setRuntimeStatus("LOCAL");
           else if (typeof navigator !== "undefined" && navigator.onLine === false) setRuntimeStatus("OFFLINE");
           else setRuntimeStatus("DEGRADED");
         } catch (localError) {
@@ -3381,7 +3052,7 @@ YANIT BİÇİMİ (zorunlu): Sıradan bir kullanıcının anlayacağı sade dille
         toggleMessageSpeech, stopMessageSpeech, openDoctorQuestions, closeDoctorQuestions, copyDoctorQuestions, addDoctorQuestionsToChat,
         setRuntimeStatus,
         previewLocalReply: generateFallbackClinicalReply,
-        getModelConfig: () => ({ primary: GEMINI_MODEL, fallback: GEMINI_FALLBACK_MODEL })
+        getModelConfig: () => ({ primary: "local", fallback: "local" })
       };
     })();
     
