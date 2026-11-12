@@ -6,7 +6,7 @@
 const VITA_PRESCRIPTION_DRUG_DB = [
   // --- 1. TİROİD İLAÇLARI ---
   {
-    barcode: "8699508010376",
+    barcode: "VT-RX-01",
     urunAdi: "Levotiron 100 mcg",
     etkenMadde: "Levotiroksin Sodyum",
     kategori: "Tiroid",
@@ -18,7 +18,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
     tuketilenBesinler: []
   },
   {
-    barcode: "8699508010413",
+    barcode: "VT-RX-02",
     urunAdi: "Euthyrox 50 mcg",
     etkenMadde: "Levotiroksin Sodyum",
     kategori: "Tiroid",
@@ -32,7 +32,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
 
   // --- 2. METFORMİN (DİYABET / İNSÜLİN DİRENCİ) ---
   {
-    barcode: "8699525092652",
+    barcode: "VT-RX-03",
     urunAdi: "Glifor 1000 mg",
     etkenMadde: "Metformin Hidroklorür",
     kategori: "Metformin",
@@ -45,7 +45,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
     klinikUyari: "Uzun süreli Metformin kullanımı ileumda B12 emilimini bozar. B12 kan düzeyinizi düzenli kontrol ettiriniz."
   },
   {
-    barcode: "8699546090125",
+    barcode: "VT-RX-04",
     urunAdi: "Glucophage 850 mg",
     etkenMadde: "Metformin Hidroklorür",
     kategori: "Metformin",
@@ -60,7 +60,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
 
   // --- 3. MİDE KORUYUCULAR (PPI - PROTON POMPA İNHİBİTÖRLERİ) ---
   {
-    barcode: "8699786040058",
+    barcode: "VT-RX-05",
     urunAdi: "Nexium 40 mg",
     etkenMadde: "Esomeprazol",
     kategori: "Mide Koruyucu (PPI)",
@@ -73,7 +73,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
     klinikUyari: "Kronik PPI kullanımı hipomagnezemi ve B12 eksikliği riskini artırır."
   },
   {
-    barcode: "8699532095417",
+    barcode: "VT-RX-06",
     urunAdi: "Pantpas 40 mg",
     etkenMadde: "Pantoprazol",
     kategori: "Mide Koruyucu (PPI)",
@@ -86,7 +86,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
     klinikUyari: "Uzun süreli kullanımda magnezyum düzeylerinizi tahlillerinizden takip edin."
   },
   {
-    barcode: "8699514092106",
+    barcode: "VT-RX-07",
     urunAdi: "Lansor 30 mg",
     etkenMadde: "Lansoprazol",
     kategori: "Mide Koruyucu (PPI)",
@@ -101,19 +101,19 @@ const VITA_PRESCRIPTION_DRUG_DB = [
 
   // --- 4. KAN SULANDIRICILAR & ANTİKOAGÜLANLAR ---
   {
-    barcode: "8699546010086",
+    barcode: "VT-RX-08",
     urunAdi: "Coumadin 5 mg",
     etkenMadde: "Varfarin Sodyum",
     kategori: "Kan Sulandırıcı (Antikoagülan)",
     kutuAdedi: 28,
     gunlukDoz: 1,
     zamanBloku: "Akşam",
-    aclikDurumu: "Aç/Tok (Her gün aynı saatte)",
+    aclikDurumu: "Her gün aynı saatte; doz INR sonucuna göre hekimce belirlenir",
     etkilesimKurali: "KRİTİK: K Vitamini (K2/MK-7), Yüksek Doz E Vitamini, Koenzim Q10 ve Sarımsak/Ginkgo takviyeleri ilacın antikoagülan etkisini bozar (INR dengesizliği). K vitamini takviyesi alınmamalıdır!",
     tuketilenBesinler: []
   },
   {
-    barcode: "8699548010411",
+    barcode: "VT-RX-09",
     urunAdi: "Coraspin 100 mg",
     etkenMadde: "Asetilsalisilik Asit",
     kategori: "Kan Sulandırıcı (Antiagregan)",
@@ -125,7 +125,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
     tuketilenBesinler: ["C Vitamini", "Demir (Gastrointestinal mikrokanama riski)"]
   },
   {
-    barcode: "8699546090781",
+    barcode: "VT-RX-10",
     urunAdi: "Eliquis 5 mg",
     etkenMadde: "Apiksaban",
     kategori: "Yeni Nesil Kan Sulandırıcı (DOAC)",
@@ -139,7 +139,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
 
   // --- 5. TANSİYON & DİÜRETİKLER ---
   {
-    barcode: "8699536090029",
+    barcode: "VT-RX-11",
     urunAdi: "Delix 5 mg",
     etkenMadde: "Ramipril (ACE İnhibitörü)",
     kategori: "Tansiyon",
@@ -152,7 +152,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
     klinikUyari: "İdrarla çinko atılımını artırabilir."
   },
   {
-    barcode: "8699525010052",
+    barcode: "VT-RX-12",
     urunAdi: "Fludex SR 1.5 mg",
     etkenMadde: "İndapamid (Tiazid Benzeri Diüretik)",
     kategori: "Diüretik",
@@ -165,7 +165,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
     klinikUyari: "Elektrolit (özellikle Magnezyum ve Potasyum) atılımını artırır. Kramplara karşı dikkat edilmelidir."
   },
   {
-    barcode: "8699546090446",
+    barcode: "VT-RX-13",
     urunAdi: "Beloc ZOK 50 mg",
     etkenMadde: "Metoprolol Süksinat (Beta Bloker)",
     kategori: "Tansiyon & Kalp",
@@ -179,13 +179,14 @@ const VITA_PRESCRIPTION_DRUG_DB = [
 
   // --- 6. KEMİK ERİMESİ (BİSFOSFONATLAR) ---
   {
-    barcode: "8699546090552",
+    barcode: "VT-RX-14",
     urunAdi: "Fosamax 70 mg Haftalık",
     etkenMadde: "Alendronat Sodyum",
     kategori: "Kemik Erimesi (Bisfosfonat)",
     kutuAdedi: 4,
-    gunlukDoz: 1, // Haftada 1 gün
-    zamanBloku: "Sabah",
+    gunlukDoz: 1,
+    dozPeriyodu: "haftalik", // Haftada 1 tablet: kalan süre hesabı ve gösterim buna göre yapılır
+    zamanBloku: "Haftada 1 gün, sabah",
     aclikDurumu: "Tam Aç (Günün ilk saatinde bol suyla)",
     etkilesimKurali: "KRİTİK UYARI: İlaç alındıktan sonra en az 30-60 dakika kesinlikle uzanılmamalı (dik durulmalı), hiçbir şey yenmemeli ve Kalsiyum/Magnezyum/D Vitamini gibi takviyeler EN AZ 2 saat sonra alınmalıdır (emilimi sıfırlar).",
     tuketilenBesinler: []
@@ -193,7 +194,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
 
   // --- 7. ANTİBİYOTİKLER (ŞELASYON YAPANLAR) ---
   {
-    barcode: "8699546090669",
+    barcode: "VT-RX-15",
     urunAdi: "Cipro 500 mg",
     etkenMadde: "Siprofloksasin (Florokinolon)",
     kategori: "Antibiyotik",
@@ -205,7 +206,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
     tuketilenBesinler: ["Bağırsak Mikrobiyotası (Probiyotik İhtiyacı)"]
   },
   {
-    barcode: "8699546090775",
+    barcode: "VT-RX-16",
     urunAdi: "Tetradox 100 mg",
     etkenMadde: "Doksisiklin",
     kategori: "Antibiyotik (Tetrasiklin)",
@@ -219,7 +220,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
 
   // --- 8. KOLESTEROL (STATİNLER) & KRONİK ETKİ ---
   {
-    barcode: "8699546090881",
+    barcode: "VT-RX-17",
     urunAdi: "Lipitor 20 mg",
     etkenMadde: "Atorvastatin",
     kategori: "Statin (Kolesterol)",
@@ -232,7 +233,7 @@ const VITA_PRESCRIPTION_DRUG_DB = [
     klinikUyari: "Statinler mevalonat yolağını bloke ederek vücudun CoQ10 üretimini %40-50 azaltır; kas ağrılarına karşı CoQ10 takibi önerilir."
   },
   {
-    barcode: "8699546090997",
+    barcode: "VT-RX-18",
     urunAdi: "Crestor 10 mg",
     etkenMadde: "Rosuvastatin",
     kategori: "Statin (Kolesterol)",

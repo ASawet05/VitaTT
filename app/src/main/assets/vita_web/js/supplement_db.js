@@ -7,7 +7,7 @@
 const VITA_SUPPLEMENT_DB = [
   // --- D3 & D3K2 GRUBU ---
   {
-    barcode: "8697595871234",
+    barcode: "VT-SUP-01",
     urunAdi: "Ocean Vitamin D3 1000 IU",
     marka: "Orzaks",
     etkenMadde: "Kolekalsiferol (Vitamin D3)",
@@ -19,7 +19,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok (Yağlı Kahvaltı İle)"
   },
   {
-    barcode: "8682417030426",
+    barcode: "VT-SUP-02",
     urunAdi: "VeNatura D3K2 Damla",
     marka: "VeNatura",
     etkenMadde: "Vitamin D3 (Kolekalsiferol) + Vitamin K2 (Menakuinon-7)",
@@ -31,7 +31,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok (Yağlı Öğünle)"
   },
   {
-    barcode: "8697595874129",
+    barcode: "VT-SUP-03",
     urunAdi: "Ocean D3K2 Damla",
     marka: "Orzaks",
     etkenMadde: "Kolekalsiferol + Menakuinon-7 (MK-7)",
@@ -57,7 +57,7 @@ const VITA_SUPPLEMENT_DB = [
 
   // --- MAGNEZYUM GRUBU (ŞELAT, MALAT, BİSGLİSİNAT, SİTRAT) ---
   {
-    barcode: "8699546014022",
+    barcode: "VT-SUP-04",
     urunAdi: "Magnimore Plus",
     marka: "Tab İlaç",
     etkenMadde: "ATA-Mg (Asetil Taurat) + Malat + Bisglisinat + B6 (P-5-P)",
@@ -69,7 +69,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok (Yatmadan Önce)"
   },
   {
-    barcode: "8682417030112",
+    barcode: "VT-SUP-05",
     urunAdi: "VeNatura Magnezyum Malat",
     marka: "VeNatura",
     etkenMadde: "Magnezyum Malat",
@@ -81,7 +81,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok (Hücresel Enerji İçin)"
   },
   {
-    barcode: "8682417030129",
+    barcode: "VT-SUP-06",
     urunAdi: "VeNatura Magnezyum Bisglisinat",
     marka: "VeNatura",
     etkenMadde: "Magnezyum Bisglisinat",
@@ -93,7 +93,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok (Kas & Uyku Onarımı)"
   },
   {
-    barcode: "8697595875225",
+    barcode: "VT-SUP-07",
     urunAdi: "Ocean Extramag Üçlü Magnezyum",
     marka: "Orzaks",
     etkenMadde: "Magnezyum Sitrat + Malat + Bisglisinat",
@@ -119,7 +119,7 @@ const VITA_SUPPLEMENT_DB = [
 
   // --- B12 & B KOMPLEKS GRUBU ---
   {
-    barcode: "8697595874419",
+    barcode: "VT-SUP-08",
     urunAdi: "Ocean Methyl B12 1000 mcg",
     marka: "Orzaks",
     etkenMadde: "Metilkobalamin (Aktif Koenzim B12)",
@@ -131,7 +131,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Aç (Dil Altında 45 sn Bekletilerek)"
   },
   {
-    barcode: "8699546014152",
+    barcode: "VT-SUP-09",
     urunAdi: "New Life B12 Plus Dilaltı",
     marka: "New Life",
     etkenMadde: "Metilkobalamin + Folik Asit (Folat) + Biotin",
@@ -143,7 +143,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Aç"
   },
   {
-    barcode: "8682417030556",
+    barcode: "VT-SUP-10",
     urunAdi: "VeNatura Metilkobalamin B12",
     marka: "VeNatura",
     etkenMadde: "Metilkobalamin",
@@ -155,7 +155,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Aç"
   },
   {
-    barcode: "0339840011077",
+    barcode: "VT-SUP-20",
     urunAdi: "Solgar B-Complex with Vitamin C",
     marka: "Solgar",
     etkenMadde: "Tiamin, Riboflavin, Niasin, B6, Folik Asit, B12 + C Vitamini",
@@ -167,7 +167,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok"
   },
   {
-    barcode: "8680134005122",
+    barcode: "VT-SUP-11",
     urunAdi: "Nutraxin Biotin 5000 mcg",
     marka: "Nutraxin",
     etkenMadde: "D-Biotin (Vitamin B7)",
@@ -181,7 +181,7 @@ const VITA_SUPPLEMENT_DB = [
 
   // --- BALIK YAĞI & OMEGA-3 GRUBU ---
   {
-    barcode: "8697595872019",
+    barcode: "VT-SUP-12",
     urunAdi: "Ocean Plus 1200 mg Balık Yağı",
     marka: "Orzaks",
     etkenMadde: "Trigliserit Form Omega-3 (384 mg EPA, 252 mg DHA)",
@@ -193,7 +193,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok (Ana Öğün İle)"
   },
   {
-    barcode: "7070866011124",
+    barcode: "VT-SUP-21",
     urunAdi: "Möller's Sıvı Omega-3 Morina Karaciğer Yağı",
     marka: "Möller's",
     etkenMadde: "Doğal Trigliserit Omega-3 (EPA + DHA + A, D, E Vitamini)",
@@ -205,7 +205,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok"
   },
   {
-    barcode: "8699546014404",
+    barcode: "VT-SUP-13",
     urunAdi: "Efa One Balık Yağı 1200 mg",
     marka: "New Life",
     etkenMadde: "Konsantre Trigliserit Omega-3 (EPA 500 mg, DHA 375 mg)",
@@ -217,7 +217,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok"
   },
   {
-    barcode: "8697595870312",
+    barcode: "VT-SUP-14",
     urunAdi: "Ocean Krill Oil 700 mg",
     marka: "Orzaks",
     etkenMadde: "Antarktika Krill Yağı (Fosfolipit bağlı EPA/DHA + Astaksantin)",
@@ -231,7 +231,7 @@ const VITA_SUPPLEMENT_DB = [
 
   // --- MULTİVİTAMİN & ENERJİ KOMPLEKSLERİ ---
   {
-    barcode: "4260384870025",
+    barcode: "VT-SUP-22",
     urunAdi: "Supradyn All Day",
     marka: "Bayer",
     etkenMadde: "13 Vitamin + 9 Mineral + Koenzim Q10",
@@ -243,7 +243,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok"
   },
   {
-    barcode: "8699548092776",
+    barcode: "VT-SUP-15",
     urunAdi: "Pharmaton Vitality Kapsül",
     marka: "Sanofi",
     etkenMadde: "Standardize Ginseng G115 + Vitamin ve Mineraller",
@@ -267,7 +267,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok"
   },
   {
-    barcode: "8697595870084",
+    barcode: "VT-SUP-16",
     urunAdi: "Ocean Daily One Energy",
     marka: "Orzaks",
     etkenMadde: "12 Vitamin + 10 Mineral + Kore Ginsengi",
@@ -281,7 +281,7 @@ const VITA_SUPPLEMENT_DB = [
 
   // --- C VİTAMİNİ, ÇİNKO, DEMİR & BAĞIŞIKLIK ---
   {
-    barcode: "4260384871152",
+    barcode: "VT-SUP-23",
     urunAdi: "Redoxon Üçlü Etki (C + D + Çinko)",
     marka: "Bayer",
     etkenMadde: "Vitamin C (1000 mg) + Vitamin D3 (400 IU) + Çinko (10 mg)",
@@ -305,7 +305,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok"
   },
   {
-    barcode: "8682417030228",
+    barcode: "VT-SUP-17",
     urunAdi: "VeNatura Çinko Bisglisinat",
     marka: "VeNatura",
     etkenMadde: "Elementel Çinko (Bisglisinat Şelatı)",
@@ -331,7 +331,7 @@ const VITA_SUPPLEMENT_DB = [
 
   // --- KALSİYUM & KEMİK DESTEĞİ ---
   {
-    barcode: "5021265220349",
+    barcode: "VT-SUP-24",
     urunAdi: "Osteocare Original",
     marka: "Vitabiotics",
     etkenMadde: "Kalsiyum + Magnezyum + Çinko + Vitamin D3",
@@ -343,7 +343,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Tok"
   },
   {
-    barcode: "0339840051059",
+    barcode: "VT-SUP-25",
     urunAdi: "Solgar Calcium Magnesium with Vitamin D3",
     marka: "Solgar",
     etkenMadde: "Kalsiyum Sitrat + Magnezyum Oksit/Sitrat + Kolekalsiferol",
@@ -357,7 +357,7 @@ const VITA_SUPPLEMENT_DB = [
 
   // --- KOLAJEN & KOENZİM Q10 ---
   {
-    barcode: "8680134011246",
+    barcode: "VT-SUP-18",
     urunAdi: "Nutraxin Collagen Plus",
     marka: "Nutraxin",
     etkenMadde: "Tip 1 ve Tip 3 Hidrolize Kolajen Peptitleri + C Vitamini + Hyaluronik Asit",
@@ -369,7 +369,7 @@ const VITA_SUPPLEMENT_DB = [
     aclikDurumu: "Aç (Yatmadan Önce)"
   },
   {
-    barcode: "8697595870220",
+    barcode: "VT-SUP-19",
     urunAdi: "Ocean Coenzyme Q10 100 mg",
     marka: "Orzaks",
     etkenMadde: "Koenzim Q10 (Ubikinon)",

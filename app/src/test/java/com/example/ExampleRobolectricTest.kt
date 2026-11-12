@@ -32,16 +32,15 @@ class ExampleRobolectricTest {
 
         val indexHtml = context.assets.open("vita_web/index.html").bufferedReader().use { it.readText() }
         assertTrue(indexHtml.contains("VitaTakip"))
-        assertTrue(indexHtml.contains("Bulut (Firebase) ile Giriş"))
-        assertTrue(indexHtml.contains("Yerel (Cihaz) Depolama ile Giriş"))
-        assertTrue(indexHtml.contains("id=\"btnFirebaseGoogleLogin\""))
-        assertTrue(indexHtml.contains("startFirebaseGoogleLoginFromPortal()"))
         assertTrue(indexHtml.contains("id=\"authTabLoginBtn\""))
         assertTrue(indexHtml.contains("id=\"authTabRegisterBtn\""))
-        assertTrue(indexHtml.contains("id=\"headerCloudSyncBtn\""))
-        assertTrue(indexHtml.contains("id=\"headerCloudSyncPing\""))
-        assertTrue(indexHtml.contains("id=\"headerCloudSyncIcon\""))
-        assertTrue(indexHtml.contains("id=\"profileMenuCloudSyncDot\""))
+        // Yalnızca yerel depolama: bulut/Google girişi ve dış bağlantı yok
+        assertTrue(!indexHtml.contains("Firebase"))
+        assertTrue(!indexHtml.contains("id=\"btnFirebaseGoogleLogin\""))
+        assertTrue(!indexHtml.contains("id=\"headerCloudSyncBtn\""))
+        assertTrue(!indexHtml.contains("id=\"cloudSyncModal\""))
+        assertTrue(!indexHtml.contains("cloud-sync.js"))
+        assertTrue(indexHtml.contains("connect-src 'self'"))
         assertTrue(!indexHtml.contains("id=\"homeCompactDosageNotifRow\""))
         assertTrue(!indexHtml.contains("id=\"btnQuickPwaNotifTrigger\""))
         assertTrue(!indexHtml.contains("id=\"headerVitaSkor\""))
@@ -49,10 +48,8 @@ class ExampleRobolectricTest {
         assertTrue(!indexHtml.contains("quickGuestLogin"))
 
         val stateLabJs = context.assets.open("vita_web/js/app/06-state-lab-reference.js").bufferedReader().use { it.readText() }
-        assertTrue(stateLabJs.contains("setHeaderCloudSyncVisualState"))
-        assertTrue(stateLabJs.contains("triggerHeaderCloudSyncAnimation"))
-        assertTrue(stateLabJs.contains("Eşitleniyor..."))
-        assertTrue(stateLabJs.contains("Bulut Eşitlendi ✓"))
+        assertTrue(!stateLabJs.contains("syncDataToCloudNow"))
+        assertTrue(!stateLabJs.contains("AndroidVitaBridge.saveCloudBackupJson"))
 
         val symptomImages = listOf(
             "tongue.jpg",
@@ -74,10 +71,7 @@ class ExampleRobolectricTest {
     fun `verify VitaTakipWebPortalScreen renders full screen WebView`() {
         composeTestRule.setContent {
             MyApplicationTheme {
-                VitaTakipWebPortalScreen(
-                    currentUser = null,
-                    onOpenCloudNativePanel = {}
-                )
+                VitaTakipWebPortalScreen()
             }
         }
 
@@ -253,18 +247,15 @@ class ExampleRobolectricTest {
         assertTrue(reportJs.contains("setDoctorReportMode"))
         assertTrue(reportJs.contains("getDoctorReportMode"))
 
-        // Verify Google Hesabı Bağla & Bulut Eşitleme button in #authModal, Header, Profile Menu Status Bar, Settings, and #cloudSyncModal
-        assertTrue(indexHtml.contains("id=\"authGoogleCloudSyncBtn\""))
-        assertTrue(indexHtml.contains("id=\"headerCloudSyncBtn\""))
-        assertTrue(indexHtml.contains("id=\"profileMenuCloudStatusCard\""))
-        assertTrue(indexHtml.contains("id=\"profileMenuCloudBarFill\""))
-        assertTrue(indexHtml.contains("id=\"profileMenuCloudPill\""))
-        assertTrue(indexHtml.contains("id=\"cloudSyncModal\""))
-        assertTrue(indexHtml.contains("id=\"settingsCloudSyncStatusBadge\""))
+        // Bulut eşitleme kaldırıldı: veriler yalnızca cihazda; yedek dosyası ile taşınır
+        assertTrue(!indexHtml.contains("id=\"authGoogleCloudSyncBtn\""))
+        assertTrue(!indexHtml.contains("id=\"headerCloudSyncBtn\""))
+        assertTrue(!indexHtml.contains("id=\"cloudSyncModal\""))
+        assertTrue(indexHtml.contains("exportDataBackup()"))
+        assertTrue(indexHtml.contains("id=\"drawerImportBackupInput\""))
         val stateJs = context.assets.open("vita_web/js/app/06-state-lab-reference.js").bufferedReader().use { it.readText() }
-        assertTrue(stateJs.contains("openCloudSyncModal"))
-        assertTrue(stateJs.contains("syncDataToCloudNow"))
-        assertTrue(stateJs.contains("restoreDataFromCloudNow"))
+        assertTrue(!stateJs.contains("syncDataToCloudNow"))
+        assertTrue(!stateJs.contains("restoreDataFromCloudNow"))
 
         // Verify Task 1: Dual-mode Barcode & AI Recognition (Supplement vs Medication) & Turkish EAN-13 DB
         assertTrue(indexHtml.contains("id=\"btnHomeScanSupplementBarcode\""))

@@ -739,7 +739,7 @@ private fun DashboardSupplementItemCard(
 @Composable
 private fun DashboardVitalSummaryRow(log: VitalLog) {
     val dateFormat = SimpleDateFormat("dd MMM HH:mm", Locale.forLanguageTag("tr-TR"))
-    val dateText = log.createdAt?.toDate()?.let { dateFormat.format(it) } ?: "Yeni"
+    val dateText = log.createdAt?.let { dateFormat.format(it) } ?: "Yeni"
     val valueDisplay = if (log.type == "Tansiyon" && log.secondaryValue > 0L) {
         "${log.primaryValue}/${log.secondaryValue} ${log.unit}"
     } else {

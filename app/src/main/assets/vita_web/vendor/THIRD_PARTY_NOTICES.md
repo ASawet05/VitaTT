@@ -10,4 +10,3 @@ Sürüm yükseltirken ilgili npm paketinden yeniden kopyalayın ve `sw.js` için
 | `chartjs/` | chart.js 4.4.7 | MIT | Tekil trend grafiği |
 | `html5-qrcode/` | html5-qrcode 2.3.8 | Apache-2.0 | Kamerayla barkod/karekod |
 | `zxing/` | @zxing/browser 0.1.5 (@zxing/library içerir) | MIT/Apache-2.0 | Yedek barkod okuyucu |
-| `firebase/` | firebase 11.10.0 (yalnızca app + auth + firestore; esbuild ile tek dosya) | Apache-2.0 (`LICENSE`) | İsteğe bağlı bulut eşitleme (yalnızca yapılandırılırsa yüklenir) |

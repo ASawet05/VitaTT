@@ -1,6 +1,6 @@
 /* VitaTakip servis çalışanı: çevrimdışı açılış için uygulama dosyalarını önbelleğe alır.
    Dosyalarda değişiklik yaptığınızda CACHE_VERSION değerini artırın ki kullanıcılar yeni sürümü alsın. */
-const CACHE_VERSION = 'vitatakip-v83';
+const CACHE_VERSION = 'vitatakip-v84';
 const CORE_FILES = [
   "./",
   "index.html",
@@ -27,9 +27,6 @@ const CORE_FILES = [
   "js/report-simple.js",
   "js/age-stage.js",
   "js/day-compact.js",
-  "js/firebase-config.js",
-  "js/cloud-sync.js",
-  "vendor/firebase/vita-firebase-11.10.0.min.js",
   "js/add-sup-simple.js",
   "js/scanner-simple.js",
   "js/lazy-icon-fonts.js",
@@ -114,7 +111,7 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  // Yalnızca kendi dosyalarımız: Gemini API, CDN ve diğer dış istekler olduğu gibi geçer.
+  // Yalnızca kendi dosyalarımız önbelleğe alınır; uygulama dış sunuculara istek göndermez.
   if (url.origin !== self.location.origin) return;
 
   // Sayfa gezintisi ve JS/CSS dosyaları: önce ağ (güncel sürüm), ağ yoksa önbellek

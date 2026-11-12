@@ -2,6 +2,8 @@
 
 <html lang="tr">
 <head>
+<!-- Gizlilik: sayfa hiçbir dış sunucuya veri gönderemez (fetch/XHR/WebSocket/sendBeacon yalnızca kendi adresine). -->
+<meta http-equiv="Content-Security-Policy" content="connect-src 'self'; form-action 'self'">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -51,83 +53,6 @@
 <link rel="stylesheet" href="css/overrides.css">
 <link rel="stylesheet" href="css/food-alternatives.css">
 <link rel="stylesheet" href="css/tools.css?v=83">
-<style id="vitaCloudSyncHeaderStyles">
-  @keyframes vitaCloudSpin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  @keyframes vitaCloudPulseGlow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45), 0 0 14px rgba(56, 189, 248, 0.35); }
-    50% { box-shadow: 0 0 0 5px rgba(56, 189, 248, 0), 0 0 22px rgba(99, 102, 241, 0.65); }
-  }
-  @keyframes vitaCloudConnectedGlow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35), 0 0 12px rgba(16, 185, 129, 0.22); }
-    50% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0), 0 0 18px rgba(20, 184, 166, 0.4); }
-  }
-  @keyframes vitaCloudPing {
-    0% { transform: scale(1); opacity: 0.85; }
-    75%, 100% { transform: scale(2.35); opacity: 0; }
-  }
-  .vita-cloud-spin {
-    animation: vitaCloudSpin 0.9s linear infinite;
-  }
-  .vita-cloud-ping {
-    animation: vitaCloudPing 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
-  }
-  .vita-cloud-btn-syncing {
-    background: linear-gradient(135deg, rgba(30, 58, 138, 0.95), rgba(49, 46, 129, 0.95)) !important;
-    border-color: rgba(56, 189, 248, 0.85) !important;
-    animation: vitaCloudPulseGlow 1.2s ease-in-out infinite;
-  }
-  .vita-cloud-btn-synced {
-    background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(15, 118, 110, 0.95)) !important;
-    border-color: rgba(52, 211, 153, 0.9) !important;
-    box-shadow: 0 0 18px rgba(16, 185, 129, 0.55) !important;
-  }
-  .vita-cloud-btn-connected {
-    background: linear-gradient(135deg, rgba(6, 78, 59, 0.88), rgba(15, 23, 42, 0.95)) !important;
-    border-color: rgba(16, 185, 129, 0.65) !important;
-    animation: vitaCloudConnectedGlow 2.8s ease-in-out infinite;
-  }
-  .vita-cloud-btn-local {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95)) !important;
-    border-color: rgba(56, 189, 248, 0.55) !important;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.18);
-  }
-  @keyframes vitaCloudBarShimmer {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  .vita-profile-cloud-card {
-    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .vita-profile-cloud-local {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.96));
-    border-color: rgba(251, 191, 36, 0.38);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 14px rgba(2, 6, 23, 0.35);
-  }
-  .vita-profile-cloud-connected {
-    background: linear-gradient(135deg, rgba(6, 78, 59, 0.55), rgba(15, 23, 42, 0.96));
-    border-color: rgba(16, 185, 129, 0.55);
-    box-shadow: inset 0 1px 0 rgba(52, 211, 153, 0.15), 0 0 16px rgba(16, 185, 129, 0.18);
-  }
-  .vita-profile-cloud-syncing {
-    background: linear-gradient(135deg, rgba(30, 58, 138, 0.72), rgba(49, 46, 129, 0.88));
-    border-color: rgba(56, 189, 248, 0.75);
-    box-shadow: 0 0 18px rgba(56, 189, 248, 0.32);
-  }
-  .vita-profile-cloud-synced {
-    background: linear-gradient(135deg, rgba(6, 95, 70, 0.82), rgba(15, 118, 110, 0.88));
-    border-color: rgba(52, 211, 153, 0.85);
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-  }
-  .vita-cloud-status-bar-fill {
-    transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1), background 0.35s ease, box-shadow 0.35s ease;
-    background-size: 200% 200%;
-    animation: vitaCloudBarShimmer 2.4s ease infinite;
-  }
-</style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-teal-500 selection:text-white overflow-x-hidden">
 <div aria-label="VitaTakip açılıyor" id="vitaSplash" role="status">
@@ -285,15 +210,8 @@
 <!-- Arama Sonuçları Açılır Paneli -->
 <div class="hidden absolute top-full left-0 right-0 mt-2 bg-white text-navy-900 rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 max-h-80 overflow-y-auto" id="globalSearchResults"></div>
 </div>
-<!-- Sağ Taraf: Kompakt Bulut Durum İkonu & Profil Butonu -->
+<!-- Sağ Taraf: Profil Butonu -->
 <div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
-<button aria-label="Bulut Eşitleme Durumu" aria-live="polite" class="vita-cloud-btn-local relative flex items-center justify-center gap-1.5 bg-navy-800 hover:bg-slate-800 text-sky-200 px-2.5 h-10 rounded-xl border border-slate-700 transition-all duration-300 cursor-pointer shrink-0" data-sync-state="local" id="headerCloudSyncBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); openCloudSyncModal('header')" title="Google Bulut Eşitleme &amp; Hesap Bağlantısı" type="button">
-<i class="fa-solid fa-cloud text-sky-300 text-sm transition-transform duration-300" id="headerCloudSyncIcon"></i>
-<span class="relative flex h-2.5 w-2.5 shrink-0">
-<span class="vita-cloud-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75 hidden" id="headerCloudSyncPing"></span>
-<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.9)]" id="headerCloudSyncDot"></span>
-</span>
-</button>
 <div class="relative" id="headerProfileMenuWrapper">
 <button aria-expanded="false" aria-haspopup="menu" class="flex items-center gap-1.5 bg-navy-800 hover:bg-slate-800 text-slate-200 px-2.5 sm:px-3 h-10 rounded-xl border border-slate-700 transition text-xs font-medium cursor-pointer" id="headerProfileButton" onclick="if(window.SoundEffects) SoundEffects.playClick(); toggleHeaderProfileMenu(event)" type="button">
 <div class="w-6 h-6 rounded-full bg-teal-500/20 text-teal-300 flex items-center justify-center font-bold text-[11px] flex-shrink-0" id="headerUserAvatar">
@@ -307,37 +225,6 @@
 <button class="w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-100 hover:bg-navy-800 flex items-center gap-2.5 transition cursor-pointer" onclick="closeHeaderProfileMenu(); openProfileModal(true)" role="menuitem" type="button">
 <i class="fa-solid fa-user-pen text-teal-400 w-4 text-center"></i>
 <span>Profilim</span>
-</button>
-<!-- Modern Canlı Bulut Eşitleme Durum Çubuğu ve Göstergesi (Üst barda ve Ayarlarda bulunduğu için profil menüsünde gizlendi) -->
-<button aria-hidden="true" class="hidden vita-profile-cloud-card vita-profile-cloud-local w-full p-3 rounded-xl border text-left transition cursor-pointer group" data-sync-state="local" id="profileMenuCloudStatusCard" onclick="closeHeaderProfileMenu(); openCloudSyncModal('profile')" role="menuitem" style="display:none !important" type="button">
-<div class="flex items-center justify-between gap-2">
-<div class="flex items-center gap-2.5 min-w-0">
-<div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-400/35 text-amber-300 flex items-center justify-center shrink-0 transition-all duration-300" id="profileMenuCloudIconBox">
-<i class="fa-solid fa-cloud text-xs transition-transform duration-300" id="profileMenuCloudIcon"></i>
-</div>
-<div class="min-w-0">
-<div class="text-xs font-extrabold text-white truncate">Bulut Eşitleme &amp; Google</div>
-<div class="text-[10px] font-semibold text-slate-300 truncate mt-0.5" id="headerCloudSyncSublabel">Cihazda Yerel Depolama</div>
-</div>
-</div>
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-200 border border-amber-400/40 shrink-0 transition-all duration-300" id="profileMenuCloudPill">
-<span class="relative flex h-2 w-2 shrink-0">
-<span class="vita-cloud-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 hidden" id="profileMenuCloudPing"></span>
-<span class="relative inline-flex rounded-full h-2 w-2 bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.95)]" id="profileMenuCloudSyncDot"></span>
-</span>
-<span id="headerCloudSyncLabel">Yerel Mod</span>
-</span>
-</div>
-<!-- Anlık Renkli Durum Çubuğu (Status Bar) -->
-<div class="mt-2.5 space-y-1.5">
-<div class="h-2 w-full rounded-full bg-slate-950/85 border border-slate-700/80 p-0.5 overflow-hidden" id="profileMenuCloudBarTrack">
-<div class="vita-cloud-status-bar-fill h-full rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-sky-400 shadow-[0_0_8px_rgba(251,191,36,0.65)]" id="profileMenuCloudBarFill" style="width: 38%"></div>
-</div>
-<div class="flex items-center justify-between gap-2 text-[10px]" id="profileMenuCloudMetaRow">
-<span class="font-medium text-slate-300 truncate" id="profileMenuCloudMetaText">Google / Firebase bağlamak için dokunun</span>
-<span class="font-extrabold text-amber-300 shrink-0" id="profileMenuCloudPercentBadge">Yerel • Cihaz İçi</span>
-</div>
-</div>
 </button>
 <button class="w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-100 hover:bg-navy-800 flex items-center gap-2.5 transition cursor-pointer" onclick="closeHeaderProfileMenu(); navigateToView('view-settings')" role="menuitem" type="button">
 <i class="fa-solid fa-sliders text-sky-400 w-4 text-center"></i>
@@ -1864,7 +1751,7 @@ Kapalı
 </span>
 <div class="min-w-0">
 <div class="text-[11px] font-extrabold text-navy-900 truncate">2. AI Kutu Fotoğraf Analizi</div>
-<div class="text-[10px] text-slate-500 truncate">Gemini Vision &amp; Yerel Kutu Tanıma</div>
+<div class="text-[10px] text-slate-500 truncate">Yerel Kutu Tanıma</div>
 </div>
 </div>
 <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shrink-0" id="cameraPermModuleAiPhotoBadge">Kontrol Ediliyor</span>
@@ -1897,35 +1784,6 @@ Kapalı
 </summary>
 <div class="p-3.5 sm:p-4 border-t border-slate-200 bg-white space-y-3" id="pwaNotifSmartChecklistContainer"></div>
 </details>
-</div>
-
-<!-- 5.3. Vita AI ve Gemini Bağlantısı -->
-<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 space-y-3" id="settingsSectionAiConnection">
-<div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-<div class="flex items-center gap-2.5">
-<i class="fa-solid fa-robot text-teal-600 text-sm"></i>
-<h3 class="text-xs sm:text-sm font-black text-navy-900">Yapay zekâ (isteğe bağlı)</h3>
-</div>
-<span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 border border-slate-200" id="apiStatusBadge">Girilmedi</span>
-</div>
-<div class="space-y-2">
-<label class="text-xs font-bold text-slate-700 block" for="drawerGeminiApiKeyInput">Gemini API anahtarı</label>
-<div class="flex flex-col sm:flex-row gap-2">
-<input autocomplete="off" class="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs text-navy-900 focus:outline-none focus:border-teal-500 font-mono" id="drawerGeminiApiKeyInput" onkeydown="if(event.key==='Enter'){event.preventDefault(); saveGeminiApiKey(this.value);}" placeholder="AIzaSy... anahtarınızı buraya yapıştırın" type="password"/>
-<button class="px-4 py-2 rounded-xl bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer shrink-0 flex items-center justify-center gap-1.5" id="btnSaveGeminiApiKey" onclick="if(window.SoundEffects) SoundEffects.playClick(); saveGeminiApiKey(document.getElementById('drawerGeminiApiKeyInput').value)" type="button">
-<i class="fa-solid fa-plug-circle-check text-teal-400"></i>
-<span>Kaydet</span>
-</button>
-<button class="hidden px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition cursor-pointer shrink-0 flex items-center justify-center gap-1" id="btnClearGeminiApiKey" onclick="if(window.SoundEffects) SoundEffects.playClick(); clearGeminiApiKeyFromSettings()" type="button">
-<i class="fa-solid fa-trash-can"></i>
-<span>Anahtarı Kaldır</span>
-</button>
-</div>
-<div aria-live="polite" class="hidden rounded-xl border p-2.5 text-xs font-bold" id="geminiApiSaveFeedbackBox"></div>
-<p class="text-[11px] text-slate-500 leading-relaxed">
-Anahtar girerseniz sohbet ve kutu fotoğrafı tanıma Gemini ile çalışır; girmezseniz cihazdaki yerel motor yanıtlar. Anahtar yalnızca bu hesapta saklanır.
-</p>
-</div>
 </div>
 
 <!-- 5.4. Kurulum ve Çizelge Araçları -->
@@ -1966,19 +1824,6 @@ Anahtar girerseniz sohbet ve kutu fotoğrafı tanıma Gemini ile çalışır; gi
 <span class="text-[10px] font-bold text-slate-500" id="settingsDataSummaryText">Yerel depolama aktif</span>
 </div>
 <div class="divide-y divide-slate-100 text-xs">
-<div class="py-2.5 flex flex-wrap items-center justify-between gap-3">
-<div>
-<div class="flex items-center gap-2">
-<span class="font-bold text-navy-900">Google Hesabı &amp; Bulut Eşitleme (İsteğe Bağlı)</span>
-<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200" id="settingsCloudSyncStatusBadge">Bağlı Değil (Yerel Mod)</span>
-</div>
-<div class="text-[11px] text-slate-500 mt-0.5" id="settingsCloudSyncSubtext">Google hesabınızı bağlayarak profil, tahlil ve takviye kayıtlarınızı buluta yedekleyebilir veya başka cihazdan geri yükleyebilirsiniz.</div>
-</div>
-<button class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition cursor-pointer shrink-0 flex items-center gap-1.5" onclick="if(window.SoundEffects) SoundEffects.playClick(); openCloudSyncModal('settings')" type="button">
-<i class="fa-solid fa-cloud-arrow-up"></i>
-<span>Bulut Eşitleme Merkezi</span>
-</button>
-</div>
 <div class="py-2.5 flex items-center justify-between gap-3">
 <div>
 <div class="font-bold text-navy-900">Tüm Verileri Yedekle (JSON)</div>
@@ -2159,8 +2004,7 @@ Verileri Sil
 <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2 border-t border-slate-100 pt-3">
 <button class="min-h-10 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100" onclick="closeVitaFeedback()" type="button">Kapat</button>
 <div class="flex flex-wrap items-center gap-2">
-<button class="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-indigo-300 bg-indigo-50 px-3.5 py-2 text-xs font-bold text-indigo-900 hover:bg-indigo-100 cursor-pointer" onclick="sendVitaFeedbackViaEmailClient()" type="button"><i aria-hidden="true" class="fa-solid fa-envelope"></i> E-posta Uygulamasıyla Gönder</button>
-<button class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-teal-800 cursor-pointer" id="btnSubmitVitaFeedback" type="submit"><i aria-hidden="true" class="fa-solid fa-paper-plane"></i> Gönder &amp; Kaydet</button>
+<button class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-teal-800 cursor-pointer" id="btnSubmitVitaFeedback" type="submit"><i aria-hidden="true" class="fa-solid fa-envelope"></i> Kaydet &amp; E-postayla Gönder</button>
 </div>
 </div>
 </form>
@@ -2243,35 +2087,11 @@ Verileri Sil
 <span class="flex-1" id="ai-typing-text">VitaAI klinik verileri analiz ediyor...</span>
 <button class="hidden px-2.5 py-1 rounded-lg bg-white border border-teal-300 text-teal-800 hover:bg-teal-100 font-black shrink-0" id="ai-use-local-fallback" onclick="VitaAIChat.useLocalFallback()" type="button">Yerel yanıtı kullan</button>
 </div>
-<!-- Haricî yapay zekâ veri paylaşım ayarları: kompakt çekmece; varsayılan olarak kapalıdır. -->
-<div class="shrink-0 border-t border-slate-200 bg-white" id="aiHealthDataConsentDisclosure">
-<div class="flex items-center gap-2 px-2 py-1.5">
-<button aria-controls="aiHealthDataConsentPanel" aria-expanded="false" class="min-w-0 flex-1 flex items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-slate-50 transition cursor-pointer" id="aiHealthDataConsentToggle" onclick="VitaAIChat.toggleConsentPanel()" type="button">
-<i class="fa-solid fa-shield-halved text-teal-700 shrink-0"></i>
-<div class="min-w-0 flex-1">
-<span class="block text-[10px] font-black text-slate-700">Haricî yapay zekâ veri paylaşım ayarları</span>
-<span class="block text-[9px] text-slate-500" id="aiHealthDataConsentStatus">Kapalı · Yerel yanıt motoru kullanılır</span>
-</div>
-<i class="fa-solid fa-chevron-down text-[10px] text-slate-500 transition-transform" id="aiHealthDataConsentChevron"></i>
-</button>
-<button class="hidden shrink-0 rounded-lg border border-teal-200 bg-teal-50 px-2 py-1 text-[9px] font-bold text-teal-800 hover:bg-teal-100" id="aiHealthDataConsentApproved" onclick="VitaAIChat.revokeConsent()" type="button">Onayı kaldır</button>
-</div>
-<div class="hidden px-3 py-2 bg-amber-50 border-t border-amber-200" id="aiHealthDataConsentPanel">
-<label class="flex items-start gap-2 text-[10px] leading-relaxed text-amber-950 cursor-pointer" for="aiHealthDataConsent">
-<input class="mt-0.5 h-4 w-4 rounded border-amber-400 text-teal-600 focus:ring-teal-500 shrink-0" id="aiHealthDataConsent" onchange="VitaAIChat.handleConsentChange(this.checked)" type="checkbox"/>
-<span><strong id="aiConsentProviderLabel">Haricî yapay zekâ veri paylaşım onayı:</strong> Bu oturumdaki sorumun ve soruyla ilişkili, uygulamada kayıtlı sağlık verilerinin (tahlil yorumu isteyen sorularda girdiğiniz tüm tahlil değerleri, referans aralıkları, önceki ölçümler, yaş/cinsiyet, ilaç ve belirti kayıtları dahil) Google Gemini hizmetine yanıt üretimi için gönderilmesini onaylıyorum.</span>
-</label>
-<p class="mt-1 pl-6 text-[9px] text-amber-800">Onay vermezseniz soru yerel VitaTakip motoruyla yanıtlanır. Sağlık verileriniz hassastır; dış servise göndermeden önce metni ve paylaşım kapsamını değerlendirin. Bu uygulama otomatik KVKK uyumluluğu garantisi vermez.</p>
-<div class="mt-2 flex justify-end">
-<button class="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[9px] font-bold text-amber-900 hover:bg-amber-100" onclick="VitaAIChat.closeConsentPanel()" type="button">Kapat / Şimdilik yerel kullan</button>
-</div>
-</div>
-</div>
 <!-- Mesaj Giriş Alanı -->
-<div aria-live="polite" class="px-3 py-1 text-[9px] text-slate-500 bg-white border-t border-slate-100" id="ai-voice-status">Mikrofonla konuşarak soru yazabilirsiniz. Tarayıcı konuşma tanıma hizmeti sesinizi çevrim içi işleyebilir; metni göndermeden önce kontrol edin.</div>
+<div aria-live="polite" class="px-3 py-1 text-[9px] text-slate-500 bg-white border-t border-slate-100" id="ai-voice-status">Sorunuzu yazın; yanıtlar bu cihazda hazırlanır.</div>
 <form class="p-2.5 bg-white border-t border-slate-200 flex items-center gap-1.5 shrink-0" onsubmit="VitaAIChat.handleSubmit(event)">
 <input autocomplete="off" class="min-w-0 flex-1 px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 font-medium" id="ai-user-input" placeholder="Tahlil, takviye veya etkileşim sorunuz..." type="text"/>
-<button aria-label="Konuşarak soru yaz" class="w-9 h-9 shrink-0 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 flex items-center justify-center transition cursor-pointer" id="ai-voice-btn" onclick="VitaAIChat.toggleVoiceInput()" title="Konuşarak soru yaz" type="button">
+<button aria-label="Konuşarak soru yaz" class="hidden w-9 h-9 shrink-0 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 flex items-center justify-center transition cursor-pointer" id="ai-voice-btn" onclick="VitaAIChat.toggleVoiceInput()" title="Konuşarak soru yaz" type="button">
 <i class="fa-solid fa-microphone text-xs"></i>
 </button>
 <button aria-label="Soruyu gönder" class="w-9 h-9 shrink-0 rounded-xl bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center shadow-xs transition cursor-pointer" id="ai-send-btn" type="submit">
@@ -2317,12 +2137,6 @@ Verileri Sil
 </header>
 
 <div class="vta-body">
-<!-- Eski yöntem seçici (JS uyumluluğu için duruyor; gizli) -->
-<div id="authMainMethodTabs" role="tablist" aria-hidden="true">
-<button id="authMethodTabCloud" onclick="selectAuthPrimaryMethod('cloud')" role="tab" tabindex="-1" type="button">Bulut</button>
-<button id="authMethodTabLocal" onclick="selectAuthPrimaryMethod('local')" role="tab" tabindex="-1" type="button">Yerel</button>
-</div>
-
 <div id="authLocalMethodCard">
 <div class="vta-seg" role="group" aria-label="Giriş türü">
 <button id="authTabLoginBtn" class="bg-white" onclick="if(window.SoundEffects) SoundEffects.playClick(); switchAuthMode('login')" type="button">Giriş Yap</button>
@@ -2388,20 +2202,6 @@ Verileri Sil
 <p id="authSwitchPrompt"></p>
 </div>
 
-<div class="vta-or"><span>veya</span></div>
-
-<div id="authCloudMethodCard">
-<span id="authCloudSyncStatusBadge">Cloud Firestore</span>
-<button class="vta-google" id="btnFirebaseGoogleLogin" onclick="if(window.SoundEffects) SoundEffects.playClick(); startFirebaseGoogleLoginFromPortal()" type="button">
-<i class="fa-brands fa-google" aria-hidden="true"></i>
-<span id="authFirebaseLoginBtnLabel">Google ile devam et</span>
-</button>
-<button class="vta-sync" id="authGoogleCloudSyncBtn" onclick="if(window.SoundEffects) SoundEffects.playClick(); openCloudSyncModal('auth')" type="button">
-<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
-<span id="authGoogleCloudSyncBtnLabel">Yedekten geri yükle</span>
-</button>
-</div>
-
 <div class="vta-download" data-vita-download-entry>
 <span class="vta-download-label">Uygulamayı indir</span>
 <div class="vta-download-row">
@@ -2413,104 +2213,8 @@ Verileri Sil
 
 <p class="vta-note" id="authLocalDataNotice">
 <i class="fa-solid fa-lock" aria-hidden="true"></i>
-<span>Yerel hesapta verileriniz yalnızca bu cihazda tutulur; Google ile girişte bulutta yedeklenir. <button type="button" onclick="openKvkkInfoModal()">Gizlilik &amp; Yasal Şartlar</button></span>
+<span>Verileriniz yalnızca bu cihazda tutulur; hiçbir sunucuya gönderilmez. Şifre bu cihazdaki ekranı kilitler, verileri şifrelemez; ortak cihazda dikkatli olun. <button type="button" onclick="openKvkkInfoModal()">Gizlilik &amp; Yasal Şartlar</button></span>
 </p>
-</div>
-</div>
-</div>
-<!-- MODAL: GOOGLE HESABI BAĞLANTISI & BULUT EŞİTLEME MERKEZİ -->
-<div class="hidden fixed inset-0 z-[9999] bg-slate-950/90 backdrop-blur-md items-center justify-center p-4 vita-cloud-sync-modal" id="cloudSyncModal" onclick="if(event.target === this) closeCloudSyncModal()" style="display:none; background-color: rgba(2, 6, 23, 0.92);">
-<div class="bg-white text-slate-900 rounded-3xl max-w-lg w-full p-5 sm:p-7 shadow-2xl border-2 border-indigo-500/40 relative max-h-[90vh] overflow-y-auto space-y-4 vita-cloud-sync-dialog" style="background-color: #ffffff; color: #0f172a;">
-<button class="absolute right-5 top-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition cursor-pointer" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeCloudSyncModal()" type="button">
-<i class="fa-solid fa-xmark text-sm"></i>
-</button>
-<div class="flex items-center gap-3.5">
-<div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md shrink-0">
-<i class="fa-solid fa-cloud-arrow-up"></i>
-</div>
-<div>
-<span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200" id="cloudModalTopBadge">
-İsteğe Bağlı Bulut Yedekleme
-</span>
-<h3 class="text-base sm:text-lg font-black text-navy-900 mt-0.5">Google Hesabı Bağla &amp; Bulut Eşitleme</h3>
-</div>
-</div>
-<p class="text-xs text-slate-600 leading-relaxed">
-VitaTakip'i Google hesabı olmadan tamamen yerel olarak kullanabilirsiniz. Verilerinizi cihaz değişimine karşı korumak veya bulutla eşitlemek isterseniz aşağıdan Google hesabınızı bağlayabilirsiniz.
-</p>
-<!-- Mevcut Bağlantı Durumu Kartı -->
-<div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2" id="cloudSyncAccountStatusCard">
-<div class="flex items-center justify-between gap-2">
-<span class="text-[11px] font-black text-navy-900 flex items-center gap-1.5">
-<span class="w-2.5 h-2.5 rounded-full bg-slate-400" id="cloudModalStatusDot"></span>
-<span id="cloudModalStatusTitle">Henüz Google Hesabı Bağlanmadı</span>
-</span>
-<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700" id="cloudModalSourceTag">Yerel Mod</span>
-</div>
-<p class="text-[11px] text-slate-600" id="cloudModalAccountDetail">Kayıtlarınız şu anda yalnızca bu cihazın yerel hafızasında tutulmaktadır.</p>
-<p class="text-[10px] font-semibold text-teal-700 hidden" id="cloudModalLastSyncText"></p>
-</div>
-<!-- 1. ADIM: Google Hesabı Bağlama Seçenekleri -->
-<div class="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-200 space-y-3">
-<div class="text-xs font-black text-navy-900 flex items-center gap-1.5">
-<i class="fa-solid fa-link text-indigo-600"></i>
-<span>1. Adım: Google Hesabınızı Bağlayın</span>
-</div>
-<!-- Android Native Google Sign-In Butonu -->
-<button class="w-full py-2.5 px-4 rounded-xl bg-navy-900 hover:bg-slate-800 text-white font-bold text-xs shadow transition flex items-center justify-center gap-2 cursor-pointer" id="btnTriggerNativeGoogleSignIn" onclick="if(window.SoundEffects) SoundEffects.playClick(); triggerNativeGoogleCloudSignIn()" type="button">
-<i class="fa-solid fa-shield-halved text-teal-400"></i>
-<span>Cihazdaki Google Hesabıyla Tek Tıkla Bağlan</span>
-</button>
-<!-- Manuel / Hızlı Google E-posta Eşleştirme Alanı -->
-<div class="pt-2 border-t border-indigo-200/80 space-y-2">
-<span class="text-[11px] font-bold text-slate-700 block">Veya Google e-posta adresinizle doğrudan eşleştirin:</span>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-<input class="px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs font-semibold text-navy-900 focus:outline-none focus:border-indigo-500" id="cloudSyncNameInput" placeholder="Adınız Soyadınız (Örn: Ahmet Yılmaz)" type="text"/>
-<input class="px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs font-semibold text-navy-900 focus:outline-none focus:border-indigo-500" id="cloudSyncEmailInput" placeholder="ornek@gmail.com" type="email"/>
-</div>
-<div class="flex flex-wrap items-center gap-2">
-<button class="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5" id="btnLinkGoogleAccountDirect" onclick="if(window.SoundEffects) SoundEffects.playClick(); linkGoogleAccountFromModal()" type="button">
-<i class="fa-solid fa-check-circle"></i>
-<span>Hesabı Bağla &amp; Portalı Aç</span>
-</button>
-<button class="hidden py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition cursor-pointer" id="btnUnlinkGoogleAccount" onclick="if(window.SoundEffects) SoundEffects.playClick(); unlinkGoogleCloudAccount()" type="button">
-Bağlantıyı Kes
-</button>
-</div>
-</div>
-</div>
-<!-- 2. ADIM: Bulut Yedekleme & Geri Yükleme İşlemleri -->
-<div class="p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200 space-y-2.5">
-<div class="flex items-center justify-between gap-2">
-<span class="text-xs font-black text-navy-900 flex items-center gap-1.5">
-<i class="fa-solid fa-arrows-rotate text-teal-700"></i>
-<span>2. Adım: Bulut Yedekleme &amp; Geri Yükleme</span>
-</span>
-<label class="inline-flex items-center gap-1.5 text-[11px] font-bold text-teal-900 cursor-pointer">
-<input checked="" class="rounded border-teal-400 text-teal-600 focus:ring-teal-500" id="cloudAutoSyncCheckbox" onchange="toggleCloudAutoSyncPreference(this.checked)" type="checkbox"/>
-<span>Otomatik Eşitle</span>
-</label>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-<button class="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs" id="btnCloudBackupNow" onclick="if(window.SoundEffects) SoundEffects.playClick(); syncDataToCloudNow(true)" type="button">
-<i class="fa-solid fa-cloud-arrow-up"></i>
-<span>Şimdi Buluta Yedekle</span>
-</button>
-<button class="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 text-navy-900 border border-slate-300 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5" id="btnCloudRestoreNow" onclick="if(window.SoundEffects) SoundEffects.playClick(); restoreDataFromCloudNow()" type="button">
-<i class="fa-solid fa-cloud-arrow-down text-indigo-600"></i>
-<span>Buluttan Geri Yükle</span>
-</button>
-</div>
-<p aria-live="polite" class="hidden text-[11px] font-bold p-2 rounded-xl border" id="cloudSyncModalFeedback"></p>
-</div>
-<div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
-<button class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition cursor-pointer" onclick="if(window.SoundEffects) SoundEffects.playClick(); closeCloudSyncModal()" type="button">
-Kapat
-</button>
-<button class="hidden px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition cursor-pointer flex items-center gap-1.5" id="btnContinueWithLinkedGoogle" onclick="if(window.SoundEffects) SoundEffects.playClick(); continueToPortalWithLinkedGoogle()" type="button">
-<i class="fa-solid fa-right-to-bracket"></i>
-<span>Bağlı Hesapla Uygulamaya Gir</span>
-</button>
 </div>
 </div>
 </div>
@@ -2539,7 +2243,7 @@ Kapat
 </ol>
 <div class="vg-tips">
   <div><i class="fa-solid fa-house text-emerald-700"></i><span><strong>Ana Sayfa:</strong> bugünkü vitaminlerinizi işaretleyin, su ekleyin, barkodla yeni takviye ekleyin. Her gün 00:00'da liste ve su sayacı yenilenir.</span></div>
-  <div><i class="fa-solid fa-robot text-indigo-700"></i><span><strong>Vita AI:</strong> kısa sorular sorun. Anahtar girmezseniz cihazdaki yerel yanıt motoru, girerseniz Gemini yanıtlar. Anahtarınız yalnızca kendi hesabınızda saklanır.</span></div>
+  <div><i class="fa-solid fa-robot text-indigo-700"></i><span><strong>Vita AI:</strong> kısa sorular sorun. Yanıtlar cihazdaki yerel motorla üretilir; sorularınız hiçbir yere gönderilmez.</span></div>
   <div><i class="fa-solid fa-shield-halved text-teal-700"></i><span><strong>Gizlilik:</strong> bulutla giriş verilerinizi yedekler; yerel giriş yalnızca bu cihazda tutar. Uygulama tanı koymaz, karar için hekime danışın.</span></div>
 </div>
 <div class="mt-4 flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
@@ -2980,7 +2684,7 @@ Kapat
 <button class="vsa-submit" onclick="if(window.SoundEffects) SoundEffects.playClick(); commitManualSupplement()" type="button"><i class="fa-solid fa-plus"></i><span>Takviyeyi ekle</span></button>
 </div>
 </div>
-<!-- Gerçek kamera barkod okuyucu ve isteğe bağlı Gemini fotoğraf ön incelemesi. İki modlu: 'supplement' (Takviye Ekle) ve 'medication' (İlaç Seç ve Denetle). -->
+<!-- Gerçek kamera barkod okuyucu ve yerel fotoğraf ön incelemesi. İki modlu: 'supplement' (Takviye Ekle) ve 'medication' (İlaç Seç ve Denetle). -->
 <div aria-hidden="true" class="hidden fixed inset-0 z-[75] bg-navy-950/80 backdrop-blur-sm items-center justify-center p-3 sm:p-4 no-print" data-scanner-mode="supplement" id="barcodeScannerModal" onclick="if(event.target===this) closeBarcodeScannerModal()">
 <section aria-labelledby="barcodeScannerTitle" aria-modal="true" class="w-full max-w-2xl max-h-[94dvh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-teal-400" role="dialog">
 <div class="flex items-center justify-between gap-3 rounded-t-3xl bg-gradient-to-r from-navy-900 to-medTeal-700 px-5 py-4 text-white" id="barcodeScannerHeaderBar">
@@ -3118,7 +2822,7 @@ Kapat
 </div>
 <div class="rounded-xl border border-indigo-200 bg-white p-3">
 <button class="min-h-10 w-full rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-900 hover:bg-indigo-100" onclick="askVitaAIAboutBarcodeSupplement()" type="button"><i class="fa-solid fa-comment-medical mr-1.5"></i> VitaAI'ye etkileşim / kullanım sorusu hazırla</button>
-<p class="mt-1.5 text-[9px] leading-relaxed text-slate-500">Soru sohbet alanına taşınır, otomatik gönderilmez. Göndermeden önce metni ve Gemini veri paylaşım onayını kontrol edin.</p>
+<p class="mt-1.5 text-[9px] leading-relaxed text-slate-500">Soru sohbet alanına taşınır, otomatik gönderilmez. Yanıtlar cihazdaki yerel motorla üretilir.</p>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div><label class="mb-1 block text-[10px] font-bold text-slate-700" for="barcodeScheduleTime">Hatırlatma saati *</label><input class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs focus:border-teal-500 focus:outline-none" id="barcodeScheduleTime" onchange="this.dataset.userEdited='true'" required="" type="time"/><p aria-live="polite" class="mt-1 text-[9px] leading-relaxed text-slate-500" id="barcodeScheduleSuggestionNote">Ürün adı girildiğinde uygun bir hatırlatma saati taslak olarak önerilebilir. Etiket/hekim/eczacı talimatı önceliklidir.</p></div>
@@ -3166,7 +2870,7 @@ Kapat
 <input accept="image/*" capture="environment" class="sr-only" id="barcodePhotoFile" onchange="handleBarcodePhotoSelected(event)" type="file"/>
 <img alt="Seçilen kutu fotoğrafı önizlemesi" class="hidden mx-auto max-h-64 max-w-full rounded-xl border border-slate-200 object-contain" id="barcodePhotoPreview"/>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><button class="min-h-10 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-50" onclick="decodeBarcodeFromPhoto()" type="button"><i class="fa-solid fa-barcode mr-1"></i> Fotoğraftaki barkodu oku</button><button class="min-h-10 rounded-xl bg-indigo-700 px-3 py-2 text-xs font-black text-white hover:bg-indigo-800" id="barcodeAnalyzePhotoBtn" onclick="analyzeMedicationPhotoWithAI()" type="button"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Yapay Zeka (AI) ile Kutuyu Tanı</button></div>
-<label class="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-[10px] leading-relaxed text-amber-950"><input checked="" class="mt-0.5 h-4 w-4 shrink-0 rounded border-amber-400 text-teal-600" id="barcodePhotoConsent" type="checkbox"/><span><strong>Fotoğraf analiz onayı:</strong> Seçtiğim kutu fotoğrafının ürün adını ve içeriğini tespit etmek amacıyla analiz edilmesini onaylıyorum. Fotoğrafa kişisel kimlik bilgisi eklemeyin.</span></label>
+<label class="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-[10px] leading-relaxed text-amber-950"><input checked="" class="mt-0.5 h-4 w-4 shrink-0 rounded border-amber-400 text-teal-600" id="barcodePhotoConsent" type="checkbox"/><span><strong>Fotoğraf yalnızca bu cihazda incelenir:</strong> fotoğraf hiçbir sunucuya gönderilmez.</span></label>
 <div aria-live="polite" class="hidden rounded-2xl border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-950" id="barcodeAiResult"><div class="font-black"><i class="fa-solid fa-robot mr-1"></i> Yapay Zeka Kutu &amp; İçerik Tanıma Sonucu</div><pre class="mt-2 whitespace-pre-wrap break-words font-sans text-xs leading-relaxed" id="barcodeAiResultText"></pre><p class="mt-2 border-t border-indigo-200 pt-2 text-[10px] leading-relaxed">Bu sonuç görselde okunabilen yazıların analizidir; etken madde, doz ve ürün kimliğini kutu/prospektüs veya eczacıyla doğrulayın.</p></div>
 </section>
 <div class="rounded-xl border border-amber-300 bg-amber-50 p-3 text-[10px] leading-relaxed text-amber-950"><strong><i class="fa-solid fa-triangle-exclamation mr-1"></i> Önemli:</strong> Barkod önce <strong>Türkiye EAN-13 (869) Takviye &amp; İlaç Veritabanı</strong>, ardından NIH DSLD ve Open Food Facts kataloglarında aranır. <em>Takviye Ekle</em> modunda yalnızca vitamin ve gıda takviyeleri, <em>İlaç Seç ve Denetle</em> modunda ise genel/reçeteli ilaçlar eşleştirilir.</div>
@@ -3192,10 +2896,10 @@ Kapat
 <li><strong>Kapsam ve veri sorumlusu.</strong> Bu metin, VitaTakip'te işlenen kişisel verilere ilişkin 6698 sayılı KVKK kapsamındaki aydınlatma özetidir. Uygulama eğitim ve klinik karar desteği amacıyla sunulur.</li>
 <li><strong>İşlenen veriler.</strong> Profil bilgileriniz (yaş, cinsiyet, boy, kilo), tahlil sonuçları ve referans aralıkları, seçtiğiniz belirtiler, kullandığınız ilaç ve takviyeler, günlük takip kayıtları ve yüklediğiniz PDF/fotoğraf içerikleri; bunlar sağlık verisi olup özel nitelikli kişisel veridir.</li>
 <li><strong>İşleme amaçları.</strong> Verileriniz yalnızca tahlil ve belirti analizi, takviye ve ilaç etkileşimi kontrolü, hatırlatmalar ve doktorunuzla paylaşabileceğiniz özetlerin üretilmesi için kullanılır. Reklam veya profilleme amacıyla kullanılmaz.</li>
-<li><strong>Saklama yeri.</strong> Yerel depolama ile kullanımda kayıtlarınız yalnızca bu cihazın tarayıcı/uygulama hafızasında tutulur. Bulut (Firebase) ile giriş yaparsanız yedekleme amacıyla kayıtlarınız Cloud Firestore'a da yazılır.</li>
-<li><strong>Üçüncü taraflarla paylaşım.</strong> Reklam, pazarlama veya profilleme amacıyla hiçbir üçüncü tarafla veri paylaşılmaz. Yapay zekâ sohbetinde Google Gemini sağlayıcısını seçer ve paylaşım onayını açarsanız, yalnızca o soruyla ilgili sağlık bağlamı yanıt üretimi için bu servise gönderilir. Onayı kapalı tutarsanız yanıtlar cihazınızdaki yerel motorla üretilir. Geri bildirim gönderirseniz adınız (profilinizden) ve yazdığınız mesaj, e-posta iletim hizmeti (FormSubmit) aracılığıyla geliştiriciye iletilir; sağlık bilgisi yazmamanız önerilir.</li>
-<li><strong>Yurt dışına aktarım.</strong> Firebase ve Google Gemini kullanımı verilerin yurt dışındaki sunucularda işlenmesi anlamına gelebilir. Bu servisleri kullanmak tamamen isteğe bağlıdır; kullanmadığınız sürece verileriniz cihazınızdan çıkmaz.</li>
-<li><strong>Güvenlik ve sınırlar.</strong> Tarayıcı yerel depolaması şifrelenmemiştir; cihazı ortak kullanıyorsanız gerçek sağlık verisi girmeyin. API anahtarı tarayıcıda saklandığından geliştirici araçlarıyla erişilebilir olabilir. Bu uygulama otomatik KVKK uyumluluğu garantisi vermez.</li>
+<li><strong>Saklama yeri.</strong> Kayıtlarınız yalnızca bu cihazın tarayıcı/uygulama hafızasında (localStorage ve IndexedDB) tutulur. Uygulamanın sunucusu yoktur; verileriniz hiçbir sunucuya gönderilmez veya yedeklenmez.</li>
+<li><strong>Üçüncü taraflarla paylaşım.</strong> Hiçbir üçüncü tarafla veri paylaşılmaz. Yapay zekâ sohbeti ve ürün tanıma cihazınızdaki yerel motorla çalışır. Geri bildirim yazarsanız mesajınız cihazınıza kaydedilir; göndermek isterseniz kendi e-posta uygulamanız hazır mesajla açılır ve gönderim kararı size aittir.</li>
+<li><strong>Yurt dışına aktarım.</strong> Uygulama verilerinizi cihazınızdan dışarı aktarmaz. Verilerinizi başka bir cihaza taşımak için Ayarlar'daki "Yedek İndir" ile oluşturduğunuz dosyayı kendiniz aktarırsınız.</li>
+<li><strong>Güvenlik ve sınırlar.</strong> Tarayıcı yerel depolaması şifrelenmemiştir; cihazı ortak kullanıyorsanız gerçek sağlık verisi girmeyin. Tarayıcı verilerini temizlerseniz kayıtlarınız silinir; düzenli olarak yedek dosyası almanız önerilir. Bu uygulama otomatik KVKK uyumluluğu garantisi vermez.</li>
 <li><strong>Haklarınız.</strong> KVKK madde 11 uyarınca verilerinize erişme, düzeltme, silme ve işlenmesine itiraz etme hakkınız vardır. Yerel verilerinizi tarayıcı verilerini temizleyerek veya uygulamadaki yedekleme/silme araçlarıyla kendiniz silebilirsiniz.</li>
 <li><strong>Tıbbi sorumluluk ve değişiklikler.</strong> VitaTakip tanı koymaz, tedavi başlatmaz ve reçete düzenlemez; nihai karar hekiminize aittir. Acil durumlarda 112'yi arayın. Bu metin güncellenebilir ve hukuki danışmanlık niteliği taşımaz.</li>
 </ol>
@@ -3258,8 +2962,6 @@ Kapat
 <script src="js/report-simple.js?v=73"></script>
 <script src="js/age-stage.js?v=73"></script>
 <script src="js/day-compact.js?v=75"></script>
-<script src="js/firebase-config.js?v=82"></script>
-<script src="js/cloud-sync.js?v=82"></script>
 <script src="js/add-sup-simple.js?v=64"></script>
 <script src="js/scanner-simple.js?v=64"></script>
 <script src="js/ui-enhancements.js"></script>

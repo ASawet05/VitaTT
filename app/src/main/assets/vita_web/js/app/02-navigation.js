@@ -27,7 +27,6 @@ function openAppDrawer() {
       if (!menu) return;
       const isHidden = menu.classList.contains("hidden");
       if (isHidden) {
-        if (typeof refreshCloudSyncUI === "function") refreshCloudSyncUI();
         menu.classList.remove("hidden");
         if (btn) btn.setAttribute("aria-expanded", "true");
       } else {
@@ -104,9 +103,6 @@ function openAppDrawer() {
       }
       if (typeof window.renderPwaNotificationSmartChecklist === "function") {
         window.renderPwaNotificationSmartChecklist();
-      }
-      if (typeof refreshCloudSyncUI === "function") {
-        refreshCloudSyncUI();
       }
     }
 

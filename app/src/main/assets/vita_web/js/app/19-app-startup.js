@@ -37,7 +37,6 @@
       applyCompactMode();
       startNotificationScheduler();
       purgeLegacyDemoAccounts();
-      if (typeof refreshCloudSyncUI === "function") refreshCloudSyncUI();
 
       const rememberMeActive = typeof isRememberMeEnabled === "function"
         ? isRememberMeEnabled()

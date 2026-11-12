@@ -158,13 +158,16 @@
     /* 2. MODÜL: TÜRKÇE SESLİ OKUMA MOTORU (TTS) */
     const TTSVoice = (() => {
       let turkishVoice = null;
+      let remoteVoicesOnly = false;
       let isReading = false;
       let activeReadButton = null;
       let utteranceToken = 0;
       function loadVoices() {
         if ('speechSynthesis' in window) {
           const voices = window.speechSynthesis.getVoices();
-          turkishVoice = voices.find(v => v.lang === 'tr-TR' || v.lang.startsWith('tr')) || null;
+          // Yalnızca cihazda çalışan (localService) sesler: çevrim içi sesler okunan metni dış sunucuya gönderebilir.
+          turkishVoice = voices.find(v => v.localService && (v.lang === "tr-TR" || v.lang.startsWith("tr"))) || null;
+          remoteVoicesOnly = !turkishVoice && voices.some(v => !v.localService);
         }
       }
       function syncButtonState(button, active) {
@@ -200,6 +203,7 @@
         loadVoices();
         window.speechSynthesis.onvoiceschanged = loadVoices;
       }
+      window.vitaLocalTurkishVoice = function () { loadVoices(); return { voice: turkishVoice, blocked: remoteVoicesOnly }; };
       return {
         speak(text, button = null) {
           if (!('speechSynthesis' in window)) {
@@ -237,6 +241,12 @@
           };
           if (!turkishVoice) loadVoices();
           if (turkishVoice) utterance.voice = turkishVoice;
+          else if (remoteVoicesOnly) {
+            isReading = false;
+            syncButtonState(activeReadButton, false);
+            showToast("Cihazda Türkçe ses yok", "Sesli okuma yalnızca cihazdaki seslerle yapılır. Cihaz ayarlarından Türkçe ses paketi yükleyebilirsiniz.", "info");
+            return;
+          }
           window.speechSynthesis.speak(utterance);
         },
         toggleCurrentAnalysis(button) {

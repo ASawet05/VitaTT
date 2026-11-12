@@ -500,7 +500,7 @@ function syncSelectedSymptomsFromDOM() {
     state.selectedSymptomsArray = Array.from(domSet);
     try {
       if (typeof safeLocalStorageSetItem === "function") {
-        safeLocalStorageSetItem("vitatakip_selected_symptoms_array", JSON.stringify(state.selectedSymptomsArray));
+        safeLocalStorageRemoveItem("vitatakip_selected_symptoms_array"); /* eski, kullanıcıya özel olmayan anahtar */
         if (typeof activeUserId !== "undefined" && activeUserId) {
           safeLocalStorageSetItem(`vitatakip_symptoms_${activeUserId}`, JSON.stringify(state.selectedSymptomsArray));
         }
@@ -832,7 +832,7 @@ function runCDSSAnalysis(event) {
     state.selectedSymptomsArray = [...symptomsList];
     try {
       if (typeof safeLocalStorageSetItem === "function") {
-        safeLocalStorageSetItem("vitatakip_selected_symptoms_array", JSON.stringify(symptomsList));
+        safeLocalStorageRemoveItem("vitatakip_selected_symptoms_array"); /* eski, kullanıcıya özel olmayan anahtar */
       }
     } catch (_) {}
 

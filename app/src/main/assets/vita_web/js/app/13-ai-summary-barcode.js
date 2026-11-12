@@ -1,7 +1,7 @@
 window.VitaAIChat = VitaAIChat;
-    VitaAIChat.setRuntimeStatus(getGeminiApiKey() ? "UNVERIFIED" : "CONFIGURATION_REQUIRED");
+    VitaAIChat.setRuntimeStatus("LOCAL");
     window.addEventListener("offline", () => VitaAIChat.setRuntimeStatus("OFFLINE"));
-    window.addEventListener("online", () => VitaAIChat.setRuntimeStatus(getGeminiApiKey() ? "UNVERIFIED" : "CONFIGURATION_REQUIRED"));
+    window.addEventListener("online", () => VitaAIChat.setRuntimeStatus("LOCAL"));
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && !document.getElementById("doctorQuestionsModal")?.classList.contains("hidden")) {
         VitaAIChat.closeDoctorQuestions();
@@ -53,7 +53,7 @@ window.VitaAIChat = VitaAIChat;
           const altWarning = Number(labs.alt) > 50 ? `<p class="rounded-lg bg-amber-50 border border-amber-200 p-2 text-amber-900"><strong>⚠️ Hepatik Güvenlik Uyarısı:</strong> ALT ${labs.alt} U/L. Hekim değerlendirmesi gereklidir.</p>` : "";
           const fallbackReason = e && e.aiPrivacyDeclined
             ? "Veri paylaşım onayı verilmedi; sağlık verileri Google'a gönderilmedi. Yerel klinik sentez devreye girdi."
-            : "Gemini yanıtı alınamadı. Yerel klinik sentez devreye girdi.";
+            : "Yerel klinik sentez hazırlandı.";
           htmlResult = `<div class="mb-2 rounded-xl border border-sky-200 bg-sky-50 p-2.5 text-sky-900"><strong><i class="fa-solid fa-arrows-rotate"></i> Otomatik yerel yanıt</strong><p>${escapeHtmlText(fallbackReason)}</p></div><p><strong>1. Durum Tespiti:</strong> <strong>${escapeHtmlText(p.name || 'Hasta')}</strong> (${escapeHtmlText(p.age)} yaş, ${p.gender === 'E' ? 'Erkek' : 'Kadın'}, ${escapeHtmlText(p.weight)} kg, VKİ: ${escapeHtmlText(p.bmi)}) için yerel sentez hazırlanmıştır. ${egfr ? `CKD-EPI eGFR: ${escapeHtmlText(egfr.egfr)} mL/dk/1.73m² (Evre ${escapeHtmlText(egfr.stage)}). ` : ''}${findings.length ? findings.map(f => escapeHtmlText(f.title)).join('; ') + '. ' : ''}Mevcut veriler klinik öyküyle birlikte yorumlanmalıdır.</p>${window.VitaLabInsights && VitaLabInsights.hasAnyLab() ? `<div class="mt-1"><strong>Girilen tüm tahliller:</strong>${VitaLabInsights.labsHtml()}${VitaLabInsights.relationsHtml() ? `<div class="mt-1"><strong>Tahliller arası ilişkiler ve değişim:</strong>${VitaLabInsights.relationsHtml()}</div>` : ""}</div>` : ""}<p><strong>2. Önerilen Form &amp; Saat Optimizasyonu:</strong> Takviyelerin formu ve zamanlaması; tahliller, ilaçlar, böbrek/karaciğer işlevleri ve ürün etiketi incelenerek hekim veya eczacıyla kararlaştırılmalıdır. Kendi kendinize doz değiştirmeyin.</p>${altWarning}<p><strong>3. Zorunlu Hekim Uyarısı:</strong> Bu yerel özet tanı ya da reçete değildir. Takviye başlatma, bırakma veya doz değiştirme kararını uzman hekimle verin.</p>`;
         }
 
@@ -70,7 +70,7 @@ window.VitaAIChat = VitaAIChat;
         }
         if (window.SoundEffects) SoundEffects.playSuccess();
         if (usedLocalFallback) {
-          showToast("Yerel Sentez Hazır", "Gemini yanıt veremedi; VitaTakip'in yerel klinik motoru kullanıldı.", "info");
+          showToast("Yerel Sentez Hazır", "VitaTakip yerel klinik motoru kullanıldı.", "info");
         } else {
           showToast("AI Sentezi Hazır", "Klinik doğal dil özeti oluşturuldu.", "success");
         }
@@ -153,7 +153,7 @@ window.VitaAIChat = VitaAIChat;
          Yalnızca VİTAMİNLER ve GIDA TAKVİYELERİ listelenir / eşleştirilir.
        - Mod 2 ('medication'): "İlaç Seç ve Denetle" (Modal Olarak)
          Genel İLAÇLAR (reçeteli/reçetesiz) aranır ve denetleme mekanizmasına aktarılır.
-       - Türkiye EAN-13 (869...) yerel JSON veritabanı + NIH DSLD / OpenFoodFacts API
+       - Türkiye EAN-13 (869...) yerel JSON veritabanı (yalnızca cihazdaki listeler; dış katalog sorgusu yok)
        - Kamera (BarcodeDetector / HTML5-QRCode / ZXing) + Fotoğraf Yükleme & AI Tanıma
        ========================================================================== */
     let vitaBarcodeStream = null;
@@ -272,7 +272,7 @@ window.VitaAIChat = VitaAIChat;
         suggestedTime: "08:00"
       },
       {
-        barcode: "8681571300124",
+        barcode: "VT-CAT-01",
         name: "Venatura Magnezyum Bisglisinat & P5P 60 Kapsül",
         brand: "Venatura",
         type: "supplement",
@@ -286,7 +286,7 @@ window.VitaAIChat = VitaAIChat;
         suggestedTime: "21:30"
       },
       {
-        barcode: "8681571300452",
+        barcode: "VT-CAT-02",
         name: "Venatura Çinko Pikolinat 15 mg 60 Kapsül",
         brand: "Venatura",
         type: "supplement",
@@ -300,7 +300,7 @@ window.VitaAIChat = VitaAIChat;
         suggestedTime: "13:00"
       },
       {
-        barcode: "8681571300681",
+        barcode: "VT-CAT-03",
         name: "Venatura Metilfolat (Quatrefolic 5-MTHF) 400 mcg",
         brand: "Venatura",
         type: "supplement",
@@ -328,7 +328,7 @@ window.VitaAIChat = VitaAIChat;
         suggestedTime: "08:00"
       },
       {
-        barcode: "8681398001122",
+        barcode: "VT-CAT-04",
         name: "Nature's Supreme Hidrolize Kolajen Peptit + C Vitamini",
         brand: "Nature's Supreme",
         type: "supplement",
@@ -344,7 +344,7 @@ window.VitaAIChat = VitaAIChat;
 
       // --- GENEL İLAÇLAR (REÇETELİ / REÇETESİZ - type: 'medication') ---
       {
-        barcode: "8699541010205",
+        barcode: "VT-CAT-05",
         name: "Euthyrox 100 mcg 50 Tablet",
         brand: "Merck İlaç",
         type: "medication",
@@ -386,7 +386,7 @@ window.VitaAIChat = VitaAIChat;
         interactionWarning: "Mide asidini baskıladığı için B12, Demir, Kalsiyum ve Magnezyum emilimini azaltabilir. Dilaltı B12 veya şelatlı/sitrat formlar tercih edilmelidir."
       },
       {
-        barcode: "8699548790105",
+        barcode: "VT-CAT-06",
         name: "Nexium 40 mg 28 Enterik Kaplı Pellet Tablet",
         brand: "AstraZeneca",
         type: "medication",
@@ -400,7 +400,7 @@ window.VitaAIChat = VitaAIChat;
         interactionWarning: "Uzun süreli PPI kullanımı B12, Demir ve Magnezyum depolarını azaltabilir."
       },
       {
-        barcode: "8699541090108",
+        barcode: "VT-CAT-07",
         name: "Glucophage 1000 mg 100 Film Tablet",
         brand: "Merck İlaç",
         type: "medication",
@@ -484,7 +484,7 @@ window.VitaAIChat = VitaAIChat;
         interactionWarning: "Kalsiyum, Demir, Magnezyum ve Çinko takviyeleri Doksisiklin emilimini bozar; en az 3-4 saat ara bırakılmalıdır."
       },
       {
-        barcode: "8699591010119",
+        barcode: "VT-CAT-08",
         name: "Fosamax 70 mg 4 Tablet",
         brand: "MSD",
         type: "medication",
@@ -1471,47 +1471,9 @@ window.VitaAIChat = VitaAIChat;
         return null;
       }
 
-      setBarcodeLookupStatus(`<span class="inline-flex items-center gap-2"><i class="fa-solid fa-circle-notch fa-spin"></i><strong>${escapeHtmlText(code)}</strong> barkodu Türkiye ve uluslararası kataloglarda aranıyor…</span>`);
-      const timeoutFetch = async (url, ms = 6500) => {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), ms);
-        try { const response = await fetch(url, { method: "GET", headers: { "Accept": "application/json" }, signal: controller.signal, cache: "no-store" }); if (!response.ok) throw new Error(`HTTP ${response.status}`); return await response.json(); }
-        finally { clearTimeout(timer); }
-      };
-      try {
-        const digits = code.replace(/\D/g, "");
-        const q = encodeURIComponent(`"${digits}"`);
-        const data = await timeoutFetch(`https://api.ods.od.nih.gov/dsld/v9/search-filter?q=${q}&size=10`);
-        const product = findExactCatalogueProduct(data, code);
-        if (product) {
-          product.source = "NIH Dietary Supplement Label Database";
-          product.type = "supplement";
-          applyBarcodeCatalogueMatch(product, code);
-          return product;
-        }
-      } catch (_) {}
-      try {
-        const digits = code.replace(/\D/g, "");
-        const data = await timeoutFetch(`https://world.openfoodfacts.org/api/v3/product/${encodeURIComponent(digits)}.json?product_type=all&cc=tr&lc=tr&fields=code,product_name,product_name_tr,brands,quantity,categories,categories_tags,ingredients_text,product_type`);
-        const product = data?.product;
-        if (product && normalizeBarcodeForMatch(product.code) === normalizeBarcodeForMatch(code)) {
-          const name = String(product.product_name_tr || product.product_name || "").trim();
-          if (name) {
-            const found = {
-              name,
-              brand: String(product.brands || "").trim(),
-              ingredients: String(product.ingredients_text || ""),
-              productType: String(product.product_type || "") + " " + (Array.isArray(product.categories_tags) ? product.categories_tags.join(", ") : String(product.categories || "")),
-              source: "Open Food Facts TR"
-            };
-            applyBarcodeCatalogueMatch(found, code);
-            return found;
-          }
-        }
-      } catch (_) {}
-
+      /* Barkod yalnızca cihazdaki yerel ürün listelerinde aranır; hiçbir dış kataloğa sorgu gönderilmez. */
       setBarcodeLookupStatus(
-        `<div class="space-y-2"><strong class="block text-amber-950"><i class="fa-solid fa-circle-question mr-1"></i>Ürün veritabanında bulunamadı. Kutu fotoğrafını çekerek AI ile tanımak ister misiniz?</strong><p class="text-[11px] text-amber-900">Barkod (<strong>${escapeHtmlText(code)}</strong>) yerel sözlükte yer almıyor. Kutunun fotoğrafını çekerek Gemini Vision AI ile ürün adı, etken madde, form, dozaj ve kutu adedini otomatik doldurabilirsiniz.</p><button type="button" onclick="triggerAiPhotoBoxFallback()" class="mt-1 rounded-xl bg-indigo-700 hover:bg-indigo-800 px-3.5 py-2 text-xs font-black text-white inline-flex items-center gap-1.5 cursor-pointer shadow-xs"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Kutu Fotoğrafını Çek &amp; Yapay Zeka ile Doldur</span></button></div>`,
+        `<div class="space-y-2"><strong class="block text-amber-950"><i class="fa-solid fa-circle-question mr-1"></i>Ürün yerel listede bulunamadı.</strong><p class="text-[11px] text-amber-900">Barkod (<strong>${escapeHtmlText(code)}</strong>) cihazdaki ürün listesinde yer almıyor. Ürün adını elle yazarak ekleyebilirsiniz.</p></div>`,
         "warning"
       );
       return null;
@@ -1678,7 +1640,7 @@ window.VitaAIChat = VitaAIChat;
             fileName,
             mode: currentBarcodeScannerMode || "medication"
           })
-        : '{"urunAdi":"Levotiron 100 mcg","etkenMadde":"Levotiroksin Sodyum","form":"Tablet","dozaj":"100 mcg","kutuAdedi":50}';
+        : '{"urunAdi":"","etkenMadde":"","form":"","dozaj":"","kutuAdedi":0}';
       return {
         ...parseGeminiBoxJsonResponse(fallbackRaw),
         modelUsed: "LocalClinicalFallbackEngine",
@@ -1743,6 +1705,11 @@ window.VitaAIChat = VitaAIChat;
           boxJson.kutuAdedi = localMatchFromFilename.kutuAdedi || boxJson.kutuAdedi;
         }
 
+        /* Cihazda görüntüden yazı okuma (yapay zekâ) yoktur; yalnızca dosya adı yerel listeyle eşleşirse doldurulur. */
+        if (!boxJson.urunAdi) {
+          throw new Error("Ürün fotoğraftan tanınamadı. Bu sürümde fotoğraftan yazı okuma yok ve fotoğraf hiçbir yere gönderilmez. Barkodu okutun veya ürün adını elle yazın.");
+        }
+
         const prettyJson = JSON.stringify({
           urunAdi: boxJson.urunAdi,
           etkenMadde: boxJson.etkenMadde,
@@ -1752,8 +1719,8 @@ window.VitaAIChat = VitaAIChat;
         }, null, 2);
 
         const engineBadge = boxJson.usedLocalFallback
-          ? "Yerel Akıllı Kutu Tanıma Motoru (LocalClinicalFallbackEngine)"
-          : `Gemini Vision (${boxJson.modelUsed || "gemini-flash"})`;
+          ? "Yerel ürün listesi eşleşmesi (dosya adına göre)"
+          : "Yerel ürün listesi eşleşmesi";
 
         if (resultText) {
           resultText.textContent =
@@ -1782,7 +1749,7 @@ window.VitaAIChat = VitaAIChat;
         };
 
         applyBarcodeCatalogueMatch(productRecord, "AI-VISION");
-        showToast("Yapay Zeka Kutu Analizi Tamamlandı", `${productRecord.name} bilgileri forma otomatik dolduruldu.`, "success");
+        showToast("Yerel listede eşleşme bulundu", `${productRecord.name} bilgileri forma dolduruldu. Kutudaki bilgilerle karşılaştırıp doğrulayın.`, "success");
       } catch (error) {
         if (resultText) {
           resultText.textContent = `Görsel analizi tamamlanamadı: ${error?.message || "Bilinmeyen hata"}\n\nYukarıdaki Türkiye EAN-13 listesinden ürün seçebilir veya barkod numarasını elle girebilirsiniz.`;
@@ -1887,7 +1854,6 @@ window.VitaAIChat = VitaAIChat;
       renderVitaFeedbackHistory();
       const senderLine = document.getElementById("vitaFeedbackSenderLine"); if (senderLine) senderLine.textContent = getVitaFeedbackSenderName();
       const statusBox = document.getElementById("vitaFeedbackDeliveryStatus"); if (statusBox) { statusBox.classList.add("hidden"); statusBox.innerHTML = ""; }
-      if (typeof retryPendingVitaFeedback === "function") retryPendingVitaFeedback();
       const message = document.getElementById("vitaFeedbackMessage");
       if (message) window.setTimeout(() => message.focus(), 30);
     }
@@ -1912,7 +1878,7 @@ window.VitaAIChat = VitaAIChat;
         const dateLabel = item.createdAt ? new Date(item.createdAt).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" }) : "Tarih belirtilmemiş";
         const stars = "★".repeat(Math.max(1, Math.min(5, Number(item.rating) || 3)));
         return `<article class="rounded-xl border border-slate-200 bg-white p-3 vita-feedback-enter">
-          <div class="flex items-start justify-between gap-2"><div><p class="text-[11px] font-black text-navy-900">${escapeHtmlText(item.type || "Geri bildirim")} · ${escapeHtmlText(item.area || "Genel")}</p><p class="mt-0.5 text-[10px] text-slate-400">${escapeHtmlText(dateLabel)} · ${item.deliveredToEmail ? "<span class=\"text-emerald-600 font-bold\">İletildi</span>" : "<span class=\"text-amber-600 font-bold\">İletim bekliyor</span>"}</p></div><button type="button" onclick="deleteVitaFeedback(${safeJsStringAttribute(item.id)})" class="min-h-8 min-w-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-700" aria-label="Bu geri bildirimi sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></div>
+          <div class="flex items-start justify-between gap-2"><div><p class="text-[11px] font-black text-navy-900">${escapeHtmlText(item.type || "Geri bildirim")} · ${escapeHtmlText(item.area || "Genel")}</p><p class="mt-0.5 text-[10px] text-slate-400">${escapeHtmlText(dateLabel)} · <span class="text-slate-500 font-bold">Cihazda kayıtlı</span></p></div><button type="button" onclick="deleteVitaFeedback(${safeJsStringAttribute(item.id)})" class="min-h-8 min-w-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-700" aria-label="Bu geri bildirimi sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></div>
           <p class="mt-2 whitespace-pre-wrap break-words text-xs leading-relaxed text-slate-700">${escapeHtmlText(item.message || "")}</p><p class="mt-2 text-[10px] font-bold text-amber-600" aria-label="Kolaylık puanı ${Number(item.rating) || 3} / 5">${stars} <span class="text-slate-400">${Math.max(1, Math.min(5, Number(item.rating) || 3))}/5</span></p>
         </article>`;
       }).join("");
@@ -1945,72 +1911,12 @@ window.VitaAIChat = VitaAIChat;
       return { subject, body };
     }
 
-    /* Teslimi GERÇEKTEN doğrular: FormSubmit alıcı e-postası etkinleştirilmemişse HTTP 200 döner ama success:"false" yazar. */
-    async function deliverVitaFeedbackEntry(entry) {
-      const { subject, body } = buildVitaFeedbackEmailPayload(entry);
-      const controller = typeof AbortController === "function" ? new AbortController() : null;
-      const timer = controller ? window.setTimeout(() => controller.abort(), 15000) : null;
-      try {
-        const response = await fetch(`https://formsubmit.co/ajax/${VITA_DEVELOPER_FEEDBACK_EMAIL}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          signal: controller ? controller.signal : undefined,
-          body: JSON.stringify({
-            _subject: subject,
-            _template: "table",
-            _captcha: "false",
-            Gonderen: entry.sender,
-            Bildirim_Turu: entry.type,
-            Ilgili_Bolum: entry.area,
-            Puan: `${entry.rating}/5`,
-            Mesaj: entry.message,
-            Tarih: new Date(entry.createdAt).toLocaleString("tr-TR"),
-            Surum: entry.appVersion || VITA_FEEDBACK_APP_VERSION,
-            Ekran: `${window.innerWidth}x${window.innerHeight}`,
-            Tarayici: String(navigator.userAgent || "").slice(0, 200)
-          })
-        });
-        let data = null;
-        try { data = await response.json(); } catch (_) {}
-        const success = Boolean(data) && (data.success === true || String(data.success).toLowerCase() === "true");
-        return { ok: response.ok && success, status: response.status, message: data && data.message ? String(data.message).slice(0, 200) : "" };
-      } catch (error) {
-        return { ok: false, network: true, message: error && error.name === "AbortError" ? "zaman aşımı" : "bağlantı hatası" };
-      } finally {
-        if (timer) window.clearTimeout(timer);
-      }
-    }
-
-    /* İletilememiş kayıtları (çevrimdışı vb.) sessizce yeniden dener. */
-    let vitaFeedbackRetryRunning = false;
-    async function retryPendingVitaFeedback() {
-      if (vitaFeedbackRetryRunning || (navigator.onLine === false)) return;
-      vitaFeedbackRetryRunning = true;
-      try {
-        const entries = getVitaFeedbackEntries();
-        const pending = entries.filter(item => item && item.deliveredToEmail === false && (item.deliveryAttempts || 0) < VITA_FEEDBACK_MAX_ATTEMPTS);
-        let changed = false;
-        for (const item of pending) {
-          const result = await deliverVitaFeedbackEntry(item);
-          item.deliveryAttempts = (item.deliveryAttempts || 0) + 1;
-          item.lastDeliveryNote = result.ok ? "" : (result.message || "");
-          if (result.ok) item.deliveredToEmail = true;
-          changed = true;
-          if (!result.ok && result.network) break; // bağlantı yoksa diğerlerini de denemeye gerek yok
-        }
-        if (changed) { storeVitaFeedbackEntries(entries); renderVitaFeedbackHistory(); }
-      } catch (_) {}
-      vitaFeedbackRetryRunning = false;
-    }
-    window.retryPendingVitaFeedback = retryPendingVitaFeedback;
-    window.addEventListener("online", () => window.setTimeout(retryPendingVitaFeedback, 1500));
-    window.setTimeout(retryPendingVitaFeedback, 12000);
-
-    async function submitVitaFeedback(event) {
+    /* Geri bildirim hiçbir sunucuya otomatik gönderilmez: cihazda kaydedilir ve kullanıcının
+       kendi e-posta uygulaması hazır mesajla açılır; gönderim kararı tamamen kullanıcıdadır. */
+    function submitVitaFeedback(event) {
       event.preventDefault();
       const messageInput = document.getElementById("vitaFeedbackMessage");
       const statusBox = document.getElementById("vitaFeedbackDeliveryStatus");
-      const submitBtn = document.getElementById("btnSubmitVitaFeedback");
       const message = String(messageInput?.value || "").trim();
       if (message.length < 8) {
         showToast("Açıklama gerekli", "Lütfen en az 8 karakterlik bir açıklama yazın.", "warning");
@@ -2026,51 +1932,23 @@ window.VitaAIChat = VitaAIChat;
         sender: getVitaFeedbackSenderName(),
         message: message.slice(0, 800),
         appVersion: VITA_FEEDBACK_APP_VERSION,
-        createdAt: new Date().toISOString(),
-        deliveredToEmail: false,
-        deliveryAttempts: 0
+        createdAt: new Date().toISOString()
       };
 
       const entries = getVitaFeedbackEntries();
       entries.unshift(entry);
       if (!storeVitaFeedbackEntries(entries.slice(0, 100))) return;
 
-      const setStatus = (html, tone) => {
-        if (!statusBox) return;
-        const tones = {
-          info: "bg-teal-50 text-teal-900 border-teal-300",
-          ok: "bg-emerald-50 text-emerald-950 border-emerald-300",
-          warn: "bg-amber-50 text-amber-950 border-amber-300"
-        };
+      sendVitaFeedbackViaEmailClient();
+
+      const form = document.getElementById("vitaFeedbackForm");
+      if (form) form.reset();
+      const count = document.getElementById("vitaFeedbackCount");
+      if (count) count.textContent = "0/800";
+      if (statusBox) {
         statusBox.classList.remove("hidden");
-        statusBox.className = `rounded-xl p-3 text-xs font-bold border ${tones[tone] || tones.info}`;
-        statusBox.innerHTML = html;
-      };
-      setStatus(`<i class="fa-solid fa-spinner fa-spin mr-1.5"></i>Geri bildiriminiz gönderiliyor…`, "info");
-      if (submitBtn) submitBtn.disabled = true;
-
-      const result = await deliverVitaFeedbackEntry(entry);
-      entry.deliveryAttempts = 1;
-      entry.deliveredToEmail = Boolean(result.ok);
-      entry.lastDeliveryNote = result.ok ? "" : (result.message || "");
-      storeVitaFeedbackEntries(entries.slice(0, 100));
-
-      if (submitBtn) submitBtn.disabled = false;
-
-      if (result.ok) {
-        const form = document.getElementById("vitaFeedbackForm");
-        if (form) form.reset();
-        const count = document.getElementById("vitaFeedbackCount");
-        if (count) count.textContent = "0/800";
-        setStatus(`<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>Teşekkürler! Geri bildiriminiz iletildi.`, "ok");
-        showToast("Geri bildirim iletildi", "Teşekkürler, görüşünüz bize ulaştı.", "success");
-      } else {
-        const form = document.getElementById("vitaFeedbackForm");
-        if (form) form.reset();
-        const count = document.getElementById("vitaFeedbackCount");
-        if (count) count.textContent = "0/800";
-        setStatus(`<i class="fa-solid fa-clock text-amber-600 mr-1.5"></i>Geri bildiriminiz cihazınıza kaydedildi, henüz iletilemedi. Bağlantı uygun olunca otomatik yeniden denenecek. İsterseniz aşağıdaki düğmeyle e-posta uygulamanızdan da gönderebilirsiniz.`, "warn");
-        showToast("İletim bekliyor", "Mesajınız kaydedildi; otomatik yeniden denenecek.", "warning");
+        statusBox.className = "rounded-xl p-3 text-xs font-bold border bg-teal-50 text-teal-900 border-teal-300";
+        statusBox.innerHTML = `<i class="fa-solid fa-circle-check text-teal-600 mr-1.5"></i>Geri bildiriminiz bu cihaza kaydedildi. Göndermek için açılan e-posta uygulamanızda onaylayın.`;
       }
       renderVitaFeedbackHistory();
     }
@@ -2142,15 +2020,11 @@ window.VitaAIChat = VitaAIChat;
         showToast("Kayıt yok", "Dışa aktarılacak geri bildirim bulunmuyor.", "info");
         return;
       }
-      const blob = new Blob([JSON.stringify({ app: "VitaTakip", exportDate: new Date().toISOString(), storage: "local-browser-prototype", entries }, null, 2)], { type: "application/json;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `VitaTakip_GeriBildirim_${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      URL.revokeObjectURL(url);
+      const json = JSON.stringify({ app: "VitaTakip", exportDate: new Date().toISOString(), storage: "local-browser-prototype", entries }, null, 2);
+      if (!vitaSaveTextFile(`VitaTakip_GeriBildirim_${new Date().toISOString().slice(0, 10)}.json`, "application/json", json)) {
+        showToast("Kaydedilemedi", "Dosya kaydedilemedi. Depolama iznini ve boş alanı kontrol edin.", "error");
+        return;
+      }
       showToast("Dışa aktarıldı", "Geri bildirim kayıtları JSON dosyasına aktarıldı.", "success");
     }
 
